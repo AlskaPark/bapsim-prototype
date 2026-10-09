@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>밥심 · 푸드 베이스드 헬스케어</title>
+<style>
+  :root { --g:#2f8f5b; --g2:#e8f5ee; --bg:#f6f4ef; --ink:#1f2a24; --mut:#6b766f; --warn:#b4610e; --wbg:#fff4e5; --red:#c0392b; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: 'Pretendard','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif; background:#dfe7e1; color:var(--ink); }
+  .app { max-width: 460px; height: 100vh; margin: 0 auto; background: var(--bg); display:flex; flex-direction:column; box-shadow: 0 0 30px rgba(0,0,0,.08); }
+  header { padding: 14px 18px; background: #fff; border-bottom: 1px solid #ebe7de; display:flex; align-items:center; gap:10px; }
+  header .logo { width:36px; height:36px; border-radius:12px; background:var(--g); color:#fff; display:grid; place-items:center; font-size:20px; }
+  header h1 { font-size:16px; margin:0; } header p { margin:0; font-size:12px; color:var(--mut); }
+  header .badge { margin-left:auto; font-size:11px; padding:4px 8px; border-radius:99px; background:var(--g2); color:var(--g); white-space:nowrap; }
+  #chat { flex:1; overflow-y:auto; padding: 16px 14px 8px; display:flex; flex-direction:column; gap:10px; }
+  .msg { max-width: 88%; padding: 10px 13px; border-radius: 16px; font-size: 14px; line-height: 1.55; white-space: pre-wrap; }
+  .user { align-self:flex-end; background: var(--g); color:#fff; border-bottom-right-radius:4px; }
+  .bot { align-self:flex-start; background:#fff; border-bottom-left-radius:4px; border:1px solid #ece8df; }
+  .bot.danger { background:#fdecea; border-color:#f5c6c0; color:#7a1f15; }
+  .card { align-self:stretch; background:#fff; border:1px solid #ece8df; border-radius:16px; padding:14px; font-size:13.5px; line-height:1.55; }
+  .card h3 { font-size:13px; margin:12px 0 6px; display:flex; align-items:center; gap:6px; color:var(--g); }
+  .card h3:first-child { margin-top:0; }
+  .item { padding:8px 10px; border-radius:10px; background:#faf9f6; margin-bottom:6px; }
+  .item b { font-size:14px; } .item .comp { font-size:11px; color:var(--g); background:var(--g2); padding:1px 6px; border-radius:6px; margin-left:4px; }
+  .item .claim { color:#3b4740; } .item .note { margin-top:4px; font-size:12px; color:var(--warn); }
+  .tag-mfds { font-size:10px; color:#fff; background:#3567b5; padding:1px 5px; border-radius:5px; margin-left:4px; }
+  .tag-otc { font-size:10px; color:#fff; background:#8a5a2b; padding:1px 5px; border-radius:5px; margin-left:4px; }
+  .warnbox { background:var(--wbg); border-radius:10px; padding:8px 10px; color:#6d3b05; font-size:12.5px; }
+  .excl { font-size:12.5px; color:var(--mut); } .excl s { color:#999; }
+  .disc { font-size:11px; color:var(--mut); margin-top:10px; border-top:1px dashed #e2ddd2; padding-top:8px; }
+  .follow { margin-top:8px; font-size:13px; }
+  .safety label { display:inline-flex; align-items:center; gap:4px; margin:3px 6px 3px 0; padding:6px 10px; border:1px solid #dcd7cc; border-radius:99px; font-size:12.5px; cursor:pointer; background:#fff; }
+  .safety label:has(input:checked) { background:var(--g2); border-color:var(--g); color:var(--g); }
+  .safety input[type=checkbox] { display:none; }
+  .safety .grp { margin:8px 0; } .safety .grp > div:first-child { font-size:12px; color:var(--mut); margin-bottom:4px; }
+  .safety input[type=text] { width:100%; padding:8px 10px; border:1px solid #dcd7cc; border-radius:10px; font-size:13px; }
+  .btn { background:var(--g); color:#fff; border:0; border-radius:12px; padding:10px 14px; font-size:14px; cursor:pointer; width:100%; margin-top:8px; }
+  .chips { display:flex; gap:6px; flex-wrap:wrap; padding: 0 14px 8px; }
+  .chip { font-size:12.5px; padding:6px 11px; border-radius:99px; border:1px solid #cfe3d7; background:#fff; color:var(--g); cursor:pointer; }
+  footer { padding: 10px 12px 14px; background:#fff; border-top:1px solid #ebe7de; display:flex; gap:8px; }
+  footer input { flex:1; padding:12px 14px; border-radius:14px; border:1px solid #dcd7cc; font-size:14px; outline:none; }
+  footer button { background:var(--g); color:#fff; border:0; border-radius:14px; padding:0 16px; font-size:14px; cursor:pointer; }
+  .scen { background:#fff; border-bottom:1px solid #ebe7de; padding:8px 12px 10px; }
+  .scen .t { font-size:11.5px; color:var(--mut); margin-bottom:6px; display:flex; justify-content:space-between; }
+  .scen .row { display:flex; gap:6px; overflow-x:auto; padding-bottom:2px; }
+  .scen button { flex:none; font-size:12.5px; padding:7px 11px; border-radius:12px; border:1px solid #e1dccf; background:#faf9f6; cursor:pointer; color:var(--ink); }
+  .scen button.on { background:var(--g); color:#fff; border-color:var(--g); }
+  .scen button:disabled { opacity:.5; cursor:default; }
+  .scen .desc { font-size:11.5px; color:var(--g); margin-top:6px; min-height:16px; }
+  .typing { color:var(--mut); font-size:13px; }
+  .profile-bar { font-size:11.5px; color:var(--mut); padding:0 16px 6px; display:none; }
+  .profile-bar a { color:var(--g); cursor:pointer; text-decoration:underline; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">🍚</div>
+    <div><h1>밥심</h1><p>먹는 것으로 챙기는 내 컨디션</p></div>
+    <span class="badge" id="mode">…</span>
+  </header>
+  <div class="scen">
+    <div class="t"><span>▶ 시나리오를 눌러 대화 흐름을 재생해 보세요</span><a id="reset" style="color:#2f8f5b;cursor:pointer">처음으로</a></div>
+    <div class="row" id="scenRow"></div>
+    <div class="desc" id="scenDesc"></div>
+  </div>
+  <div id="chat"></div>
+  <div class="profile-bar" id="pbar"></div>
+  <div class="chips" id="chips"></div>
+  <footer>
+    <input id="inp" placeholder="요즘 컨디션을 편하게 말해 주세요" autocomplete="off" />
+    <button id="send">보내기</button>
+  </footer>
+</div>
+<script src="engine.js"></script>
+<script>
+const chat = document.getElementById('chat'), inp = document.getElementById('inp'), chipsEl = document.getElementById('chips');
+const state = { messages: [], profile: null };
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+document.getElementById('mode').textContent = '시나리오 데모';
+
+function add(html, cls) { const d = document.createElement('div'); d.className = cls; d.innerHTML = html; chat.appendChild(d); chat.scrollTop = chat.scrollHeight; return d; }
+function setChips(list) { chipsEl.innerHTML = ''; (list || []).forEach(t => { const b = document.createElement('button'); b.className = 'chip'; b.textContent = t; b.onclick = () => send(t); chipsEl.appendChild(b); }); }
+
+function greet() {
+add('안녕하세요! 🌱 밥심이에요.\n요즘 몸 상태나 챙기고 싶은 것을 평소 말투로 알려주세요. 음식, 건강기능식품, 한방 일반의약품처럼 <b>먹는 것</b>으로만 골라드려요.', 'msg bot');
+setChips(['환절기라 으슬으슬해요', '요즘 너무 피곤해요', '밥 먹고 속이 더부룩해요', '잠을 잘 못 자요']);
+}
+greet();
+
+async function send(text) {
+  text = (text ?? inp.value).trim(); if (!text) return;
+  inp.value = ''; setChips([]);
+  add(esc(text), 'msg user');
+  state.messages.push({ role: 'user', content: text });
+  await ask();
+}
+
+async function ask() {
+  const t = add('입력 중…', 'msg bot typing');
+  await new Promise(r => setTimeout(r, 450)); // 응답 대기 연출
+  const r = await window.BapsimEngine.chat(JSON.parse(JSON.stringify(state))).catch(e => ({ type: 'notice', text: '오류: ' + e.message }));
+  t.remove();
+  render(r);
+}
+
+function render(r) {
+  if (r.type === 'notice') {
+    add(esc(r.text), 'msg bot' + (r.level === 'danger' ? ' danger' : ''));
+    state.messages.push({ role: 'assistant', content: r.text });
+    setChips(r.chips);
+  } else if (r.type === 'safety') {
+    add(esc(r.text), 'msg bot');
+    renderSafety();
+  } else if (r.type === 'answer') {
+    renderAnswer(r);
+  } else add('알 수 없는 응답', 'msg bot');
+}
+
+let lastSafetyCard = null;
+function renderSafety() {
+  const conds = [['pregnant','임신·수유 중'],['hypertension','고혈압'],['diabetes','당뇨'],['heart','심장질환'],['kidney','신장질환'],['thyroid','갑상선기능항진증']];
+  const alls = ['유제품','견과류','생선','국화과','감귤류'];
+  const card = add(`<div class="safety">
+    <div class="grp"><div>🤰 임신·지병</div>${conds.map(([v,l]) => `<label><input type="checkbox" name="c" value="${v}">${l}</label>`).join('')}</div>
+    <div class="grp"><div>💊 지금 복용 중인 약 (없으면 비워두세요)</div><input type="text" id="meds" placeholder="예: 아스피린, 혈압약, 와파린"></div>
+    <div class="grp"><div>⚠️ 알레르기</div>${alls.map(a => `<label><input type="checkbox" name="a" value="${a}">${a}</label>`).join('')}<input type="text" id="allo" placeholder="기타 알레르기 (선택)" style="margin-top:6px"></div>
+    <button class="btn" id="psave">확인하고 추천 받기</button>
+    <div style="font-size:11px;color:#8a938d;margin-top:6px;text-align:center">해당 사항이 없으면 그냥 눌러주세요</div>
+  </div>`, 'card');
+  lastSafetyCard = card;
+  card.querySelector('#psave').onclick = () => {
+    state.profile = {
+      conditions: [...card.querySelectorAll('input[name=c]:checked')].map(i => i.value),
+      allergies: [...card.querySelectorAll('input[name=a]:checked')].map(i => i.value),
+      meds: card.querySelector('#meds').value.trim(),
+      allergyOther: card.querySelector('#allo').value.trim(),
+    };
+    card.querySelectorAll('input,button').forEach(e => e.disabled = true);
+    card.querySelector('#psave').textContent = '✓ 안전 정보 반영됨';
+    showProfile();
+    return ask();
+  };
+}
+
+function showProfile() {
+  const p = state.profile, names = { pregnant:'임신·수유', hypertension:'고혈압', diabetes:'당뇨', heart:'심장질환', kidney:'신장질환', thyroid:'갑상선' };
+  const parts = [...p.conditions.map(c => names[c]), p.meds && ('약: ' + p.meds), ...p.allergies.map(a => a + ' 알레르기'), p.allergyOther].filter(Boolean);
+  const bar = document.getElementById('pbar');
+  bar.style.display = 'block';
+  bar.innerHTML = '🛡️ 안전 정보: ' + esc(parts.join(' · ') || '해당 없음') + ' · <a id="pedit">수정</a>';
+  document.getElementById('pedit').onclick = () => { add('안전 정보를 다시 확인할게요.', 'msg bot'); renderSafety(); };
+}
+
+function renderAnswer(r) {
+  let h = `<div style="margin-bottom:8px">${esc(r.intro)}</div>`;
+  if (r.foods?.length) h += `<h3>🥣 일상 음식</h3>` + r.foods.map(f => `<div class="item"><b>${esc(f.name)}</b>${f.comp ? `<span class="comp">${esc(f.comp)}</span>` : ''}<div class="claim">${esc(f.effect)}</div>${f.note ? `<div class="note">⚠️ ${esc(f.note)}</div>` : ''}</div>`).join('');
+  if (r.supplements?.length) h += `<h3>💊 건강기능식품</h3>` + r.supplements.map(s => `<div class="item"><b>${esc(s.name)}</b><span class="tag-mfds">식약처 인정 기능성</span><div class="claim">“${esc(s.claim)}”</div>${s.note ? `<div class="note">⚠️ ${esc(s.note)}</div>` : ''}</div>`).join('');
+  if (r.otc?.length) h += `<h3>🌿 한방 일반의약품</h3>` + r.otc.map(o => `<div class="item"><b>${esc(o.name)}</b><span class="tag-otc">일반의약품</span><div class="claim">효능·효과: ${esc(o.claim)}</div>${o.note ? `<div class="note">ℹ️ ${esc(o.note)}</div>` : ''}</div>`).join('');
+  if (r.excluded?.length) h += `<h3>🚫 회원님 안전 정보로 제외한 항목</h3><div class="excl">` + r.excluded.map(e => `<div>• <s>${esc(e.name)}</s> — ${esc(e.reason)}</div>`).join('') + '</div>';
+  if (r.warnings?.length) h += `<h3>⚠️ 주의</h3><div class="warnbox">` + [...new Set(r.warnings)].map(w => '• ' + esc(w)).join('<br>') + '</div>';
+  if (r.followup) h += `<div class="follow">💬 ${esc(r.followup)}</div>`;
+  h += `<div class="disc">ⓘ ${esc(r.disclaimer)}</div>`;
+  add(h, 'card');
+  state.messages.push({ role: 'assistant', content: JSON.stringify({ intro: r.intro, foods: (r.foods||[]).map(f=>f.name), supplements: (r.supplements||[]).map(s=>s.name), otc: (r.otc||[]).map(o=>o.name) }) });
+  setChips(['요즘 피곤해요', '속이 더부룩해요', '운동도 추천해줘']);
+}
+
+// ---------- 스크립트 시나리오 ----------
+const SCENARIOS = [
+  { id:'s1', title:'🍂 환절기 으슬으슬', desc:'특이사항 없는 사용자 → 음식·건기식·쌍화탕/갈근탕까지 추천',
+    steps:[{ say:'환절기라 그런지 몸이 으슬으슬해요' }, { profile:{} }] },
+  { id:'s2', title:'😮‍💨 만성 피로', desc:'아스피린 복용 + 견과류 알레르기 → 홍삼·견과류 제외, 쌍화탕은 약사 확인 주의',
+    steps:[{ say:'요즘 계속 피곤하고 기운이 없어요' }, { profile:{ meds:'아스피린', allergies:['견과류'] } }] },
+  { id:'s3', title:'🍚 소화불량', desc:'더부룩함 → 무·양배추·평위산 추천, 운동 질문은 범위 밖으로 안내',
+    steps:[{ say:'밥 먹고 나면 속이 더부룩해요' }, { profile:{} }, { say:'운동도 같이 추천해줘' }] },
+  { id:'s4', title:'🩺 고혈압 + 감기 기운', desc:'고혈압 체크 → 감초·마황 든 쌍화탕·갈근탕 제외',
+    steps:[{ say:'감기 기운이 있는지 으슬으슬하고 콧물이 나요' }, { profile:{ conditions:['hypertension'], meds:'혈압약' } }] },
+  { id:'s5', title:'🤰 임신 중 더부룩함', desc:'임신 + 유제품 알레르기 → 한방제제·요거트 제외',
+    steps:[{ say:'임신 중인데 속이 자꾸 더부룩해요' }, { profile:{ conditions:['pregnant'], allergies:['유제품'] } }] },
+  { id:'s6', title:'🚨 위험 신호', desc:'흉통·호흡곤란 → 추천 중단, 의료진 상담 안내',
+    steps:[{ say:'가슴이 아프고 숨이 차요' }] },
+];
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+let playing = false;
+function resetChat() { chat.innerHTML=''; state.messages=[]; state.profile=null; const bar=document.getElementById('pbar'); bar.style.display='none'; setChips([]); }
+async function typeAndSend(text) {
+  inp.value=''; for (const ch of text) { inp.value += ch; await sleep(35); }
+  await sleep(250); await send();
+}
+async function play(sc) {
+  if (playing) return; playing = true;
+  document.querySelectorAll('#scenRow button').forEach(b => { b.disabled = true; b.classList.toggle('on', b.dataset.id===sc.id); });
+  document.getElementById('scenDesc').textContent = sc.desc;
+  resetChat(); greet(); setChips([]); await sleep(500);
+  for (const st of sc.steps) {
+    if (st.say) await typeAndSend(st.say);
+    if (st.profile) {
+      await sleep(500);
+      const c = lastSafetyCard, p = st.profile;
+      for (const v of (p.conditions||[])) { c.querySelector(`input[name=c][value=${v}]`).click(); await sleep(350); }
+      for (const v of (p.allergies||[])) { c.querySelector(`input[name=a][value="${v}"]`).click(); await sleep(350); }
+      if (p.meds) { const m=c.querySelector('#meds'); for (const ch of p.meds) { m.value+=ch; await sleep(60); } }
+      await sleep(600);
+      await c.querySelector('#psave').onclick();
+    }
+    await sleep(700);
+  }
+  document.querySelectorAll('#scenRow button').forEach(b => b.disabled = false);
+  playing = false;
+}
+const row = document.getElementById('scenRow');
+SCENARIOS.forEach(sc => { const b=document.createElement('button'); b.textContent=sc.title; b.dataset.id=sc.id; b.onclick=()=>play(sc); row.appendChild(b); });
+document.getElementById('reset').onclick = () => { if (playing) return; resetChat(); greet(); document.getElementById('scenDesc').textContent=''; row.querySelectorAll('button').forEach(b=>b.classList.remove('on')); };
+
+document.getElementById('send').onclick = () => send();
+inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) send(); });
+</script>
+</body>
+</html>
