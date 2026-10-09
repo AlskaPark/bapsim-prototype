@@ -32,7 +32,15 @@
   .follow { margin-top:8px; font-size:13px; }
   .safety label { display:inline-flex; align-items:center; gap:4px; margin:3px 6px 3px 0; padding:6px 10px; border:1px solid #dcd7cc; border-radius:99px; font-size:12.5px; cursor:pointer; background:#fff; }
   .safety label:has(input:checked) { background:var(--g2); border-color:var(--g); color:var(--g); }
-  .safety input[type=checkbox] { display:none; }
+  .safety input[type=checkbox], .safety input[type=radio] { display:none; }
+  .safety label:has(input[type=radio]:checked) { background:var(--g2); border-color:var(--g); color:var(--g); }
+  .bar { height:8px; border-radius:6px; background:#eee; overflow:hidden; margin:3px 0 8px; } .bar > i { display:block; height:100%; background:var(--g); }
+  .stack { display:flex; height:14px; border-radius:7px; overflow:hidden; margin:4px 0 4px; font-size:10px; color:#fff; } .stack > i { display:grid; place-items:center; font-style:normal; }
+  .kv { display:flex; justify-content:space-between; font-size:12.5px; } .big { font-size:22px; font-weight:700; color:var(--g); }
+  .sel { font-size:12.5px; color:var(--ink); background:#faf9f6; border-radius:10px; padding:6px 10px; min-height:30px; margin:6px 0; }
+  .addchip { display:inline-block; margin:3px 4px 3px 0; padding:6px 10px; border:1px solid #dcd7cc; border-radius:99px; font-size:12.5px; cursor:pointer; background:#fff; }
+  .addchip:active { background:var(--g2); }
+  .approx { font-size:10.5px; color:#fff; background:#9a8f7a; padding:1px 6px; border-radius:5px; margin-left:4px; }
   .safety .grp { margin:8px 0; } .safety .grp > div:first-child { font-size:12px; color:var(--mut); margin-bottom:4px; }
   .safety input[type=text] { width:100%; padding:8px 10px; border:1px solid #dcd7cc; border-radius:10px; font-size:13px; }
   .btn { background:var(--g); color:#fff; border:0; border-radius:12px; padding:10px 14px; font-size:14px; cursor:pointer; width:100%; margin-top:8px; }
@@ -86,7 +94,7 @@ function setChips(list) { chipsEl.innerHTML = ''; (list || []).forEach(t => { co
 
 function greet() {
 add('안녕하세요! 🌱 밥심이에요.\n요즘 몸 상태나 챙기고 싶은 것을 평소 말투로 알려주세요. 음식, 건강기능식품, 한방 일반의약품처럼 <b>먹는 것</b>으로만 골라드려요.', 'msg bot');
-setChips(['환절기라 으슬으슬해요', '요즘 너무 피곤해요', '밥 먹고 속이 더부룩해요', '잠을 잘 못 자요']);
+setChips(['환절기라 으슬으슬해요', '요즘 너무 피곤해요', '🍱 오늘 식단 기록할래요', '🎁 건강식품 선물 추천해줘']);
 }
 greet();
 
@@ -116,6 +124,10 @@ function render(r) {
     renderSafety();
   } else if (r.type === 'answer') {
     renderAnswer(r);
+  } else if (r.type === 'meallog') {
+    add(esc(r.text), 'msg bot'); state.messages.push({ role:'assistant', content:r.text }); renderMealLog();
+  } else if (r.type === 'gift') {
+    add(esc(r.text), 'msg bot'); state.messages.push({ role:'assistant', content:r.text }); renderGiftForm();
   } else add('알 수 없는 응답', 'msg bot');
 }
 
@@ -141,6 +153,7 @@ function renderSafety() {
     card.querySelectorAll('input,button').forEach(e => e.disabled = true);
     card.querySelector('#psave').textContent = '✓ 안전 정보 반영됨';
     showProfile();
+    if (state.pendingMeal) { const ids = state.pendingMeal; state.pendingMeal = null; return showMealResult(ids); }
     return ask();
   };
 }
@@ -168,6 +181,94 @@ function renderAnswer(r) {
   setChips(['요즘 피곤해요', '속이 더부룩해요', '운동도 추천해줘']);
 }
 
+// ---------- 식단 기록 ----------
+let lastMealCard = null, lastGiftCard = null;
+function renderMealLog() {
+  const foods = window.BapsimEngine.MEAL_FOODS, picked = [];
+  const card = add(`<div class="safety">
+    <div class="grp"><div>🍽️ 오늘 먹은 음식을 눌러 담아 주세요 (여러 번 누르면 추가)</div>${foods.map(f => `<span class="addchip" data-id="${f.id}">+ ${esc(f.name)}</span>`).join('')}</div>
+    <div class="sel" id="msel">아직 담은 음식이 없어요</div>
+    <div class="kv"><span>대략 합계 <span class="approx">예시값</span></span><span class="big" id="mkcal">0 kcal</span></div>
+    <button class="btn" id="mgo">영양 균형 보기</button>
+  </div>`, 'card');
+  lastMealCard = card;
+  const upd = () => {
+    const sel = card.querySelector('#msel');
+    sel.textContent = picked.length ? picked.map(id => foods.find(f => f.id === id).name).join(', ') : '아직 담은 음식이 없어요';
+    card.querySelector('#mkcal').textContent = picked.reduce((a, id) => a + foods.find(f => f.id === id).kcal, 0).toLocaleString() + ' kcal';
+  };
+  card.querySelectorAll('.addchip').forEach(c => c.onclick = () => { if (card.dataset.done) return; picked.push(c.dataset.id); upd(); });
+  card.querySelector('#mgo').onclick = () => {
+    if (!picked.length) return;
+    card.dataset.done = 1; card.querySelector('#mgo').disabled = true; card.querySelector('#mgo').textContent = '✓ 기록 완료';
+    state.messages.push({ role:'user', content:'식단 기록: ' + picked.join(',') });
+    if (!state.profile) {
+      state.pendingMeal = picked.slice();
+      add('부족한 부분을 채울 먹거리를 추천하기 전에, 안전하게 고를 수 있도록 몇 가지만 확인할게요.', 'msg bot');
+      renderSafety();
+      return;
+    }
+    return showMealResult(picked);
+  };
+}
+async function showMealResult(ids) {
+  const t0 = add('분석 중…', 'msg bot typing'); await new Promise(r => setTimeout(r, 450)); t0.remove();
+  const r = window.BapsimEngine.analyzeMeals(ids, state.profile), t = r.total;
+  const pct = (v, ref) => Math.min(100, Math.round(v / ref * 100));
+  let h = `<div class="kv"><span>오늘 대략 섭취 열량 <span class="approx">예시값</span></span><span class="big">${t.kcal.toLocaleString()} kcal</span></div>
+    <div class="bar"><i style="width:${pct(t.kcal, r.ref.kcal)}%"></i></div>
+    <div style="font-size:11px;color:#8a938d;margin-top:-4px">성인 하루 참고 예시 ${r.ref.kcal.toLocaleString()} kcal 기준 (나이·성별·활동량에 따라 달라요)</div>
+    <h3>⚖️ 탄수화물 · 단백질 · 지방 비율</h3>
+    <div class="stack"><i style="width:${r.ratio.carb}%;background:#e0a33a">탄 ${r.ratio.carb}%</i><i style="width:${r.ratio.prot}%;background:#2f8f5b">단 ${r.ratio.prot}%</i><i style="width:${r.ratio.fat}%;background:#c0623b">지 ${r.ratio.fat}%</i></div>
+    <div style="font-size:11px;color:#8a938d">참고 범위 예시: 탄수화물 55~65% · 단백질 7~20% · 지방 15~30%</div>
+    <h3>🥬 그 밖의 균형 <span class="approx">예시값</span></h3>
+    <div class="kv"><span>식이섬유</span><span>${t.fiber}g / ${r.ref.fiber}g</span></div><div class="bar"><i style="width:${pct(t.fiber, r.ref.fiber)}%"></i></div>
+    <div class="kv"><span>채소·과일</span><span>${t.veg}회 / ${r.ref.veg}회</span></div><div class="bar"><i style="width:${pct(t.veg, r.ref.veg)}%"></i></div>
+    <div class="kv"><span>나트륨</span><span>${t.na.toLocaleString()}mg / ${r.ref.na.toLocaleString()}mg</span></div><div class="bar"><i style="width:${pct(t.na, r.ref.na)}%;background:${t.na > r.ref.na ? '#c0392b' : 'var(--g)'}"></i></div>`;
+  if (r.gaps.length) h += `<h3>📌 오늘 기록에서 보이는 점</h3><div class="warnbox" style="background:#eef6f1;color:#1f4d33">` + r.gaps.map(g => '• ' + esc(g.label)).join('<br>') + '</div>';
+  h += `<div style="margin-top:10px">${esc(r.intro)}</div>`;
+  if (r.foods.length) h += `<h3>🥣 채우기 좋은 먹거리</h3>` + r.foods.map(f => `<div class="item"><b>${esc(f.name)}</b><span class="comp">${esc(f.comp)}</span><div class="claim">${esc(f.effect)}</div>${f.note ? `<div class="note">⚠️ ${esc(f.note)}</div>` : ''}</div>`).join('');
+  if (r.supplements.length) h += `<h3>💊 건강기능식품</h3>` + r.supplements.map(s => `<div class="item"><b>${esc(s.name)}</b><span class="tag-mfds">식약처 인정 기능성</span><div class="claim">“${esc(s.claim)}”</div></div>`).join('');
+  if (r.excluded.length) h += `<h3>🚫 회원님 안전 정보로 제외한 항목</h3><div class="excl">` + r.excluded.map(e => `<div>• <s>${esc(e.name)}</s> — ${esc(e.reason)}</div>`).join('') + '</div>';
+  if (r.warnings.length) h += `<h3>⚠️ 주의</h3><div class="warnbox">` + r.warnings.map(w => '• ' + esc(w)).join('<br>') + '</div>';
+  h += `<div class="disc">ⓘ 칼로리·영양 수치는 1인분 기준 대략적인 예시값이며 실제와 다를 수 있어요. ${esc(r.disclaimer)}</div>`;
+  add(h, 'card');
+  state.messages.push({ role:'assistant', content:'식단 분석 결과' });
+  setChips(['🎁 건강식품 선물 추천해줘', '요즘 피곤해요']);
+}
+
+// ---------- 선물 추천 ----------
+function renderGiftForm() {
+  const radios = (name, list) => list.map(([v, l], i) => `<label><input type="radio" name="${name}" value="${v}" ${i === 0 ? 'checked' : ''}>${l}</label>`).join('');
+  const card = add(`<div class="safety">
+    <div class="grp"><div>🎁 받는 분</div>${radios('gr', [['부모님','부모님'],['조부모님','조부모님'],['지인·동료','지인·동료'],['친구·연인','친구·연인']])}</div>
+    <div class="grp"><div>🎂 연령대</div>${radios('ga', [['60s','60대'],['70s','70대 이상'],['40s','40~50대'],['young','20~30대']])}</div>
+    <div class="grp"><div>🩺 알고 있는 건강 정보</div>${[['hypertension','고혈압'],['diabetes','당뇨'],['heart','심장질환'],['kidney','신장질환'],['pregnant','임신·수유'],['unknown','잘 모름']].map(([v,l]) => `<label><input type="checkbox" name="gc" value="${v}">${l}</label>`).join('')}</div>
+    <div class="grp"><div>💊 드시는 약 (아는 경우)</div><input type="text" id="gmeds" placeholder="예: 아스피린, 혈압약"></div>
+    <div class="grp"><div>⚠️ 알레르기</div>${['견과류','생선','유제품'].map(a => `<label><input type="checkbox" name="gal" value="${a}">${a}</label>`).join('')}</div>
+    <div class="grp"><div>✨ 선물 테마</div>${radios('gp', [['general','무난하게'],['energy','기력'],['eye','눈 건강'],['bone','뼈 건강'],['blood','혈행'],['gut','장 건강']])}</div>
+    <button class="btn" id="ggo">선물 추천 받기</button>
+  </div>`, 'card');
+  lastGiftCard = card;
+  card.querySelector('#ggo').onclick = async () => {
+    const val = n => (card.querySelector(`input[name=${n}]:checked`) || {}).value;
+    const cs = [...card.querySelectorAll('input[name=gc]:checked')].map(i => i.value);
+    const g = { recipient: val('gr'), recipientLabel: val('gr'), age: val('ga'), purpose: val('gp'), conditions: cs.filter(c => c !== 'unknown'), unknown: cs.includes('unknown'),
+      meds: card.querySelector('#gmeds').value.trim(), allergies: [...card.querySelectorAll('input[name=gal]:checked')].map(i => i.value) };
+    card.querySelectorAll('input,button').forEach(e => e.disabled = true);
+    card.querySelector('#ggo').textContent = '✓ 받는 분 정보 반영됨';
+    const t0 = add('고르는 중…', 'msg bot typing'); await new Promise(r => setTimeout(r, 450)); t0.remove();
+    const r = window.BapsimEngine.giftRecommend(g);
+    let h = `<div style="margin-bottom:8px">${esc(r.intro)}</div><h3>🎁 추천 선물</h3>` + r.items.map(i => `<div class="item"><b>${esc(i.name)}</b>${i.kind === '건강기능식품' ? '<span class="tag-mfds">식약처 인정 기능성</span>' : '<span class="comp">식품</span>'}<div class="claim">${i.kind === '건강기능식품' ? '“' + esc(i.claim) + '”' : esc(i.claim)}</div>${i.note ? `<div class="note">⚠️ ${esc(i.note)}</div>` : ''}</div>`).join('');
+    if (r.excluded.length) h += `<h3>🚫 받는 분 건강 정보로 제외한 선물</h3><div class="excl">` + r.excluded.map(e => `<div>• <s>${esc(e.name)}</s> — ${esc(e.reason)}</div>`).join('') + '</div>';
+    if (r.warnings.length || r.notes.length) h += `<h3>⚠️ 주의</h3><div class="warnbox">` + [...r.notes, ...r.warnings].map(w => '• ' + esc(w)).join('<br>') + '</div>';
+    h += `<div class="disc">ⓘ 건강기능식품은 질병의 예방·치료를 위한 의약품이 아니에요. 받는 분이 드시는 약이 있다면 섭취 전 약사와 확인하도록 안내해 주세요. ${esc(r.disclaimer)}</div>`;
+    add(h, 'card');
+    state.messages.push({ role:'assistant', content:'선물 추천 결과' });
+    setChips(['🍱 오늘 식단 기록할래요', '요즘 피곤해요']);
+  };
+}
+
 // ---------- 스크립트 시나리오 ----------
 const SCENARIOS = [
   { id:'s1', title:'🍂 환절기 으슬으슬', desc:'특이사항 없는 사용자 → 음식·건기식·쌍화탕/갈근탕까지 추천',
@@ -180,12 +281,16 @@ const SCENARIOS = [
     steps:[{ say:'감기 기운이 있는지 으슬으슬하고 콧물이 나요' }, { profile:{ conditions:['hypertension'], meds:'혈압약' } }] },
   { id:'s5', title:'🤰 임신 중 더부룩함', desc:'임신 + 유제품 알레르기 → 한방제제·요거트 제외',
     steps:[{ say:'임신 중인데 속이 자꾸 더부룩해요' }, { profile:{ conditions:['pregnant'], allergies:['유제품'] } }] },
+  { id:'s7', title:'🍱 식단 기록', desc:'라떼·김밥·라면·떡볶이 기록 → 대략 칼로리·영양 균형 → 단백질·채소 채울 먹거리 (유제품 알레르기 반영)',
+    steps:[{ say:'오늘 먹은 거 기록할래요' }, { meal:['latte','kimbap','ramen','tteok'] }, { profile:{ allergies:['유제품'] } }] },
+  { id:'s8', title:'🎁 부모님 선물', desc:'60대 부모님 · 고혈압 · 아스피린 복용 → 홍삼·감초차 제외한 선물 추천',
+    steps:[{ say:'부모님 선물로 건강식품 추천해줘' }, { gift:{ recipient:'부모님', age:'60s', conditions:['hypertension'], meds:'아스피린', purpose:'general' } }] },
   { id:'s6', title:'🚨 위험 신호', desc:'흉통·호흡곤란 → 추천 중단, 의료진 상담 안내',
     steps:[{ say:'가슴이 아프고 숨이 차요' }] },
 ];
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 let playing = false;
-function resetChat() { chat.innerHTML=''; state.messages=[]; state.profile=null; const bar=document.getElementById('pbar'); bar.style.display='none'; setChips([]); }
+function resetChat() { chat.innerHTML=''; state.messages=[]; state.profile=null; state.pendingMeal=null; const bar=document.getElementById('pbar'); bar.style.display='none'; setChips([]); }
 async function typeAndSend(text) {
   inp.value=''; for (const ch of text) { inp.value += ch; await sleep(35); }
   await sleep(250); await send();
@@ -197,6 +302,20 @@ async function play(sc) {
   resetChat(); greet(); setChips([]); await sleep(500);
   for (const st of sc.steps) {
     if (st.say) await typeAndSend(st.say);
+    if (st.meal) {
+      await sleep(500); const c = lastMealCard;
+      for (const id of st.meal) { c.querySelector(`.addchip[data-id=${id}]`).click(); await sleep(450); }
+      await sleep(500); await c.querySelector('#mgo').onclick();
+    }
+    if (st.gift) {
+      await sleep(500); const c = lastGiftCard, g = st.gift;
+      const pick = (n, v) => { const i = c.querySelector(`input[name=${n}][value="${v}"]`); if (i && !i.checked) i.click(); };
+      pick('gr', g.recipient); await sleep(350); pick('ga', g.age); await sleep(350);
+      for (const v of (g.conditions||[])) { pick('gc', v); await sleep(350); }
+      if (g.meds) { const m = c.querySelector('#gmeds'); for (const ch of g.meds) { m.value += ch; await sleep(60); } }
+      pick('gp', g.purpose); await sleep(600);
+      await c.querySelector('#ggo').onclick();
+    }
     if (st.profile) {
       await sleep(500);
       const c = lastSafetyCard, p = st.profile;

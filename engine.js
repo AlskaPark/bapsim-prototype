@@ -207,7 +207,7 @@ function ruleBased(messages, profile) {
 }
 
 // ---------- 대화 오케스트레이션 ----------
-async function handleChat({ messages = [], profile = null }) {
+let handleChat = async function({ messages = [], profile = null }) {
   const last = (messages.filter(m => m.role === 'user').pop() || {}).content || '';
   if (RED_FLAGS.some(k => last.includes(k))) {
     return { type: 'notice', level: 'danger', text: '말씀하신 내용은 먹는 것으로 관리할 범위를 넘어 보여요. 이런 경우엔 음식이나 일반의약품 추천을 드리지 않아요. 의료진 상담이 필요해요. 증상이 심하거나 급하면 119에 연락하세요.' };
@@ -222,5 +222,131 @@ async function handleChat({ messages = [], profile = null }) {
 }
 
 
-window.BapsimEngine = { chat: async (state) => ({ ...(await handleChat(state)), disclaimer: DISCLAIMER }) };
+
+// ---------- (1) 식단 기록 · 칼로리 ----------
+// ⚠️ 1인분 기준 '대략적인 예시값'입니다 (실제 값은 레시피·양에 따라 크게 달라짐).
+const MEAL_FOODS = [
+  { id:'rice', name:'흰쌀밥 1공기', kcal:300, carb:66, prot:5, fat:1, fiber:1, na:5, veg:0 },
+  { id:'kimbap', name:'김밥 1줄', kcal:420, carb:65, prot:12, fat:11, fiber:3, na:900, veg:0.5 },
+  { id:'ramen', name:'라면 1개', kcal:510, carb:78, prot:10, fat:17, fiber:2, na:1800, veg:0 },
+  { id:'jjigae', name:'김치찌개 1인분', kcal:300, carb:12, prot:18, fat:20, fiber:4, na:1900, veg:1 },
+  { id:'jeyuk', name:'제육볶음 정식', kcal:780, carb:95, prot:32, fat:28, fiber:4, na:1600, veg:1 },
+  { id:'tteok', name:'떡볶이 1인분', kcal:480, carb:95, prot:9, fat:6, fiber:2, na:1400, veg:0 },
+  { id:'chicken', name:'후라이드치킨 3조각', kcal:600, carb:25, prot:38, fat:38, fiber:1, na:1100, veg:0 },
+  { id:'samgyup', name:'삼겹살 1인분(200g)', kcal:660, carb:0, prot:34, fat:58, fiber:0, na:120, veg:0 },
+  { id:'sandwich', name:'샌드위치 1개', kcal:380, carb:42, prot:16, fat:16, fiber:3, na:800, veg:0.5 },
+  { id:'salad', name:'채소 샐러드 1접시', kcal:120, carb:10, prot:3, fat:8, fiber:4, na:200, veg:2 },
+  { id:'egg', name:'삶은 계란 2개', kcal:150, carb:1, prot:12, fat:10, fiber:0, na:140, veg:0, tags:['egg'] },
+  { id:'milk', name:'우유 1컵(200ml)', kcal:130, carb:10, prot:6, fat:7, fiber:0, na:100, veg:0, tags:['dairy'] },
+  { id:'banana', name:'바나나 1개', kcal:90, carb:23, prot:1, fat:0, fiber:3, na:1, veg:1 },
+  { id:'sweetpotato', name:'고구마 1개', kcal:130, carb:31, prot:2, fat:0, fiber:4, na:10, veg:1 },
+  { id:'latte', name:'카페라떼', kcal:180, carb:15, prot:9, fat:9, fiber:0, na:120, veg:0, tags:['dairy'] },
+  { id:'americano', name:'아메리카노', kcal:10, carb:2, prot:0, fat:0, fiber:0, na:5, veg:0 },
+];
+const MEAL_REF = { kcal:2000, fiber:25, na:2000, veg:5 }; // 성인 일반 참고 예시값
+const GAP_FOODS = {
+  protein: [
+    { name:'두부 반 모', comp:'식물성 단백질·이소플라본', effect:'콩 단백질은 근육 등 신체조직의 구성성분으로, 부족한 단백질을 채우는 데 도움이 될 수 있어요', tags:['soy'] },
+    { name:'닭가슴살 100g', comp:'단백질', effect:'지방이 적은 단백질 공급원으로, 하루 단백질 섭취를 채우는 데 도움이 될 수 있어요', tags:[] },
+    { name:'고등어구이 1토막', comp:'단백질·EPA/DHA', effect:'단백질과 함께 오메가3 지방산을 섭취할 수 있어요', tags:['fish','omega3'] },
+    { name:'그릭요거트 1컵', comp:'단백질·유산균', effect:'단백질과 유산균을 함께 섭취할 수 있어요', tags:['dairy'] },
+  ],
+  fiber: [
+    { name:'시금치·콩나물 나물', comp:'식이섬유·엽산', effect:'채소의 식이섬유는 연구에서 배변 활동 관련 개선 작용이 보고되어 있어요', tags:[] },
+    { name:'현미·잡곡밥', comp:'식이섬유·비타민B1', effect:'흰쌀밥 대신 먹으면 같은 양에서 식이섬유를 더 섭취할 수 있어요', tags:[] },
+    { name:'사과 1개(껍질째)', comp:'펙틴', effect:'사과의 펙틴 성분이 연구에서 장내 환경 관련 작용이 보고되어 있어요', tags:[] },
+  ],
+  veg: [
+    { name:'채소 쌈·샐러드 한 접시', comp:'식이섬유·비타민·칼륨', effect:'채소·과일 섭취 횟수를 늘리는 가장 쉬운 방법이에요', tags:[] },
+    { name:'방울토마토 한 줌', comp:'라이코펜·비타민C', effect:'라이코펜 성분이 연구에서 항산화 작용이 보고되어 있어요', tags:[] },
+  ],
+  sodium: [
+    { name:'바나나·감자', comp:'칼륨', effect:'칼륨은 연구에서 나트륨 배설 관련 작용이 보고되어, 짠 식사가 많은 날 균형에 도움이 될 수 있어요', tags:['potassium'] },
+    { name:'무가당 두유·우유', comp:'칼륨·칼슘', effect:'국물 대신 곁들이면 나트륨 섭취를 줄이면서 칼륨·칼슘을 섭취할 수 있어요', tags:['dairy','soy'] },
+  ],
+  fatHigh: [
+    { name:'다음 끼니는 생선구이·나물 위주 한식', comp:'저지방 단백질·식이섬유', effect:'지방 비중이 높은 날, 다음 끼니 구성을 가볍게 맞추는 데 참고할 수 있어요', tags:['fish'] },
+  ],
+};
+const GAP_SUPP = {
+  fiber: { name:'식이섬유(난소화성말토덱스트린 등)', claim:'배변활동 원활에 도움을 줄 수 있음', tags:[] },
+  protein: { name:'단백질 보충 식품(건강기능식품 단백질)', claim:'근육, 결합조직 등 신체조직의 구성성분', tags:['dairy'] },
+};
+const EXTRA_RULES = [
+  { cond:'kidney', tag:'potassium', action:'warn', msg:'신장질환이 있으면 칼륨 섭취 제한이 필요할 수 있어 양을 약사·영양사와 확인하세요.' },
+  { cond:'allergy:대두', tag:'soy', action:'exclude', msg:'대두 알레르기로 제외했어요.' },
+  { cond:'allergy:계란', tag:'egg', action:'exclude', msg:'계란 알레르기로 제외했어요.' },
+  { cond:'anticoag', tag:'garlic', action:'warn', msg:'흑마늘 등 마늘 농축 제품은 항응고제와 함께 섭취 시 출혈 경향이 보고되어 약사와 확인하세요.' },
+  { cond:'diabetes', tag:'sugar', action:'warn', msg:'당 함량이 높아 혈당 관리 중이라면 다른 선물이 무난해요.' },
+];
+SAFETY_RULES.push(...EXTRA_RULES);
+
+function analyzeMeals(ids, profile) {
+  const items = ids.map(id => MEAL_FOODS.find(f => f.id === id)).filter(Boolean);
+  const sum = k => items.reduce((a, f) => a + (f[k] || 0), 0);
+  const t = { kcal:sum('kcal'), carb:sum('carb'), prot:sum('prot'), fat:sum('fat'), fiber:sum('fiber'), na:sum('na'), veg:sum('veg') };
+  const e = t.carb*4 + t.prot*4 + t.fat*9 || 1;
+  const ratio = { carb:Math.round(t.carb*400/e), prot:Math.round(t.prot*400/e), fat:Math.round(t.fat*900/e) };
+  const gaps = [];
+  if (ratio.prot < 15) gaps.push({ key:'protein', label:`단백질 비율 ${ratio.prot}% (참고 15~20%)보다 적어 보여요` });
+  if (t.fiber < MEAL_REF.fiber * 0.6) gaps.push({ key:'fiber', label:`식이섬유 약 ${t.fiber}g (하루 참고 ${MEAL_REF.fiber}g)으로 적어 보여요` });
+  if (t.veg < 3) gaps.push({ key:'veg', label:`채소·과일 약 ${t.veg}회분 (참고 ${MEAL_REF.veg}회분)으로 적어 보여요` });
+  if (t.na > MEAL_REF.na) gaps.push({ key:'sodium', label:`나트륨 약 ${t.na.toLocaleString()}mg (하루 참고 ${MEAL_REF.na.toLocaleString()}mg)을 넘었어요` });
+  if (ratio.fat > 30) gaps.push({ key:'fatHigh', label:`지방 비율 ${ratio.fat}% (참고 15~30%)로 높은 편이에요` });
+  const conds = profileConds(profile);
+  const warnings = [], excluded = [];
+  let foods = [];
+  gaps.forEach(g => foods.push(...applySafety(GAP_FOODS[g.key], conds, warnings, excluded).slice(0, 2).map(f => ({ ...f, gap:g.label }))));
+  const supplements = applySafety(gaps.map(g => GAP_SUPP[g.key]).filter(Boolean), conds, warnings, excluded);
+  return { type:'mealresult', items, total:t, ratio, ref:MEAL_REF, gaps, foods, supplements, warnings:[...new Set(warnings)], excluded,
+    intro: gaps.length ? '오늘 기록 기준으로 아래 부분을 채우면 균형이 좋아 보여요. 다음 끼니에 참고해 보세요.' : '오늘 기록 기준으로 큰 불균형은 보이지 않아요. 지금처럼 다양하게 드셔 보세요.' };
+}
+
+// ---------- (2) 건강식품 선물 추천 ----------
+const GIFTS = [
+  { name:'홍삼정·홍삼 스틱', kind:'건강기능식품', claim:'면역력 증진·피로개선·혈소판 응집억제를 통한 혈액흐름에 도움을 줄 수 있음', purposes:['energy','general'], ages:['40s','60s','70s'], tags:['ginseng'] },
+  { name:'루테인', kind:'건강기능식품', claim:'노화로 인해 감소될 수 있는 황반색소밀도를 유지하여 눈 건강에 도움을 줄 수 있음', purposes:['eye','general'], ages:['40s','60s','70s','young'], tags:[] },
+  { name:'칼슘·비타민D', kind:'건강기능식품', claim:'(칼슘) 뼈와 치아 형성에 필요 · (비타민D) 칼슘과 인이 흡수되고 이용되는데 필요, 골다공증발생 위험 감소에 도움을 줌', purposes:['bone','general'], ages:['60s','70s'], tags:[] },
+  { name:'rTG 오메가3', kind:'건강기능식품', claim:'혈중 중성지질 개선·혈행 개선에 도움을 줄 수 있음', purposes:['blood','general'], ages:['40s','60s','70s'], tags:['omega3','fish'] },
+  { name:'프로바이오틱스', kind:'건강기능식품', claim:'유산균 증식 및 유해균 억제에 도움을 줄 수 있음, 배변활동 원활에 도움을 줄 수 있음', purposes:['gut','general'], ages:['young','40s','60s','70s'], tags:[] },
+  { name:'멀티비타민·미네랄', kind:'건강기능식품', claim:'(비타민B군) 에너지 대사에 필요 · (비타민C) 유해산소로부터 세포를 보호하는데 필요', purposes:['energy','general'], ages:['young','40s','60s','70s'], tags:[] },
+  { name:'대추·생강·감초 한방차 세트', kind:'식품', claim:'따뜻하게 우려 마시는 전통 차 선물 (질병 효능 표방 없음)', purposes:['general'], ages:['60s','70s','40s'], tags:['licorice'] },
+  { name:'흑마늘 진액', kind:'식품', claim:'흑마늘의 S-알릴시스테인 성분이 연구에서 항산화 작용이 보고되어 있어요', purposes:['energy'], ages:['40s','60s','70s'], tags:['garlic'] },
+  { name:'국산 견과 선물세트', kind:'식품', claim:'견과류의 불포화지방산·비타민E 성분이 연구에서 항산화 작용이 보고되어 있어요', purposes:['general','blood'], ages:['young','40s','60s','70s'], tags:['nuts'] },
+  { name:'제철 과일 바구니', kind:'식품', claim:'과일의 비타민C·폴리페놀을 즐길 수 있는 무난한 선물', purposes:['general'], ages:['young','40s','60s','70s'], tags:['sugar'] },
+  { name:'아카시아 꿀 세트', kind:'식품', claim:'전통적으로 선물로 많이 찾는 품목 (효능 표방 없음)', purposes:['general'], ages:['40s','60s','70s'], tags:['sugar'] },
+];
+function giftRecommend(g) {
+  const conds = [...(g.conditions || [])];
+  if (g.meds && /와파린|아스피린|항응고|항혈소판|클로피도그렐|플라빅스|엘리퀴스|자렐토/.test(g.meds)) conds.push('anticoag');
+  else if (g.meds && g.meds.trim()) conds.push('otherMeds');
+  (g.allergies || []).forEach(a => conds.push('allergy:' + a));
+  let list = GIFTS.filter(x => x.ages.includes(g.age || '60s'));
+  const purpose = g.purpose || 'general';
+  list.sort((a, b) => (b.purposes.includes(purpose) - a.purposes.includes(purpose)));
+  const warnings = [], excluded = [];
+  const items = applySafety(list, conds, [], excluded).slice(0, 6);
+  items.filter(i => i.note).forEach(i => warnings.push(`${i.name}: ${i.note}`));
+  const notes = [];
+  if (g.unknown) notes.push('받는 분의 지병·복용약을 잘 모르면, 건강기능식품보다 일반 식품 선물이 무난하고 드시기 전 약사와 확인하도록 권해 주세요.');
+  if ((g.conditions||[]).includes('pregnant')) notes.push('임신·수유 중인 분께는 건강기능식품보다 일반 식품 선물이 무난해요.');
+  return { type:'giftresult', items, warnings:[...new Set(warnings)], excluded, notes,
+    intro: `${g.recipientLabel || '받는 분'}께 드리기 좋은 먹거리 선물을 골라봤어요. 받는 분 건강 정보에 맞지 않는 성분은 걸러냈어요.` };
+}
+
+const MEAL_INTENT = ['식단 기록','식단기록','먹은 거 기록','먹은거 기록','칼로리','오늘 먹은','식단 관리','기록할래'];
+const GIFT_INTENT = ['선물'];
+const _handleChat = handleChat;
+handleChat = async function (state) {
+  const last = ((state.messages || []).filter(m => m.role === 'user').pop() || {}).content || '';
+  if (!RED_FLAGS.some(k => last.includes(k))) {
+    if (GIFT_INTENT.some(k => last.includes(k))) return { type:'gift', text:'선물 받으실 분에 대해 알려주세요. 받는 분의 건강 정보에 맞지 않는 성분은 걸러서 추천해 드릴게요.' };
+    if (MEAL_INTENT.some(k => last.includes(k))) return { type:'meallog', text:'오늘 드신 걸 눌러서 담아 주세요. 대략적인 칼로리와 영양 균형을 보여드리고, 부족한 부분을 채울 먹거리를 추천해 드릴게요.' };
+  }
+  return _handleChat(state);
+};
+
+window.BapsimEngine = { chat: async (state) => ({ ...(await handleChat(state)), disclaimer: DISCLAIMER }),
+  analyzeMeals: (ids, profile) => ({ ...analyzeMeals(ids, profile), disclaimer: DISCLAIMER }),
+  giftRecommend: (g) => ({ ...giftRecommend(g), disclaimer: DISCLAIMER }), MEAL_FOODS };
 })();
