@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#F2F3F5" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<script src="https://unpkg.com/lucide@0.453.0/dist/umd/lucide.min.js"></script>
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="밥심" />
+<title>밥심</title>
+<style>
+:root{--g:#2f8f5b;--g2:#e8f5ee;--bg:#f6f4ef;--ink:#1f2a24;--mut:#6b766f;--warn:#b4610e;--wbg:#fff4e5;--red:#c0392b;--rbg:#fdecea;--line:#ebe7de}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:'Pretendard','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif;background:#dfe7e1;color:var(--ink)}
+.app{max-width:480px;min-height:100vh;margin:0 auto;background:var(--bg);padding-bottom:28px}
+.top{display:flex;align-items:center;gap:8px;padding:14px 16px 6px}
+.top h1{font-size:17px;margin:0;flex:1;display:flex;align-items:center;gap:8px}.top h1 img{width:26px;height:26px;border-radius:8px}
+.top button{border:0;background:none;font-size:20px;cursor:pointer;color:var(--mut);padding:4px}
+.demo{font-size:11px;padding:3px 8px;border-radius:99px;background:#fff3d6;color:#8a5a00;display:none}
+.screen{display:none;padding:10px 16px}.screen.on{display:block}
+.w{background:#fff;border-radius:26px;padding:22px 18px;box-shadow:0 8px 28px rgba(31,42,36,.07);border:1px solid var(--line)}
+.hint{font-size:12px;color:var(--mut);margin-bottom:6px}
+.q{font-size:24px;font-weight:800;margin:0 0 18px;letter-spacing:-.3px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:center;gap:14px;border:1px solid var(--line);background:#faf9f6;border-radius:18px;padding:14px 16px;cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%}
+.opt i{font-style:normal;font-size:28px}.opt b{font-size:16px;display:block}.opt span{font-size:12px;color:var(--mut)}
+.opt:active{transform:scale(.98)}.opt.pref{border-color:#bcdcc9;background:var(--g2)}
+.ropt{padding:16px}.ropt b{font-size:15.5px}
+.backq{border:0;background:none;color:var(--mut);font-size:13px;margin-top:14px;cursor:pointer;padding:0}
+.ctx{font-size:12px;color:var(--g);font-weight:700;margin-bottom:4px}
+.title{font-size:20px;font-weight:800;margin:0 0 14px;letter-spacing:-.3px}
+.topk{background:var(--g2);border-radius:18px;padding:16px}
+.topk .lb{font-size:11.5px;color:var(--g);font-weight:700}
+.topk b{display:block;font-size:20px;margin:4px 0 6px}
+.topk p,.alt p{margin:0;font-size:13px;line-height:1.55;color:#33413a}
+.comp{display:inline-block;font-size:11px;background:#fff;color:var(--g);border-radius:6px;padding:1px 6px;margin-bottom:6px}
+.alts{margin-top:10px}.alt{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:8px}
+.alt b{font-size:15px}.tag{font-size:10.5px;padding:2px 6px;border-radius:6px;margin-left:5px;vertical-align:1px}
+.t-food{background:#eee;color:#555}.t-mfds{background:#3567b5;color:#fff}.t-otc{background:#8a5a2b;color:#fff}
+.note{font-size:12px;color:var(--warn);margin-top:4px;line-height:1.5}
+.ex{font-size:12.5px;color:#7a1f15;background:var(--rbg);border-radius:12px;padding:10px 12px;margin-top:12px;line-height:1.55}
+.ex details summary{cursor:pointer;list-style:none}.ex details summary::after{content:' ›';}
+.nt{font-size:12.5px;color:#1f4d33;background:#eef6f1;border-radius:12px;padding:10px 12px;margin-top:8px;line-height:1.55}
+.disc{font-size:11px;color:var(--mut);line-height:1.5;margin-top:12px}
+.again{display:block;width:100%;margin-top:14px;border:1px solid #cfe3d7;background:#fff;color:var(--g);border-radius:14px;padding:12px;font-size:14px;cursor:pointer}
+.stop{background:var(--rbg);color:#7a1f15;border-radius:18px;padding:16px;font-size:14px;line-height:1.6}
+.lnk{display:block;text-align:center;font-size:12.5px;color:var(--mut);margin:20px 0 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px;background:none;border:0;width:100%}
+h2{font-size:21px;margin:6px 0}.sub{color:var(--mut);font-size:13.5px;margin:0 0 10px;line-height:1.55}
+.sec{font-size:12.5px;color:var(--mut);margin:18px 0 8px;font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;padding:9px 13px;border:1px solid #dcd7cc;border-radius:99px;font-size:13.5px;background:#fff;cursor:pointer;user-select:none}
+.chip input{display:none}.chip:has(input:checked){background:var(--g2);border-color:var(--g);color:var(--g);font-weight:700}
+input[type=text]{width:100%;padding:12px 14px;border:1px solid #dcd7cc;border-radius:12px;font-size:14.5px;background:#fff;outline:none}
+.btn{display:block;width:100%;background:var(--g);color:#fff;border:0;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-top:18px}
+.btn.ghost{background:#fff;color:var(--g);border:1px solid #cfe3d7;margin-top:10px}
+.persona{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#fff;margin-bottom:8px;cursor:pointer}
+.persona .e{font-size:22px}.persona b{font-size:14px}.persona div div{font-size:12px;color:var(--mut)}.persona.on{border-color:var(--g);background:var(--g2)}
+
+.inbox{background:#fff;border-radius:22px;border:1px solid var(--line);box-shadow:0 8px 28px rgba(31,42,36,.07);padding:8px 8px 8px 16px;display:flex;align-items:center;gap:6px;margin-top:8px}
+.inbox input{flex:1;border:0;outline:none;font-size:16px;padding:10px 0;min-width:0;background:transparent}
+.inbox button{border:0;border-radius:14px;cursor:pointer;font-size:15px;height:42px;min-width:42px}
+.cam{background:#f2f0ea}
+.bigcam{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;padding:26px 12px;border:0;border-radius:22px;background:var(--g);color:#fff;font-size:34px;cursor:pointer;box-shadow:0 6px 18px rgba(46,139,87,.25)}
+.bigcam b{font-size:17px}.bigcam small{font-size:12.5px;opacity:.85}
+.inbox.sec{margin-top:12px;transform:scale(.97);opacity:.9}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.grid button{display:flex;flex-direction:column;align-items:center;padding:8px 2px;font-size:22px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.grid button span{font-size:11px;color:var(--mut);margin-top:2px}
+.ph{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:#f2f0ea;font-size:16px}
+.fu .tr{font-size:11.5px;color:var(--mut);margin-top:4px}.go{background:var(--g);color:#fff;font-weight:700;padding:0 14px}
+.hints{display:flex;flex-wrap:wrap;gap:6px;margin:10px 4px 0}
+.hints span{font-size:12px;color:#8a938d;border:1px dashed #d6d2c6;border-radius:99px;padding:5px 10px;cursor:pointer}
+.sheet{background:#fff;border:1px solid var(--line);border-radius:16px;padding:8px;margin-top:8px}
+.sheet button{display:block;width:100%;text-align:left;border:0;background:none;padding:12px 10px;font-size:14px;cursor:pointer;border-radius:10px}
+.sheet small{display:block;color:var(--mut);font-size:11.5px;padding:0 10px 6px}
+.fu{position:relative;background:#fffdf6;border:1px solid #efe6cc;border-radius:16px;padding:12px 38px 12px 14px;margin-top:12px;font-size:13.5px;line-height:1.5}
+.fu .x{position:absolute;right:8px;top:8px;border:0;background:none;color:#a49a80;font-size:16px;cursor:pointer}
+.fu .acts{display:flex;gap:6px;margin-top:8px}.fu .acts button{border:1px solid #e6dcc0;background:#fff;border-radius:10px;padding:6px 10px;font-size:12.5px;cursor:pointer}
+.ans{margin-top:16px}
+.ins{font-size:13px;color:#3b4a40;background:#f1f6f2;border-radius:12px;padding:10px 12px;line-height:1.55;margin-bottom:10px}
+.pick{background:#fff;border:1px solid var(--line);border-radius:20px;padding:18px}
+.pick .lb{font-size:11.5px;color:var(--g);font-weight:800}
+.pick .nm{font-size:21px;font-weight:800;margin:4px 0 6px}
+.pick p{margin:0;font-size:13.5px;line-height:1.55;color:#33413a}
+.exs{font-size:12.5px;color:#7a1f15;margin-top:10px}
+.cons{display:block;width:100%;margin-top:12px;border:0;background:none;color:var(--mut);font-size:13px;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:6px}
+.cons.em{background:#eef3fb;color:#24508f;text-decoration:none;border-radius:14px;padding:12px;font-weight:700}
+.cons.em small{display:block;font-weight:400;font-size:11.5px;margin-top:2px}
+.more{display:block;width:100%;margin-top:10px;border:1px solid var(--line);background:#fff;border-radius:14px;padding:11px;font-size:13.5px;color:var(--ink);cursor:pointer}
+.det{margin-top:10px}
+.it{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:8px;font-size:13px;line-height:1.55}
+.it b{font-size:14.5px}
+.cmpbtn{border:0;background:none;color:var(--g);font-size:12.5px;padding:6px 0 0;cursor:pointer}
+table.cmp{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px}
+table.cmp th,table.cmp td{border-top:1px solid var(--line);padding:6px 4px;text-align:left;vertical-align:top}
+table.cmp th{color:var(--mut);font-weight:600;width:24%}
+.pc{display:grid;gap:6px;margin-top:8px}
+.pc div{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:11.5px;line-height:1.5}
+.pc b{font-size:13px}.badge{display:inline-block;background:#eef3fb;color:#24508f;border-radius:6px;padding:1px 6px;font-size:10.5px;margin:3px 0}
+.pc a{color:var(--g);cursor:pointer}.pc button{border:1px solid #cfe3d7;background:#fff;color:var(--g);border-radius:8px;padding:4px 8px;font-size:11.5px;cursor:pointer;float:right}
+.demo-l{font-size:10.5px;color:#fff;background:#9a8f7a;border-radius:5px;padding:1px 6px}
+.stop{margin-top:16px}
+.say{font-size:15.5px;line-height:1.65;margin:0;color:var(--ink)}
+.log{margin-top:22px}.log .h{font-size:12px;color:var(--mut);font-weight:700;margin:0 4px 6px}
+.le{display:flex;gap:10px;align-items:flex-start;padding:10px 4px;border-bottom:1px solid var(--line);font-size:13.5px;line-height:1.45}
+.le .d{flex:none;width:44px;font-size:11.5px;color:var(--mut);padding-top:1px}.le .i{flex:none}
+.le.need{cursor:pointer}.le.need .t::after{content:' ›';color:var(--g)}
+.vd{display:inline-block;font-size:11.5px;font-weight:800;border-radius:99px;padding:2px 8px;margin-right:6px}
+.v-ok{background:var(--g2);color:var(--g)}.v-meh{background:#fff1d6;color:#8a5a00}.v-no{background:var(--rbg);color:#7a1f15}
+
+/* ---- 2026 visual refresh: neutral off-white + one warm accent ---- */
+:root{--g:#C6F432;--g2:#F0FBD0;--bg:#F2F3F5;--ink:#0B0B0D;--mut:#6B6F76;--warn:#4F6BFF;--wbg:#EEF1FF;--red:#B91C1C;--rbg:#FEF2F2;--line:#E6E8EB;--fill:#EEF0F2;--sh1:0 1px 2px rgba(24,24,27,.04),0 2px 8px rgba(24,24,27,.04);--sh2:0 1px 2px rgba(24,24,27,.05),0 12px 32px rgba(24,24,27,.08);--ease:cubic-bezier(.2,.8,.2,1)}
+body{font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;background:var(--bg);-webkit-font-smoothing:antialiased;letter-spacing:-.01em}
+.app{background:var(--bg);padding-bottom:48px}
+[data-lucide],svg.lucide{width:20px;height:20px;flex:none}
+.top{padding:16px 20px 8px}.top h1{font-size:22px;font-weight:850;letter-spacing:-.02em}.top h1 img{width:30px;height:30px;border-radius:9px}
+.top button{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ink)}.top button:hover{background:var(--fill)}
+.demo{background:var(--fill);color:var(--mut);font-weight:600}
+.screen{padding:8px 20px}
+.bigcam{flex-direction:row;justify-content:flex-start;gap:16px;padding:22px;border-radius:24px;background:var(--ink);color:#fff;box-shadow:var(--sh2);text-align:left;transition:transform .15s var(--ease)}
+.bigcam:active{transform:scale(.98)}.bigcam .ci{width:56px;height:56px;border-radius:18px;background:var(--g);display:flex;align-items:center;justify-content:center;flex:none}.bigcam .ci svg{width:26px;height:26px;color:#0B0B0D}
+.bigcam b{font-size:18px;font-weight:700;display:block}.bigcam small{font-size:13px;opacity:.7;display:block;margin-top:2px}
+.inbox{border:0;box-shadow:var(--sh1);border-radius:16px;padding:6px 6px 6px 16px}.inbox.sec{transform:none;opacity:1;margin-top:12px}
+.inbox input{font-size:15px}.inbox button{border-radius:12px;height:40px}.go{background:var(--fill);color:var(--ink);font-weight:600}
+.hints span{border:0;background:var(--fill);color:var(--mut);font-size:12.5px;padding:6px 12px}
+.sheet{border:0;box-shadow:var(--sh2);border-radius:20px;padding:12px;animation:nIn .3s var(--ease) both}
+.grid{grid-template-columns:repeat(4,1fr);gap:8px}.grid button{padding:0;border:0;background:none;font-size:0;gap:4px}
+.grid button img{width:100%;aspect-ratio:1;border-radius:14px;object-fit:cover}.grid button span{font-size:11.5px;color:var(--mut);margin-top:4px}
+.ph{width:36px;height:36px;border-radius:10px;overflow:hidden;background:var(--fill)}.ph img{width:100%;height:100%;object-fit:cover}
+.fu{background:#fff;border:0;border-radius:28px;padding:20px 48px 20px 20px;margin-top:16px;box-shadow:var(--sh2);font-size:16px;font-weight:650;letter-spacing:-.02em;line-height:1.55;animation:nIn .45s var(--ease) both}
+.fu::before{content:'밥심';display:flex;align-items:center;font-size:12px;font-weight:600;color:var(--mut);margin-bottom:6px;padding-left:12px;background:radial-gradient(circle at 3px 50%,var(--g) 3px,transparent 3.5px)}
+.fu.out{animation:nOut .28s var(--ease) both}.fu .x{right:12px;top:12px;width:32px;height:32px;border-radius:50%;color:#A1A1AA;display:flex;align-items:center;justify-content:center}.fu .x svg{width:18px;height:18px}
+.fu .tr{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.tchip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--mut);background:var(--fill);border-radius:999px;padding:3px 10px 3px 3px}.tchip img{width:22px;height:22px;border-radius:50%;object-fit:cover}
+.fu .acts button{border:0;background:var(--g);color:var(--ink);font-weight:600;border-radius:999px;padding:8px 12px;font-size:13px}
+@keyframes nIn{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:none}}@keyframes nOut{to{opacity:0;transform:translateY(-6px) scale(.97)}}
+.ans{animation:nIn .4s var(--ease) both}.pick,.it{border:0;box-shadow:var(--sh1);border-radius:20px}.pick{padding:20px}
+.say{font-size:18px;font-weight:750;line-height:1.55;letter-spacing:-.015em}
+.more{border:0;background:var(--fill);border-radius:14px;font-weight:600}
+.ins{background:#fff;box-shadow:var(--sh1);color:var(--ink);font-size:14px;border-radius:16px;padding:14px 16px}
+.nt{background:var(--fill);color:var(--ink);border-radius:14px}
+.note{color:var(--warn)}.ex{background:var(--rbg)}
+.tag{font-weight:600}.t-food{background:var(--fill);color:var(--mut)}.t-mfds{background:#EEF2FF;color:#3730A3}.t-otc{background:var(--g2);color:var(--warn)}
+.cmpbtn{color:var(--ink);font-weight:600}.badge{background:var(--fill);color:var(--mut)}.pc div{border:0;background:var(--fill)}.pc button{border:0;color:var(--warn);background:#fff}
+.demo-l{background:var(--g2);color:var(--warn);font-weight:600}
+.cons.em{background:var(--ink);color:#fff}.btn{background:var(--ink);color:#fff;border-radius:18px;padding:16px;font-weight:700}.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.chip{border:1px solid var(--line);font-weight:500}.chip:has(input:checked){background:var(--g);border-color:var(--g);color:var(--ink)}
+input[type=text]{border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.persona{border:0;box-shadow:var(--sh1);border-radius:16px}.persona .e{display:none}.persona.on{background:var(--g2)}
+.sec{font-weight:600;color:var(--mut)}h2{font-size:24px;font-weight:750;letter-spacing:-.025em}
+.log .h{font-size:13px;font-weight:600;margin:0 0 8px}.le{align-items:center;padding:10px 0;font-size:14.5px}.le .d{font-size:12px}.le .i svg{width:18px;height:18px;color:#A1A1AA}
+.le .i{width:36px;display:flex;justify-content:center}
+.vd{font-weight:600}.v-ok{background:#ECFDF3;color:#067647}.v-meh{background:var(--g2);color:var(--warn)}.v-no{background:var(--rbg);color:var(--red)}
+.stop{background:var(--rbg);color:var(--red);font-weight:500}
+.lchips{position:fixed;left:12px;right:12px;bottom:24px;z-index:30;background:rgba(255,255,255,.95);backdrop-filter:blur(20px);border-radius:20px;padding:10px 12px;box-shadow:var(--sh2);animation:nIn .3s var(--ease) both;max-width:456px;margin:0 auto}
+.lchips small{font-size:12px;color:var(--mut)}.lchips div{display:flex;gap:6px;overflow-x:auto;margin-top:8px}.lchips button{flex:none;border:0;background:var(--fill);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <button id="back" style="display:none" aria-label="뒤로">‹</button>
+    <h1 id="ttl"><img src="icons/icon-192.png" alt="">밥심</h1>
+    <span class="demo" id="demo">데모</span>
+    <button id="gear" aria-label="설정"><i data-lucide="settings-2"></i></button>
+  </div>
+
+  <section class="screen" id="s-onboard">
+    <h2>먼저, 안전하게 고르기 위한 정보</h2>
+    <p class="sub">한 번만 알려주시면 맞지 않는 음식·성분을 걸러드려요. 이 기기에만 저장돼요.</p>
+    <div id="pf1"></div>
+    <button class="btn" id="save1">시작하기</button>
+  </section>
+
+  <section class="screen" id="s-home">
+    <button class="bigcam" id="cam"><span class="ci"><i data-lucide="camera"></i></span><span><b>먹고 마신 것 찍기</b><small>밥·간식·커피·술·약 뭐든요. 찍어 두기만 하세요.</small></span></button>
+    <button id="samples" class="lnk" style="margin-top:8px">샘플 사진·서류로 둘러보기</button><div class="sheet" id="sheet" style="display:none"><small>샘플 사진 (분석 없이 저장만)</small>
+      <div class="grid" id="grid"></div>
+      <div style="margin-top:8px"><button data-sample="checkup">검진 결과지 (샘플)</button><button data-sample="meds">약 봉투 (샘플)</button></div></div>
+    <div class="inbox sec"><input id="q" placeholder="한 줄 메모나 궁금한 것 (선택)" autocomplete="off"><button class="go" id="go">확인</button></div>
+    <div class="hints" id="hints"></div>
+    <div id="fus"></div>
+    <div id="ans"></div>
+    <div id="log"></div>
+  </section>
+
+  <section class="screen" id="s-settings">
+    <h2>설정</h2>
+    <p class="sub">모든 추천에 반영돼요. 이 기기(localStorage)에만 저장돼요.</p>
+    <div id="pf2"></div>
+    <button class="btn" id="save2">저장</button>
+    <div class="sec">샘플 기록 (선택)</div>
+    <div id="personas"></div>
+    <button class="btn ghost" id="reset">모든 정보 지우기</button>
+  </section>
+</div>
+
+<script src="engine.js"></script>
+<script>
+const E = window.BapsimEngine;
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const PKEY='bapsim.profile.v2', MKEY='bapsim.memory.v1';
+const CONDS=[['pregnant','임신·수유 중'],['hypertension','고혈압'],['diabetes','당뇨'],['heart','심장질환'],['kidney','신장질환'],['thyroid','갑상선기능항진증']];
+const ALLERGIES=['유제품','견과류','생선','대두','계란','국화과','감귤류'];
+const PERSONAS=[
+  { id:'none', e:'🙂', name:'특이사항 없음', desc:'지병·약·알레르기 없음', p:{} },
+  { id:'htn', e:'🩺', name:'고혈압 · 혈압약', desc:'쌍화탕 사진 · 회식 기록', p:{ conditions:['hypertension'], meds:'혈압약' }, notes:[[6,'팀 회식, 소주 꽤 마심'],[4,'거래처 회식 2차까지'],[3,'잠 못 잤음']], snaps:[[6,'soju'],[5,'jjigae'],[4,'jjamppong'],[3,'ramen'],[2,'ssanghwa'],[1,'jjigae']] },
+  { id:'preg', e:'🤰', name:'임신 중 · 철분제', desc:'철분제와 커피가 같은 날', p:{ conditions:['pregnant'], allergies:['유제품'], meds:'철분제' }, snaps:[[4,'iron'],[4,'coffee'],[2,'iron'],[2,'coffee'],[1,'bibim']], notes:[[3,'밤에 잠을 설쳤음'],[1,'잠 못 잤음']] },
+  { id:'cold', e:'🤧', name:'감기약 복용 중 · 회식 많음', desc:'타이레놀 + 음주 → 간 부담 알림', p:{ meds:'타이레놀' }, notes:[[1,'목이 계속 칼칼']], snaps:[[3,'tylenol'],[2,'tylenol'],[2,'beer'],[1,'soju']] },
+  { id:'drink', e:'🍺', name:'어젯밤 회식', desc:'다음 날 아침 물 한 줄 + 숙취해소제 비교(탭 뒤)', p:{}, snaps:[[3,'bibim'],[2,'coffee'],[1,'samgyeop'],[1,'soju'],[1,'beer']], notes:[[1,'팀 회식 2차까지']] },
+  { id:'cramp', e:'🦵', name:'커피·맥주 자주', desc:'쥐가 나요 → 기록 연결 · 새우 처음 → 간지러움', p:{}, snaps:[[6,'coffee'],[5,'beer'],[4,'coffee'],[3,'bibim'],[2,'coffee'],[1,'shrimp']] },
+  { id:'asp', e:'💊', name:'아스피린 복용', desc:'홍삼 제외 · 이번 주 야근 기록', p:{ meds:'아스피린' }, notes:[[5,'마감이라 야근'],[4,'야근 또, 저녁은 컵라면'],[3,'잠 못 잤음'],[2,'점심 거름'],[1,'야근하고 늦게 잠']] },
+  { id:'fish', e:'🐟', name:'생선 알레르기 · 검진 LDL 높음', desc:'스타틴 복용 · 자몽주스 사진 있음', p:{ allergies:['생선'], checkups:['lipid'], meds:'스타틴' }, notes:[[6,'삼겹살 회식'],[4,'퇴근하고 치킨 시켜 먹음']], snaps:[[6,'samgyeop'],[5,'grapefruit'],[4,'chicken'],[3,'salad'],[2,'grapefruit'],[1,'samgyeop']] },
+];
+const HINTS=['잠 못 잤음','목 칼칼해요','검진에서 LDL 높게 나옴'];
+const NM=Object.fromEntries([...CONDS, ...E.CHECKUPS.map(([v,l])=>['chk:'+v,'검진 '+l])]);
+const norm=p=>({ conditions:[], allergies:[], meds:'', checkups:[], demo:null, ...p });
+let profile=(()=>{ try{ const p=JSON.parse(localStorage.getItem(PKEY)); return p?norm(p):null; }catch{ return null; } })();
+const qs=new URLSearchParams(location.search);
+const todayD=()=> qs.get('today') ? new Date(qs.get('today')+'T09:00') : new Date();   // 테스트용 날짜 지정
+const dayKey=d=>d.toLocaleDateString('sv');
+const daysBetween=(a,b)=>Math.round((new Date(b)-new Date(a))/864e5);
+let lastQ='', lastR=null;
+
+function saveProfile(p){ profile=norm(p); localStorage.setItem(PKEY, JSON.stringify(profile)); $('#demo').style.display=profile.demo?'inline-block':'none'; }
+function summary(){ const p=profile; const a=[...p.conditions.map(c=>NM[c]), p.meds&&('약: '+p.meds), ...p.allergies.map(x=>x+' 알레르기'), ...p.checkups.map(c=>NM['chk:'+c])].filter(Boolean); return a.length?a.join(' · '):'특이사항 없음'; }
+function recentMeals(m){ const today=dayKey(todayD()); return (m.meals||[]).filter(x=>{ const d=daysBetween(x.day,today); return d>=0&&d<=7; }); }
+function recentEntries(m){ const today=dayKey(todayD()); return (m.entries||[]).filter(x=>{ const d=daysBetween(x.day,today); return d>=0&&d<=7; }); }
+function memFor(m){ return { ...m, lastTops:(m.shown||[]).slice(-3).reverse(), seen:(m.shown||[]).reduce((o,n)=>(o[n]=(o[n]||0)+1,o),{}), lastTips:(m.tips||[]).slice(-3).reverse(), recentEntries: recentEntries(m).map(e=>({ ...e, dayDiff: daysBetween(e.day, dayKey(todayD())) })), lastCatches:(m.catches||[]).slice(-5), recentMealTags: recentMeals(m).flatMap(x=>x.tags), recentNoteTags: recentEntries(m).flatMap(x=>x.tags||[]) }; }
+function mem(){ try{ return { events:[], picks:[], dismissed:[], ...(JSON.parse(localStorage.getItem(MKEY))||{}) }; }catch{ return { events:[], picks:[], dismissed:[] }; } }
+function setMem(m){ localStorage.setItem(MKEY, JSON.stringify(m)); }
+
+// ---------- 프로필 ----------
+const pfHTML=x=>`<div class="sec">임신·지병</div><div class="chips">${CONDS.map(([v,l])=>`<label class="chip"><input type="checkbox" name="${x}c" value="${v}">${l}</label>`).join('')}</div>
+  <div class="sec">복용 중인 약</div><input type="text" id="${x}m" placeholder="없으면 비워두세요 (예: 아스피린, 혈압약)">
+  <div class="sec">알레르기</div><div class="chips">${ALLERGIES.map(a=>`<label class="chip"><input type="checkbox" name="${x}a" value="${a}">${a}</label>`).join('')}</div>
+  <div class="sec">최근 건강검진 결과 <span style="font-weight:400">(선택)</span></div><div class="chips">${E.CHECKUPS.map(([v,l])=>`<label class="chip"><input type="checkbox" name="${x}k" value="${v}">${l}</label>`).join('')}</div>
+  <div style="font-size:11.5px;color:var(--mut);margin-top:6px">검진 결과는 의사의 안내를 우선 따라 주세요.</div>`;
+const readPF=x=>({ conditions:$$(`input[name=${x}c]:checked`).map(i=>i.value), allergies:$$(`input[name=${x}a]:checked`).map(i=>i.value), checkups:$$(`input[name=${x}k]:checked`).map(i=>i.value), meds:$('#'+x+'m').value.trim(), demo:null });
+function fillPF(x){ const p=profile||norm({}); $$(`input[name=${x}c]`).forEach(i=>i.checked=p.conditions.includes(i.value)); $$(`input[name=${x}a]`).forEach(i=>i.checked=p.allergies.includes(i.value)); $$(`input[name=${x}k]`).forEach(i=>i.checked=p.checkups.includes(i.value)); $('#'+x+'m').value=p.meds; }
+$('#pf1').innerHTML=pfHTML('a'); $('#pf2').innerHTML=pfHTML('b');
+$('#save1').onclick=()=>{ saveProfile(readPF('a')); go('home'); };
+$('#save2').onclick=()=>{ saveProfile(readPF('b')); go('home'); };
+$('#reset').onclick=()=>{ localStorage.clear(); profile=null; $('#ans').innerHTML=''; go('onboard'); };
+function renderPersonas(){ $('#personas').innerHTML=PERSONAS.map(x=>`<div class="persona ${profile&&profile.demo===x.id?'on':''}" data-id="${x.id}"><div class="e">${x.e}</div><div><b>${x.name}</b><div>${x.desc}</div></div></div>`).join('');
+  $$('.persona').forEach(el=>el.onclick=()=>{ const x=PERSONAS.find(p=>p.id===el.dataset.id); saveProfile({ ...JSON.parse(JSON.stringify(x.p)), demo:x.id }); $('#ans').innerHTML=''; { const m=mem(); const t=todayD(); m.meals=[]; m.catches=[]; m.shown=[]; m.tips=[]; m.dismissed=[]; m.entries=[].concat((x.snaps||[]).map(([d,k])=>({ day:dayKey(new Date(t-d*864e5)), text:SNAPS[k].l, snap:k, time:snapTime(k), kind:'photo', tags:SNAPS[k].tags, seed:true }))); m.entries=m.entries.concat((x.notes||[]).map(([d,text])=>({ day:dayKey(new Date(t-d*864e5)), text, kind:'note', tags:E.classify(text).tags, seed:true }))).sort((a,b)=>a.day<b.day?-1:1); setMem(m); } go('home'); }); }
+
+// ---------- 라우팅 ----------
+function go(n){
+  if(!profile && n!=='onboard') n='onboard';
+  $$('.screen').forEach(s=>s.classList.toggle('on', s.id==='s-'+n));
+  $('#back').style.display=n==='settings'?'block':'none';
+  $('#gear').style.display=n==='home'?'block':'none';
+  if(n==='home'){ renderFollowups(); renderLog(); } if(n==='settings'){ fillPF('b'); renderPersonas(); }
+  window.scrollTo(0,0);
+}
+$('#back').onclick=()=>go('home'); $('#gear').onclick=()=>go('settings');
+
+// ---------- 입력 ----------
+$('#hints').innerHTML=HINTS.map(h=>`<span>${h}</span>`).join('');
+$$('#hints span').forEach(s=>s.onclick=()=>{ $('#q').value=s.textContent; $('#q').focus(); });
+// 실제 카메라 → 기기(IndexedDB)에 저장. 라벨 칩은 선택, 막지 않고 잠깐 떠 있다 사라짐
+const PDB=new Promise(res=>{ const r=indexedDB.open('bapsim-photos',1); r.onupgradeneeded=()=>r.result.createObjectStore('p'); r.onsuccess=()=>res(r.result); r.onerror=()=>res(null); });
+const PURL={};
+const phSrc=e=>e.pid?(PURL[e.pid]||''):e.snap?`img/${e.snap}.jpg`:'';
+async function loadPhotos(){ const db=await PDB; if(!db) return; for(const e of (mem().entries||[])) if(e.pid&&!PURL[e.pid]){ const b=await new Promise(r=>{ const q=db.transaction('p').objectStore('p').get(e.pid); q.onsuccess=()=>r(q.result); q.onerror=()=>r(null); }); if(b) PURL[e.pid]=URL.createObjectURL(b); } renderLog(); renderFollowups(); }
+$('#cam').onclick=()=>{ const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.capture='environment'; inp.style.display='none'; document.body.appendChild(inp);
+  inp.onchange=async()=>{ const f=inp.files[0]; inp.remove(); if(!f) return; const pid='p'+Date.now(); const db=await PDB; if(db) await new Promise(r=>{ const t=db.transaction('p','readwrite'); t.objectStore('p').put(f,pid); t.oncomplete=r; t.onerror=r; }); PURL[pid]=URL.createObjectURL(f);
+    const m=mem(), id='e'+Date.now(); m.entries=(m.entries||[]).concat([{ id, day:dayKey(todayD()), text:'사진', pid, time:new Date().toTimeString().slice(0,5), kind:'photo', tags:[] }]).slice(-120); setMem(m); toast('저장했어요'); renderLog(); renderFollowups(); labelChips(id); };
+  inp.click(); };
+$('#samples').onclick=()=>{ const s=$('#sheet'); s.style.display=s.style.display==='none'?'block':'none'; };
+function labelChips(id){ document.querySelectorAll('.lchips').forEach(x=>x.remove()); const d=document.createElement('div'); d.className='lchips';
+  const K=['coffee','energy','beer','soju','tylenol','dosirak','pizza','grapefruit','iron','ssanghwa']; d.innerHTML=`<small>원하면 한 번 눌러 두세요</small><div>${K.map(k=>`<button data-k="${k}">${SNAPS[k].l}</button>`).join('')}</div>`; document.body.appendChild(d);
+  const kill=()=>d.remove(), t=setTimeout(kill,6000);
+  d.querySelectorAll('button').forEach(b=>b.onclick=()=>{ clearTimeout(t); const m=mem(), e=(m.entries||[]).find(x=>x.id===id); if(e){ const k=b.dataset.k; e.snap=k; e.text=SNAPS[k].l; e.tags=SNAPS[k].tags; setMem(m); } kill(); renderLog(); renderFollowups(); }); }
+const SNAPS={
+  energy:{e:'',l:'에너지 드링크',tags:['coffee_pm']}, dosirak:{e:'',l:'편의점 도시락',tags:[]}, pizza:{e:'',l:'배달 피자',tags:[]}, protein:{e:'',l:'프로틴바',tags:[]}, onigiri:{e:'',l:'삼각김밥',tags:[]}, cola:{e:'',l:'콜라',tags:[]},
+  ramen:{e:'🍜',l:'라면',tags:['salty']}, jjigae:{e:'🍲',l:'김치찌개',tags:['salty']}, jjamppong:{e:'🍜',l:'짬뽕',tags:['salty']},
+  chicken:{e:'🍗',l:'치킨',tags:['fried']}, samgyeop:{e:'🥓',l:'삼겹살',tags:['fried']}, salad:{e:'🥗',l:'샐러드',tags:[]}, bibim:{e:'🍚',l:'비빔밥',tags:[]},
+  coffee:{e:'☕',l:'오후 커피',tags:['coffee_pm']}, beer:{e:'🍺',l:'맥주',tags:['alcohol']}, soju:{e:'🍶',l:'소주',tags:['alcohol']},
+  grapefruit:{e:'🧃',l:'자몽주스',tags:['grapefruit']}, shrimp:{e:'🦐',l:'새우',tags:['shellfish']}, spinach:{e:'🥬',l:'시금치나물',tags:['vitk']}, snack:{e:'🍪',l:'과자',tags:['sugar']},
+  ssanghwa:{e:'🫙',l:'쌍화탕',tags:['licorice']}, tylenol:{e:'💊',l:'타이레놀',tags:['apap']}, iron:{e:'💊',l:'철분제',tags:['iron']},
+};
+$('#grid').innerHTML=Object.entries(SNAPS).map(([k,s])=>`<button data-snap="${k}"><img src="img/${k}.jpg" alt=""><span>${s.l}</span></button>`).join('');
+function snapTime(k){ return ({coffee:'15:00',ramen:'22:40',chicken:'23:10',snack:'23:30',beer:'21:00',soju:'21:30'})[k]||'12:30'; }
+$$('[data-snap]').forEach(b=>b.onclick=()=>{ $('#sheet').style.display='none'; const k=b.dataset.snap, s=SNAPS[k], m=mem(); m.entries=(m.entries||[]).concat([{ day:dayKey(todayD()), text:s.l, snap:k, time:snapTime(k), kind:'photo', tags:s.tags }]).slice(-120); setMem(m); toast('저장했어요'); renderLog(); renderFollowups(); });
+function toast(t){ const d=document.createElement('div'); d.textContent=t; d.style.cssText='position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:#1f2a24;color:#fff;padding:8px 14px;border-radius:99px;font-size:13px;opacity:.9;z-index:20'; document.body.appendChild(d); setTimeout(()=>d.remove(),1400); }
+$$('[data-sample]').forEach(b=>b.onclick=()=>{ $('#sheet').style.display='none'; $('#q').value=E.SAMPLES[b.dataset.sample].text; submit(); });
+$('#go').onclick=()=>submit(); $('#q').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.isComposing) submit(); });
+
+function submit(text){
+  const q=(text ?? $('#q').value).trim(); if(!q) return;
+  $('#hints').style.display='none';
+  const m=mem(); const c=E.classify(q);
+  if(!c.need){ const cc=E.crossCatch(q, profile, memFor(m)); if(cc) m.catches=(m.catches||[]).concat([cc.id]); const tip=cc?cc.line:E.noteTip(c.tags, memFor(m)); if(tip) m.tips=(m.tips||[]).concat([tip]).slice(-10); m.entries=(m.entries||[]).concat([{ day:dayKey(todayD()), text:q, kind:'note', tags:c.tags }]).slice(-80); setMem(m); $('#q').value=''; $('#ans').innerHTML=`<div class="ans"><div class="ins">📝 기록했어요${tip?' · '+esc(tip):''}</div></div>`; renderLog(); renderFollowups(); return; }
+  $('#q').value=q;
+  const r=E.answer(q, profile, memFor(m));
+  m.entries=(m.entries||[]).concat([{ day:dayKey(todayD()), text:q, kind:'need', tags:c.tags }]).slice(-80);
+  lastQ=q; lastR=r;
+  if(r.type==='answer' && r.topic){ m.events.push({ day:dayKey(todayD()), topic:r.topic, text:q }); m.events=m.events.slice(-30); setMem(m); }
+  const cc=E.crossCatch(q, profile, memFor(m)); if(cc){ m.catches=(m.catches||[]).concat([cc.id]); r.catchLine=cc.line; }
+  if(r.top){ m.shown=(m.shown||[]).concat([r.top.name]).slice(-20); }
+  setMem(m); renderAnswer(r); renderLog();
+}
+
+// ---------- 답변 카드 (짧게: 한 가지만, 나머지는 탭 뒤) ----------
+const VD={'괜찮아요':'v-ok','조금 아쉬워요':'v-meh','피하는 게 좋아요':'v-no'};
+const verdict=v=>v?`<span class="vd ${VD[v]}">${v}</span>`:'';
+const insHTML=x=>`<div class="ins">${verdict(x.verdict)}${esc(x.text)}</div>`;
+const kindTag=k=>'';
+const body=(i,k)=>k==='supp'?`“${esc(i.claim)}”`:k==='otc'?`효능·효과: ${esc(i.claim)} · 설명서 확인, 약사 상담 후 복용`:esc(i.effect);
+function renderAnswer(r){
+  const a=$('#ans');
+  if(r.type==='stop'){ a.innerHTML=`<div class="stop"><b>${esc(r.title)}</b> ${esc(r.text)}</div>`; return; }
+  let h=`<div class="ans"><div class="pick">`;
+  if(r.catchLine) h+=`<div class="nt" style="margin-bottom:8px">${esc(r.catchLine)}</div>`;
+  if(r.top){ h+=`<p class="say">${(r.lines||[]).map(esc).join(' ')}</p>`; }
+  else h+=`<p class="say">${esc(r.scope||r.hint||'')}</p>`;
+  if(r.top){ const extra=r.consult?.emphasize?' · 약사 상담 권해요':''; h+=`<button class="more" id="more">왜 그런지 · 더 보기${extra} ▾</button>`; }
+  h+=`</div>`;
+  if(r.top) h+=`<div class="det" id="det" style="display:none">${detailHTML(r)}${consultBtn(r)}<div id="cbox"></div><p class="disc">ⓘ ${esc(r.disclaimer)} 상호작용 문구는 예시이며 약사 검수 전이에요.</p></div>`;
+  h+=`</div>`;
+  a.innerHTML=h;
+  if($('#more')) $('#more').onclick=()=>{ const d=$('#det'); d.style.display=d.style.display==='none'?'block':'none'; };
+  $$('.cmpbtn').forEach(b=>b.onclick=()=>{ const t=$('#'+b.dataset.t); t.style.display=t.style.display==='none'?'block':'none'; });
+  $$('[data-pick]').forEach(b=>b.onclick=()=>{ const m=mem(); m.picks=m.picks.filter(p=>p.item!==b.dataset.item); m.picks.push({ name:b.dataset.pick, item:b.dataset.item, day:dayKey(todayD()), days:30 }); setMem(m); b.textContent='✓ 정했어요'; b.disabled=true; });
+  $$('.seller').forEach(x=>x.onclick=e=>{ e.preventDefault(); alert('예시 링크예요. 실제 판매처로 연결되지 않아요.'); });
+  $$('.consult').forEach(b=>b.onclick=()=>openConsult(r));
+}
+function detailHTML(r){
+  let h='';
+  if(r.trace?.length) h+=`<div class="it"><b>참고한 내 기록</b>${r.trace.map(t=>`<div style="color:var(--mut)">· ${dayLabel(t.day)} — ${esc(t.text)}</div>`).join('')}</div>`;
+  if(r.insights?.length) h+=r.insights.map(insHTML).join('');
+  let n=0;
+  for(const g of r.groups) for(const i of g.items){
+    const id='cmp'+(n++);
+    h+=`<div class="it"><b>${esc(i.name)}</b>${kindTag(g.kind)}<div>${body(i,g.kind)}</div>${i.note?`<div class="note">${esc(i.note)}</div>`:''}
+      ${i.variants?`<button class="cmpbtn" data-t="${id}">제품으로 고른다면 ›</button><div id="${id}" style="display:none">${cmpHTML(i, r.enough && g.kind==='food')}</div>`:''}</div>`;
+  }
+  if(r.excluded.length) h+=`<div class="it" style="border-color:#f3d2cc">${verdict('피하는 게 좋아요')}${r.excluded.map(e=>`<div style="margin-top:4px">• <b>${esc(e.name)}</b> — ${esc(e.reason)}</div>`).join('')}</div>`;
+  return h;
+}
+function cmpHTML(i, enough){
+  const v=i.variants;
+  return `${enough?`<div class="nt" style="margin-top:8px">집에서 끓여 마셔도 충분해요. 굳이 사지 않아도 돼요.</div>`:''}
+  <div style="margin-top:8px"><span class="demo-l">예시 데이터</span> <span style="font-size:11px;color:var(--mut)">가상의 제품·번호·가격</span></div>
+  <table class="cmp"><tr><th></th>${v.items.map(p=>`<th style="color:var(--ink)">${esc(p.name)}</th>`).join('')}</tr>${v.axis.map((ax,k)=>`<tr><th>${esc(ax)}</th>${v.items.map(p=>`<td>${esc(p.vals[k])}</td>`).join('')}</tr>`).join('')}
+  <tr><th>좋은 점</th>${v.items.map(p=>`<td>${esc(p.pro||'-')}</td>`).join('')}</tr><tr><th>아쉬운 점</th>${v.items.map(p=>`<td>${esc(p.con||'-')}</td>`).join('')}</tr></table>
+  <div class="pc">${v.items.map(p=>`<div><button data-pick="${esc(p.name)}" data-item="${esc(i.name)}">이걸로 정했어요</button><b>${esc(p.name)}</b><br><span class="badge">${esc(p.badge)}</span><br>${esc(p.price.replace('예시가','가격(예시)'))} · <a class="seller" href="#">${esc(p.seller)}</a></div>`).join('')}</div>`;
+}
+function consultBtn(r){
+  return r.consult?.emphasize ? `<button class="cons em consult">약사·영양사 상담<small>${esc(r.consult.why)}</small></button>` : `<button class="cons consult">약사·영양사에게 상담하기</button>`;
+}
+// ---------- 상담 (카드 안에서 바로, 목업) ----------
+function openConsult(r){
+  const box=$('#cbox'); if(!box) return;
+  if(box.innerHTML){ box.innerHTML=''; return; }
+  box.innerHTML=`<div class="it" style="margin-top:8px">이 내용으로 약사·영양사에게 상담을 요청할 수 있어요. <span class="demo-l">목업</span>
+    <div style="font-size:12px;color:var(--mut);margin:6px 0">“${esc(lastQ)}” · ${esc(summary())}</div>
+    <button class="more" id="creq" style="margin-top:4px">상담 요청하기</button></div>`;
+  $('#creq').onclick=()=>{ box.innerHTML=`<div class="nt" style="margin-top:8px">요청된 것처럼 보여주는 목업이에요. 실제로는 전송되지 않았어요.</div>`; };
+}
+
+// ---------- 맥락이 생긴 경우에만 보이는 후속 메모 ----------
+function followups(){
+  const m=mem(), today=dayKey(todayD()), out=[];
+  const last=t=>[...m.events].reverse().find(e=>t.includes(e.topic));
+  const c=last(['chill','throat']);
+  if(c){ const d=daysBetween(c.day,today); if(d===1) out.push({ id:'cold-'+c.day, text: c.topic==='throat'?'어제 목이 칼칼하다고 하셨죠. 오늘도 따뜻한 물이나 차를 가까이 두시면 조금이라도 편해요.':'어제 감기 기운 있다고 하셨죠. 오늘은 따뜻한 물 한 잔이면 충분해요.', acts:[] }); }
+  const s=last(['constipation']);
+  if(s){ const d=daysBetween(s.day,today); if(d===2) out.push({ id:'con-'+s.day, text:'그저께 화장실이 불편하다고 하셨죠. 오늘 아침 물 한 잔 먼저 드시면 조금이라도 도움이 될 수 있어요.', acts:[] }); }
+  for(const p of m.picks){ const d=daysBetween(p.day,today); if(d===p.days-3) out.push({ id:'stock-'+p.name+p.day, text:`${p.name}, 곧 떨어질 때예요.`, acts:[] }); }
+  const re=recentEntries(m), alc=re.filter(x=>(x.tags||[]).includes('alcohol')).length;
+  out.push(...snapNudges(m, today));
+  return out.filter(f=>!m.dismissed.includes(f.id));
+}
+function snapNudges(m, today){
+  const wk=today.slice(0,7)+'-'+Math.floor(+today.slice(8)/7), P=profile||{}, meds=(P.meds||'')+' '+(m.entries||[]).filter(e=>e.kind!=='photo').map(e=>e.text).join(' ');
+  const sn=recentEntries(m).filter(e=>e.kind==='photo'), has=t=>sn.filter(e=>(e.tags||[]).includes(t));
+  const tr=a=>a.slice(0,4).map(e=>`<span class="tchip">${phSrc(e)?`<img src="${phSrc(e)}" alt="">`:''}${esc(dayLabel(e.day)+' '+e.text)}</span>`).join('');
+  const conds=P.conditions||[], htn=conds.includes('hypertension')||/혈압약/.test(meds), bpRisk=htn||conds.includes('kidney')||(P.checkups||[]).includes('bp'), out=[];
+  const apap=has('apap'), alc=has('alcohol');
+  if(apap.length && alc.length) out.push({ id:'n-apap-'+wk, text:'타이레놀 드신 주에 술도 있었어요. 같은 날 겹치면 간에 부담이 될 수 있어요. 약 먹는 날은 술을 쉬어 주세요.', trace:tr([...apap,...alc].slice(0,4)) });
+  const gf=has('grapefruit');
+  if(gf.length && /스타틴|암로디핀|고지혈증약/.test(meds)) out.push({ id:'n-gf-'+wk, text:'자몽주스가 두 번 있었어요. 드시는 스타틴은 자몽과 같이 먹으면 약이 세게 들 수 있어요. 오렌지주스로 바꿔 보세요.'.replace('두 번', gf.length>1?'몇 번':'한 번'), trace:tr(gf) });
+  const lic=has('licorice');
+  if(lic.length && htn) out.push({ id:'n-lic-'+wk, text:'쌍화탕엔 감초가 들어 있어요. 혈압약 드시는 동안은 생강차·대추차가 나아요.', trace:tr(lic) });
+  const iron=has('iron'), cof=has('coffee_pm');
+  if(iron.length && iron.some(i=>cof.some(c=>c.day===i.day))) out.push({ id:'n-iron-'+wk, text:'철분제 드신 날 커피도 같이 있었어요. 커피는 철분제와 1~2시간 떨어뜨려 드세요.', trace:tr([...iron,...cof].slice(0,4)) });
+  // 어젯밤 음주 기록 → 오늘 아침 한 줄 (하루 한 번)
+  const yd=(m.entries||[]).filter(e=>daysBetween(e.day,today)===1 && (e.tags||[]).includes('alcohol'));
+  if(yd.length && !(apap.length && alc.length)) out.unshift({ id:'n-morning-'+today, text:`어젯밤 ${yd[0].text} 기록이 있었죠. 오늘 오전엔 물을 평소보다 몇 잔 더 드셔 보세요. 조금이라도 편해질 수 있어요.`, trace:tr(yd), acts:[['숙취해소제 비교 보기 ›','ask:어제 술 마셨는데 숙취해소제 추천']] });
+  // 고치라고 하지 않고, 이미 드시는 것에 하나 곁들이기 (프로필 확인)
+  const salty=has('salty'), kOK=!conds.includes('kidney') && !/칼륨|스피로노락톤|ACE|사르탄|혈압약|이뇨제/.test(meds) && !htn;
+  if(salty.length>=4 && kOK) out.push({ id:'n-k-'+wk, text:`${salty.slice(-1)[0].text} 드신 날, 후식으로 바나나나 참외 하나 곁들이면 칼륨이 나트륨 배출에 조금이라도 도움이 될 수 있어요.`, trace:tr(salty.slice(-4)) });
+  const fr=has('fried');
+  if(fr.length>=3 && (P.checkups||[]).includes('lipid')) out.push({ id:'n-fr-'+wk, text:'삼겹살 드실 때 쌈채소와 마늘·양파를 같이 구워 곁들이면 좋아요. 식이섬유가 조금이라도 도움이 될 수 있어요.', trace:tr(fr) });
+  return out.filter(f=>!(m.dismissed||[]).includes(f.id)).slice(0,2).map(x=>({ acts:[], ...x }));
+}
+function icons(){ if(window.lucide) lucide.createIcons({attrs:{'stroke-width':1.75}}); }
+function renderFollowups(){
+  const f=followups();
+  $('#fus').innerHTML=f.map(x=>`<div class="fu" data-id="${esc(x.id)}"><button class="x" aria-label="닫기"><i data-lucide="x"></i></button>${esc(x.text)}${x.trace?`<div class="tr">${x.trace}</div>`:''}${x.acts.length?`<div class="acts">${x.acts.map(([l,a])=>`<button data-a="${esc(a)}">${l}</button>`).join('')}</div>`:''}</div>`).join('');
+  icons();
+  $$('.fu').forEach(el=>{ const dismiss=()=>{ const m=mem(); m.dismissed.push(el.dataset.id); setMem(m); renderFollowups(); };
+    el.querySelector('.x').onclick=()=>{ el.classList.add('out'); setTimeout(dismiss,260); };
+    el.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{ const a=b.dataset.a; dismiss(); if(a.startsWith('ask:')) submit(a.slice(4)); }); });
+}
+
+// ---------- 기록 타임라인 (숫자·분석 없음) ----------
+function dayLabel(d){ const n=daysBetween(d, dayKey(todayD())); return n<=0?'오늘':n===1?'어제':n+'일 전'; }
+function renderLog(){
+  const es=[...(mem().entries||[])].reverse().slice(0,30);
+  if(!es.length){ $('#log').innerHTML=''; return; }
+  const ic={ note:'<i data-lucide="pen-line"></i>', need:'<i data-lucide="message-square"></i>', photo:'<i data-lucide="image"></i>' };
+  $('#log').innerHTML=`<div class="log"><div class="h">내 기록</div>${es.map((e,i)=>`<div class="le ${e.kind==='need'?'need':''}" data-i="${i}"><span class="d">${dayLabel(e.day)}</span><span class="i">${phSrc(e)?`<span class="ph"><img src="${phSrc(e)}" alt=""></span>`:(ic[e.kind]||'📝')}</span><span class="t">${esc(e.text)}</span></div>`).join('')}</div>`; icons();
+  $$('.le.need').forEach(el=>el.onclick=()=>{ const e=es[+el.dataset.i]; $('#q').value=e.text; const r=E.answer(e.text, profile, memFor(mem())); lastQ=e.text; lastR=r; renderAnswer(r); window.scrollTo({top:0,behavior:'smooth'}); });
+}
+
+// ---------- PWA ----------
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+if(profile) saveProfile(profile); else $('#demo').style.display='none';
+go(profile?'home':'onboard'); icons(); loadPhotos();
+</script>
+</body>
+</html>
