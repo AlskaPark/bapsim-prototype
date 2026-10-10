@@ -493,6 +493,44 @@ function productSheet(key){ const P = PRODUCTS[key]; if (!P) return;
     <p class="disc">가격과 변동 그래프는 예시 데이터예요. 실제 제품·가격이 아니고, 이 앱은 판매 수수료를 받지 않는다는 가정이에요.</p>`);
   $$('[data-w]', bg).forEach(c => c.onchange = () => { S.watch = S.watch || {}; if (c.checked) S.watch[c.dataset.w] = { base: +c.dataset.b, at: priceOn(c.dataset.w, +c.dataset.b, today()), day: today(), key }; else delete S.watch[c.dataset.w]; save(); buzz(); });
   notesRefresh(); }
+// ---- 전문가 연결 (건강 컨설팅, 진료 의뢰 아님 · 비의료 건강관리서비스 가이드라인) ----
+// 패턴이 반복되고, 직접 확인(며칠만 빼보기)으로도 가려지지 않았을 때만 작은 링크로.
+// 전문가 목록: 데이터로만 늘려요(종류·사람 추가 = 항목 추가). 모두 예시.
+const EXPERT_TYPES = {
+  dietitian:{ label:'영양사', lic:'영양사 면허 확인됨', scope:'먹는 쪽 조언만 해요. 진단이나 약 조언은 하지 않아요.' },
+  kmd:{ label:'한의사', lic:'한의사 면허 확인됨', doctor:true },
+  fmd:{ label:'기능의학 의사', lic:'의사 면허 확인됨', doctor:true },
+};
+// 매칭은 서비스가 기록을 보고 정해요(데모에선 서버 대신 고정 예시). 상황→직종 규칙도, 사용자 선택 목록도 두지 않아요.
+const matchExpert = ex => EXPERTS.find(e => e.id === ex.who) || EXPERTS[0];
+const SCOPE_LINE = '먹는 쪽 조언만 해요. 진단이나 약 조언은 하지 않아요.';
+const DOCTOR_SCOPE = '먹는 쪽 조언만 해요. 진단이나 약 조언은 하지 않아요. 진료가 아닌 식생활 상담이에요(진단·처방 없음).';
+const EXPERTS = [
+  { id:'e1', type:'dietitian', name:'김하늘' },
+  { id:'e2', type:'kmd', name:'박서진' },
+  { id:'e3', type:'fmd', name:'이도윤' },
+];
+const exType = e => EXPERT_TYPES[e.type], exName = e => `${e.name.slice(1)} 전문가`, exScope = e => exType(e).doctor ? DOCTOR_SCOPE : exType(e).scope;
+const exNeeds = (x, c) => !x.inter && !x.pos && c && c.result === 'kept' && (x.src || []).filter(e => e.kind === 'memo').length >= 2;
+function exHTML(x, c){ const ex = (S.expert || {})[x.id], who = ex && matchExpert(ex);
+  if (ex) { const t = today(); if (gap(ex.sent, t) < 1) return `<div class="ex-sent"${why('보낸 뒤엔 조용히 기다려요. 알림도, 대화창도 없어요. 답은 이 카드 안에 와요.')}><i data-lucide="loader"></i>기록에 맞는 전문가를 찾고 있어요. 답은 이 카드에 와요.</div>`;
+    return `<div class="ex-reply"${why('사람이 쓴 답이라 AI 표시가 없어요. 먹는 쪽 이야기만 하고, 다시 묻지 않아요.')}><div class="ex-h"><span class="ex-av">${esc(who.name[1])}</span><div><b>${esc(exName(who))}</b><small>답장 · 예시</small></div></div>
+      <p>보내 주신 기록을 보면, 소화가 불편했던 날은 저녁에 기름진 메뉴가 있던 날이 많았지만 확인하는 동안에도 계속 드셔서 아직 가려지지 않았어요.</p><p>메뉴는 그대로 두셔도 돼요. 다음에 기름진 메뉴를 드신 날엔 먹은 시간만 함께 남겨 주시면, 양보다 시간과 겹치는지 다음 답에서 볼 수 있어요.</p>
+      <small class="ex-scope">${esc(SCOPE_LINE)}</small></div>`; }
+  return exNeeds(x, c) ? `<button class="ex-link" data-ex="${x.id}"${why('반복되는데 직접 해 봐도 가려지지 않을 때만 나타나는 작은 링크. 늘 떠 있는 상담 버튼은 두지 않아요. 진료 의뢰가 아니라 먹는 쪽 건강 컨설팅이에요.')}><i data-lucide="user-round"></i>전문가에게 기록 보여주기</button>` : ''; }
+function expertSheet(x){ const items = (x.src || []).slice(0, 8);
+  const bg = sheet(`<div class="s-eyebrow">건강 컨설팅 · 예시</div><h2 class="s-title">전문가에게 기록 보여주기</h2>
+    <div class="s-sec"${why('무엇이 나가는지 먼저. 이 발견에 쓰인 기록만, 하나씩 뺄 수 있어요.')}><h4>보낼 기록</h4><div class="ex-items">${items.map(e => `<label class="ex-it"><input type="checkbox" checked data-id="${e.id}">${src(e) ? `<img src="${src(e)}" alt="">` : '<span class="m"><i data-lucide="pen-line"></i></span>'}<span>${esc(e.text)}<small>${esc(dayName(e.day, today()))}</small></span></label>`).join('')}</div></div>
+    <div class="s-sec"${why('고를 목록을 보여 주지 않아요. 기록을 보고 서비스가 맞는 전문가를 연결하고, 사용자는 무엇을 보낼지만 정해요. 누가 오든 범위는 같은 한 줄이에요.')}><h4>누가 보나요</h4><p class="ex-match">기록에 맞는 전문가를 밥심이 찾아 연결해요.</p>
+      <p class="ex-scope">${esc(SCOPE_LINE)}</p></div>
+    <div class="ex-price"><span>1회 9,900원</span><small>예시 가격</small></div>
+    <button class="primary" id="exgo"${why('버튼은 하나. 보내고 나면 대화창 없이 답을 기다리기만 하면 돼요.')}>기록 보내기</button>`);
+  const upd = () => { const n = $$('.ex-it input:checked', bg).length; $('#exgo', bg).disabled = !n; $('#exgo', bg).textContent = n ? `기록 ${n}개 보내기` : '보낼 기록을 골라 주세요'; };
+  $$('.ex-it input', bg).forEach(i => i.onchange = upd); upd();
+  $('#exgo', bg).onclick = () => { const ids = $$('.ex-it input:checked', bg).map(i => i.dataset.id); S.expert = S.expert || {}; S.expert[x.id] = { sent: today(), ids, who: EXPERTS[seedOf(x.id) % EXPERTS.length].id }; save(); buzz();
+    $('.sh', bg).innerHTML = `<div class="ex-done"><i data-lucide="check"></i><b>보냈어요</b><span>기록에 맞는 전문가를 찾고 있어요. 답은 '나에 대해 알게 된 것'의 이 카드에 조용히 와요. 알림은 보내지 않아요.</span><button class="primary" id="exok">확인</button></div>`; icons();
+    $('#exok', bg).onclick = () => { bg.close ? bg.close() : bg.remove(); const ov = $('#ins'); if (ov) { ov.remove(); insightsPage(); } }; };
+  notesRefresh(); }
 function insightsPage(){
   let list = insights(); const t = today(), fo = focus();
   const ds = d => { const n = gap(d, t); if (n <= 2) return dayName(d, t); const x = new Date(d + 'T12:00:00'); return `${x.getMonth()+1}월 ${x.getDate()}일 ${WD[x.getDay()]}`; };
@@ -518,6 +556,7 @@ function insightsPage(){
       ${x.hl ? `<p class="fd-hl"${why('건강 데이터는 원인으로 쓰지 않고, \'이런 날이기도 했어요\'처럼 곁들여 적기만 해요.')}><i data-lucide="heart-pulse"></i>${esc(x.hl)}</p>` : ''}
       ${stepsHTML(x)}
       ${c ? ckHTML(x, c) : act(x)}
+      ${exHTML(x, c)}
       ${curHTML(x, hero)}
       <div class="fd-f"${hero ? why('근거는 겹친 사진 몇 장으로만 보여 주고, 날짜별 기록은 원할 때만 펼쳐요. 숫자로 몇 번인지 세지 않아요.') : ''}>${stack(x.src)}<span class="ai" aria-label="AI가 쓴 문장"${hero ? why('알게 된 것의 문장도 AI가 기록을 보고 써요. 근거 사진 옆, 같은 작은 표시.') : ''}>AI</span><button class="fd-more">기록 보기<i data-lucide="chevron-down"></i></button></div>
       <div class="fd-ev">${tline(x.src)}</div></article>`; };
@@ -540,6 +579,7 @@ function insightsPage(){
   $$('.ck-go', ov).forEach(b => b.onclick = () => { const id = b.closest('.fd').dataset.id, x = list.find(y => y.id === id); startCheck(x, b.dataset.m, b.dataset.v || undefined); ov.remove(); insightsPage(); });
   $$('.ck-stop', ov).forEach(b => b.onclick = () => { delete S.checks[b.closest('.fd').dataset.id]; save(); ov.remove(); insightsPage(); });
   $$('.pr-open', ov).forEach(b => b.onclick = () => productSheet(b.dataset.p));
+  $$('.ex-link', ov).forEach(b => b.onclick = () => expertSheet(list.find(y => y.id === b.dataset.ex)));
   $('#ib', ov).onclick = () => { ov.classList.add('out'); setTimeout(() => { ov.remove(); notesRefresh(); }, 250); };
   $('.su', ov).addEventListener('scroll', () => notesOn && notesRefresh(), { passive: true });
   notesRefresh();
