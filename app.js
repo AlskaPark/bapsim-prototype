@@ -109,22 +109,17 @@ function pick(){
     short:'쌍화탕 감초는 혈압약과 안 맞을 수 있어요', title:'쌍화탕과 혈압약', why:'감초 성분(글리시리진)은 몸에 나트륨과 물을 붙잡아 두는 쪽으로 작용할 수 있어요. 그래서 혈압약을 먹는 동안에는 감초가 든 차·탕을 피하라고 안내하는 경우가 많아요.', q:'감기 기운 있어요', refs:['ssanghwa','licorice'], quote:[{ ref:'ssanghwa', t:'다음과 같은 사람은 이 약을 복용하기 전에 의사, 한의사, 치과의사, 약사, 한약사와 상의할 것. 1) 고혈압 환자', s:'경방쌍화탕액 사용상의 주의사항' }] });
   const gf = [...on(t,'grapefruit'), ...on(y,'grapefruit')];
   if (gf.length && (htn || lipid)) C.push({ id:'gf', src:gf.slice(-1), pair:`자몽주스 + ${lipid ? '고지혈증약' : '혈압약'}`,
-    msg:`자몽은 일부 ${lipid ? '고지혈증약' : '혈압약'}의 효과를 세게 만들 수 있어요. 약을 드시는 동안엔 다른 과일 주스가 나아요.`,
+    msg:`자몽은 일부 ${lipid ? '고지혈증약' : '혈압약'}의 효과를 세게 만들 수 있어요. 약을 드시는 동안엔 물이 가장 무난해요.`,
     short:'자몽은 내 약 효과를 세게 할 수 있어요', title:'자몽과 내 약', why:'자몽은 장에서 약을 분해하는 효소를 막아서, 일부 약(특정 스타틴·칼슘 통로 차단제 등)이 몸에 더 많이 남게 할 수 있어요. 내 약이 해당되는지는 약 봉투나 약사에게 확인하면 정확해요.',
-    alts:[['오렌지·사과 주스','이 상호작용과는 거리가 멀어요'],['물이나 탄산수','가장 무난해요']] });
+    alts:[['물','다른 과일 주스도 일부 약과 겹칠 수 있어서, 대신 마실 건 물만 적어 둬요']], refs:['simva'], quote:[{ ref:'simva', t:'자몽주스: 자몽주스는 CYP3A4를 저해하는 1개 또는 그 이상의 성분을 함유하고 있어 CYP3A4에 의해 대사되는 약물의 혈장 농도를 증가시킬 수 있다. 일반적인 섭취량(1일 1컵, 250mL)의 영향은 미미하며(AUC로 평가한 혈장 HMG-CoA 환원효소 억제 작용 13% 증가), 임상적으로 유의하지 않다. 그러나 이 약과 다량(1일 1L이상)의 자몽주스를 병용할 경우, 혈장 HMG-CoA 환원효소 억제 작용을 유의하게 증가시키므로 이 약 투여시 자몽주스를 섭취하지 않도록 한다(5. 일반적 주의 참조).', s:'심바스틴정20밀리그램(심바스타틴) 상호작용 — 예시 제품' }] });
   const iron = [...on(t,'iron')], cof = on(t,'coffee');
   if ((iron.length || hasMed(/철분/)) && cof.length && iron.length) C.push({ id:'iron', src:[...iron.slice(-1), ...cof.slice(-1)], pair:'철분제 + 커피',
-    msg:'철분제 먹은 날 커피도 있었어요. 둘 사이에 시간 차를 두면 철분이 조금 더 잘 흡수될 수 있어요.',
-    short:'철분제와 커피는 시간 차를 두면 좋아요', title:'철분제와 커피', why:'커피·녹차의 탄닌 성분은 철분과 붙어서 흡수를 줄일 수 있어요. 커피는 그대로 드시고, 시간만 떨어뜨려도 충분해요.' });
+    msg:'철분제 먹은 날 커피도 있었어요. 커피는 철분 흡수를 줄일 수 있다는 연구가 있어요.',
+    short:'철분제 먹은 날 커피도 있었어요', title:'철분제와 커피', why:'식사와 함께 마신 커피는 음식 속 철분 흡수를 줄였고, 식사 한 시간 전에 마신 커피는 줄이지 않았다는 연구가 있어요. 철분제 허가사항에는 녹차·홍차 같은 차를 복용 전후에 피하라고 적혀 있어요.', alts:[['비타민 C가 든 과일·채소와 함께','귤 같은 감귤류·딸기·파프리카·토마토·브로콜리와 함께 먹으면 식물성 철분이 더 잘 흡수된다고 안내돼 있어요','odsiron']], refs:['morck','ferrimam','odsiron'], quote:[{ ref:'ferrimam', t:'녹차, 홍차 등 탄닌을 함유하는 차는 복용 중, 복용 전후에는 피하십시오.', s:'훼리맘큐연질캡슐(철분제) 주의사항 — 예시 제품' }] });
   const ya = on(y,'alcohol');
-  if (ya.length && !alc.length) C.push({ id:'water', src:ya.slice(-1), pair:`어젯밤 ${ya.at(-1).text}`,
-    msg:`어젯밤 ${ya.at(-1).text} 기록이 있어요.`,
-    short:`어젯밤 ${ya.at(-1).text} 기록이 있어요`, health: shortSleep(t), title:'술 마신 다음 날' });
+  /* 술 다음 날 카드: 출처 있는 도움이 없어 숨김 (NIAAA: 숙취 해소법 중 과학적으로 입증된 것 없음) */
   const cramp = es.filter(e => e.kind === 'memo' && /쥐/.test(e.text) && gap(e.day, t) >= 1 && gap(e.day, t) <= 2), cw = wk('caffeine'), mg = wk('mg');
-  if (cramp.length && cw.length >= 3 && mg.length) { const f = mg.at(-1).text;
-    C.push({ id:'mg', src:[cramp[0], mg.at(-1), cw.at(-1)], pair:'다리에 쥐 + 커피 잦은 주',
-      msg:'커피 잦은 주에 다리에 쥐가 났다고 적으셨어요.',
-      short:'커피 잦은 주에 다리에 쥐가 났어요', title:'다리에 쥐가 난 주' }); }
+  /* 다리에 쥐 카드: 출처 있는 도움이 없어 숨김 */
   if (!C.length && S.watch) for (const [name, w] of Object.entries(S.watch)) { const now = priceOn(name, w.base, t); if (now < w.at && t > w.day) { C.push({ id:'price', src:[], product: w.key, pair:'지켜보던 가격', msg:`지켜보던 ${name} 가격이 내려갔어요. 확인된 판매처 기준이에요.`, short:`지켜보던 ${name} 가격이 내려갔어요` }); break; } }
   const kind = d => d.slice(0, d.indexOf('-')), dday = d => d.slice(d.indexOf('-') + 1);
   return C.find(c => !S.dismissed.some(d => kind(d) === c.id && gap(dday(d), t) >= 0 && gap(dday(d), t) <= 3)) || null;
@@ -188,7 +183,7 @@ function sheet(html, cls = ''){ const bg = document.createElement('div'); bg.cla
   bg.onclick = ev => { if (ev.target === bg || ev.target.closest('.sh > .x')) close(); }; document.body.appendChild(bg); icons(); bg.close = close; return bg; }
 
 function detail(n){
-  let items = (n.alts || []).map(([a,b]) => ({ name:a, text:b }));
+  let items = (n.alts || []).map(([a,b,r]) => ({ name:a, text:b, ref:r }));
   let cmp = '';
   if (n.q) { const r = E.answer(n.q, profile(), { recentEntries: [] });
     for (const g of r.groups || []) for (const i of g.items) { if (i.note) continue; if (g.kind === 'food' && !i.ref) continue; /* 출처 없으면 제안도 없음 */ items.push({ name:i.name, text: g.kind === 'food' ? i.effect : i.claim, ref: i.ref || (/허가사항/.test(i.claim||'') ? '_mfds' : ''), v: i.variants }); }
@@ -426,8 +421,6 @@ Object.assign(PRODUCTS, {
 const CURATE = [
   { key:'필터 커피', on:'coffee', food:'커피를 끊지 않고 내리는 방식만 바꿔 볼 수 있어요.', trig:'피곤·속 불편 메모 + 그날의 커피 사진 → 커피 종류 확인' },
   { key:'디카페인', on:'coffee', food:'카페인 때문인지 가려 보려면 몇 잔만 디카페인으로 바꿔도 돼요.', trig:'피곤 메모 + 커피 사진, 잠은 평소와 비슷' },
-  { key:'숙취해소 음료', on:'bloat', food:'', trig:'더부룩 메모 + 전날 밤 맥주·소주 사진' },
-  { key:'마그네슘', on:'cramp', food:'', trig:'다리에 쥐 메모 + 커피 잦던 며칠' },
   { key:'락토프리 우유', on:'gas', when:x => /유제품/.test(x.what), food:'라떼는 그대로, 우유만 바꿔 볼 수 있어요.', trig:'아침 가스 메모 + 전날 라떼·우유 사진' },
   { key:'유산균', on:'calm', food:'', trig:'속 편한 날 메모 + 그날 아침 요거트 사진' },
   { key:'저당 간식', on:'skin', when:x => /단 것/.test(x.what), food:'', trig:'뾰루지 메모 + 며칠 전 단 것 사진' },
@@ -451,6 +444,10 @@ const REFS = {
   ibuprofen:{ l:'식약처 의약품안전나라 · 부루펜정200밀리그램', u:'https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=197700120' },
   ssanghwa:{ l:'식약처 의약품안전나라 · 경방쌍화탕액', u:'https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=200707044' },
   galgeun:{ l:'식약처 의약품안전나라 · 경방갈근탕액', u:'https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=200711872' },
+  simva:{ l:'식약처 의약품안전나라 · 심바스틴정20밀리그램', u:'https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=200500072' },
+  ferrimam:{ l:'식약처 의약품안전나라 · 훼리맘큐연질캡슐', u:'https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=201110661' },
+  odsiron:{ l:'NIH ODS · Iron Fact Sheet for Consumers', u:'https://ods.od.nih.gov/factsheets/Iron-Consumer/' },
+  morck:{ l:'Morck 등, Am J Clin Nutr 1983 (커피와 철분 흡수)', u:'https://pubmed.ncbi.nlm.nih.gov/6402915/' },
   licorice:{ l:'Penninkilampi 등, J Hum Hypertens 2017 (체계적 문헌고찰)', u:'https://pubmed.ncbi.nlm.nih.gov/28660884/' },
   honey:{ l:'Oduwole 등, Cochrane 2018 (어린이 기침과 꿀)', u:'https://doi.org/10.1002/14651858.CD007094.pub5' },
   chamomile:{ l:'Hieu 등, Phytother Res 2019 (체계적 문헌고찰)', u:'https://pubmed.ncbi.nlm.nih.gov/31006899/' },
