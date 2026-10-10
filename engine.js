@@ -108,11 +108,11 @@ const TOPICS = [
 
 // 안전 규칙: 프로필 조건 × 태그 → exclude(제외) 또는 warn(주의)
 const SAFETY_RULES = [
-  { cond: 'hypertension', tag: 'licorice', action: 'exclude', msg: '감초가 들어 있어요. 감초의 글리시리진은 장기·과량 복용 시 혈압 상승·부종과 관련이 보고되어 고혈압이 있으면 제외했어요.' },
+  { cond: 'hypertension', tag: 'licorice', action: 'exclude', msg: '감초가 들어 있어요. 감초는 혈압을 올리고 몸을 붓게 할 수 있어서, 고혈압이 있으면 뺐어요.' },
   { cond: 'hypertension', tag: 'ephedra', action: 'exclude', msg: '마황(에페드린 계열)은 혈압·심박수를 올릴 수 있어 고혈압이 있으면 제외했어요.' },
   { cond: 'heart', tag: 'ephedra', action: 'exclude', msg: '마황은 심박수를 올릴 수 있어 심장질환이 있으면 제외했어요.' },
-  { cond: 'heart', tag: 'licorice', action: 'warn', msg: '감초는 칼륨 저하와 관련이 보고되어 심장질환이 있으면 약사와 먼저 확인하세요.' },
-  { cond: 'kidney', tag: 'licorice', action: 'warn', msg: '감초는 부종·칼륨 저하와 관련이 보고되어 신장질환이 있으면 약사와 먼저 확인하세요.' },
+  { cond: 'heart', tag: 'licorice', action: 'warn', msg: '감초는 몸의 칼륨을 낮출 수 있어요. 심장질환이 있으면 약사와 먼저 확인하세요.' },
+  { cond: 'kidney', tag: 'licorice', action: 'warn', msg: '감초는 몸을 붓게 하고 칼륨을 낮출 수 있어요. 신장질환이 있으면 약사와 먼저 확인하세요.' },
   { cond: 'kidney', tag: 'magnesium', action: 'exclude', msg: '신장 기능이 떨어지면 마그네슘 배설이 어려워 보충제는 제외했어요.' },
   { cond: 'diabetes', tag: 'ephedra', action: 'warn', msg: '마황은 혈당에 영향을 줄 수 있어 당뇨가 있으면 약사와 먼저 확인하세요.' },
   { cond: 'diabetes', tag: 'ginseng', action: 'warn', msg: '홍삼은 혈당을 낮추는 작용이 보고되어 당뇨약을 드신다면 저혈당에 주의하세요.' },
