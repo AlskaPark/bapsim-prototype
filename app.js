@@ -101,16 +101,12 @@ function pick(){
   const ya = on(y,'alcohol');
   if (ya.length && !alc.length) C.push({ id:'water', src:ya.slice(-1), pair:`어젯밤 ${ya.at(-1).text}`,
     msg:`어젯밤 ${ya.at(-1).text} 기록이 있어요. 오늘 오전엔 물을 평소보다 몇 잔 더 마시면 조금 편할 수 있어요.`,
-    short:`어젯밤 ${ya.at(-1).text}, 오늘 오전엔 물 몇 잔 더`, title:'술 마신 다음 날', why:'술은 소변을 늘려 몸의 수분을 빼앗아요. 다음 날 물을 조금 더 마시면 그만큼 채우는 데 도움이 될 수 있어요.', q:'어제 술 마셨는데 숙취해소제 추천' });
+    short:`어젯밤 ${ya.at(-1).text}, 오늘 오전엔 물 몇 잔 더`, health: shortSleep(t), title:'술 마신 다음 날', why:'술은 소변을 늘려 몸의 수분을 빼앗아요. 다음 날 물을 조금 더 마시면 그만큼 채우는 데 도움이 될 수 있어요.', q:'어제 술 마셨는데 숙취해소제 추천' });
   const cramp = es.filter(e => e.kind === 'memo' && /쥐/.test(e.text) && gap(e.day, t) >= 1 && gap(e.day, t) <= 2), cw = wk('coffee'), mg = wk('mg');
   if (cramp.length && cw.length >= 3 && mg.length) { const f = mg.at(-1).text;
     C.push({ id:'mg', src:[cramp[0], mg.at(-1), cw.at(-1)], pair:'다리에 쥐 + 커피 잦은 주',
       msg:`커피 잦은 주에 다리에 쥐가 났다고 적으셨어요. 이미 드시는 ${f}${/[가-힣]/.test(f) && (f.charCodeAt(f.length-1)-0xAC00)%28 ? '을' : '를'} 매일 하나씩 곁들이면 조금이라도 도움이 될 수 있어요.`,
       short:`이미 드시는 ${f}, 매일 하나씩 곁들여 보세요`, title:'다리에 쥐가 난 주', why:'카페인은 마그네슘·칼륨이 소변으로 빠지는 걸 조금 늘릴 수 있어요. 커피는 그대로 두고, 이미 드시는 것 중 마그네슘·칼륨이 든 걸 조금 더하는 정도면 충분해요.', q:'다리에 쥐가 자주 나요' }); }
-  if (shortSleep(t) && cof.length && !C.length) C.push({ id:'sleep', src:cof.slice(-1), health:true, pair:'어젯밤 짧은 잠 + 커피',
-    msg:'어젯밤 잠이 짧았던 날이에요. 오늘 커피는 그대로 드시되, 오후 늦게는 따뜻한 보리차로 바꾸면 오늘 밤 잠에 조금이라도 도움이 될 수 있어요.',
-    short:'잠이 짧았던 날이에요. 늦은 오후엔 보리차로', title:'잠이 짧았던 날의 커피', why:'카페인은 마신 뒤에도 꽤 오래 몸에 남아 있어서, 늦은 오후에 마신 커피가 그날 밤 잠에 영향을 줄 수 있어요. 수면 정보는 연결한 건강 데이터에서 조용히 참고했어요.',
-    alts:[['보리차·옥수수차','카페인이 없어서 오후에 마시기 편해요'],['따뜻한 우유','자기 전에 마시기 무난해요']] });
   const kind = d => d.slice(0, d.indexOf('-')), dday = d => d.slice(d.indexOf('-') + 1);
   return C.find(c => !S.dismissed.some(d => kind(d) === c.id && gap(dday(d), t) >= 0 && gap(dday(d), t) <= 3)) || null;
 }
