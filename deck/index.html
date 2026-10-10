@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>밥심 — 제품 기획과 전체 흐름</title>
+<meta name="description" content="밥심 프로토타입 v10의 기능, 문구 규칙, 사용자 흐름을 한곳에 정리한 슬라이드">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --bg:#F4F5F7; --surface:#fff; --ink:#0B0B0D; --ink2:#2B2D31; --sub:#6B6F76; --faint:#A3A7AE; --line:#E7E9EC; --fill:#EEF0F2;
+  --accent:#C6F432; --accent-soft:#EEFBC8; --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#E9EBEE;overflow:hidden}
+body{font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;letter-spacing:-.02em;word-break:keep-all;overflow-wrap:break-word;line-height:1.45}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:0 0}
+.slide{position:absolute;inset:0;background:var(--bg);overflow:hidden;opacity:0;visibility:hidden;transform:translateX(24px);transition:opacity .42s var(--ease),transform .42s var(--ease),visibility 0s .42s}
+.slide.on{opacity:1;visibility:visible;transform:none;transition:opacity .42s var(--ease),transform .42s var(--ease)}
+.slide.prev{transform:translateX(-24px)}
+/* chrome */
+.kicker{position:absolute;left:120px;top:84px;display:flex;align-items:center;gap:14px;font-size:20px;font-weight:600;color:var(--sub);letter-spacing:-.01em}
+.kicker i{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 1px rgba(11,11,13,.12)}
+.kicker b{color:var(--ink);font-weight:700}
+h2{position:absolute;left:120px;top:128px;max-width:1560px;font-size:56px;line-height:1.2;font-weight:760;letter-spacing:-.035em;text-wrap:balance}
+h2 .s{color:var(--sub);font-weight:600}
+.foot{position:absolute;left:120px;right:120px;bottom:44px;display:flex;justify-content:space-between;font-size:16px;color:var(--faint);font-weight:500}
+.mark{display:inline-flex;align-items:center;justify-content:center;background:var(--ink);border-radius:28%}
+.mark::after{content:"";width:46%;height:46%;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(198,244,50,.22)}
+/* phone */
+.phone{--w:300px;width:var(--w);height:calc((var(--w) - 20px) * 2.1641 + 20px);padding:10px;background:#0E0F11;border-radius:calc(var(--w) * .16);box-shadow:0 50px 90px -40px rgba(11,11,13,.45),0 18px 36px -24px rgba(11,11,13,.3),inset 0 0 0 1.5px #3A3D42;position:relative;flex:none}
+.phone img{display:block;width:100%;height:100%;object-fit:cover;object-position:top;border-radius:calc(var(--w) * .135);background:#fff}
+.ph{display:flex;flex-direction:column;align-items:center;gap:22px}
+.cap{font-size:18px;font-weight:600;color:var(--ink2);display:flex;align-items:center;gap:10px;white-space:nowrap}
+.cap .n{width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--accent);font-size:14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;letter-spacing:0}
+/* feature layout */
+.feat{position:absolute;left:120px;right:120px;top:300px;bottom:110px;display:grid;grid-template-columns:600px 1fr;gap:64px;align-items:center}
+.feat.wide{grid-template-columns:560px 1fr}
+.phones{display:flex;justify-content:flex-end;align-items:flex-start;gap:36px}
+.pts{display:flex;flex-direction:column;gap:30px}
+.pt{display:grid;grid-template-columns:40px 1fr;column-gap:16px}
+.pt .k{grid-row:span 2;width:32px;height:32px;margin-top:2px;border-radius:10px;background:var(--surface);border:1px solid var(--line);font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;color:var(--ink);letter-spacing:0}
+.pt b{display:block;font-size:26px;font-weight:720;line-height:1.3;letter-spacing:-.03em}
+.pt p{font-size:20px;color:var(--sub);line-height:1.5;margin-top:6px;text-wrap:pretty}
+.pt p em{font-style:normal;color:var(--ink2);font-weight:600}
+.note{font-size:17px;color:var(--faint);line-height:1.5}
+.chip{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 16px;border-radius:999px;background:var(--surface);border:1px solid var(--line);font-size:17px;font-weight:600;color:var(--ink2);white-space:nowrap}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--ink)}
+.chip.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
+.hl{background:linear-gradient(transparent 58%,var(--accent) 58%,var(--accent) 92%,transparent 92%);padding:0 .06em}
+/* nav */
+#bar{position:fixed;left:0;bottom:0;height:3px;background:var(--ink);transition:width .42s var(--ease);z-index:5}
+#nav{position:fixed;right:18px;bottom:14px;display:flex;align-items:center;gap:6px;z-index:6;font:600 13px 'Pretendard Variable',sans-serif;color:var(--sub);opacity:.0;transition:opacity .3s}
+body:hover #nav,#nav:focus-within{opacity:1}
+#nav button{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--ink);font:600 16px sans-serif;cursor:pointer}
+#nav span{min-width:56px;text-align:center}
+
+/* ---------- slide specific ---------- */
+/* 1 cover */
+.s1 .mk{position:absolute;left:120px;top:120px;width:76px;height:76px}
+.s1 h1{position:absolute;left:112px;top:300px;font-size:220px;font-weight:800;letter-spacing:-.06em;line-height:1}
+.s1 .tag{position:absolute;left:124px;top:560px;font-size:48px;font-weight:650;letter-spacing:-.035em;line-height:1.3;max-width:900px}
+.s1 .tag .s{color:var(--sub);font-weight:550}
+.s1 .meta{position:absolute;left:124px;bottom:120px;display:flex;gap:12px;flex-wrap:wrap;max-width:880px}
+.s1 .url{position:absolute;left:124px;bottom:80px;font-size:17px;color:var(--faint);font-weight:500}
+.s1 .p1{position:absolute;right:170px;top:92px;--w:420px;z-index:2}
+.s1 .p2{position:absolute;right:540px;top:200px;--w:340px;opacity:.95;transform:rotate(-4deg)}
+.s1 .glow{position:absolute;right:120px;top:260px;width:820px;height:620px;border-radius:50%;background:radial-gradient(closest-side,rgba(198,244,50,.42),rgba(198,244,50,0));filter:blur(20px)}
+/* 2 problem */
+.s2 h2{top:150px;font-size:72px;max-width:1500px;line-height:1.16}
+.moments{position:absolute;left:120px;right:120px;top:500px;display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.mo{background:var(--surface);border-radius:28px;padding:38px 40px 40px;box-shadow:0 1px 0 rgba(11,11,13,.04)}
+.mo .when{font-size:18px;color:var(--sub);font-weight:600}
+.mo .pair{margin-top:16px;font-size:34px;font-weight:760;letter-spacing:-.035em;line-height:1.25}
+.mo .pair i{font-style:normal;color:var(--faint);font-weight:500;padding:0 6px}
+.mo p{margin-top:20px;font-size:21px;color:var(--ink2);line-height:1.5}
+.s2 .bottom{position:absolute;left:120px;right:120px;top:860px;display:flex;gap:56px;align-items:center;font-size:24px;color:var(--sub);font-weight:550}
+.s2 .bottom b{color:var(--ink);font-weight:720}
+/* 3 concept */
+.s3 .q{position:absolute;left:120px;top:180px;width:1080px;font-size:66px;line-height:1.32;font-weight:760;letter-spacing:-.04em;text-wrap:balance}
+.s3 .filter{position:absolute;left:120px;top:660px;width:1040px;background:var(--surface);border-radius:28px;padding:36px 44px}
+.s3 .filter small{display:block;font-size:18px;color:var(--sub);font-weight:600;margin-bottom:12px}
+.s3 .filter p{font-size:28px;font-weight:650;line-height:1.45;letter-spacing:-.03em}
+.s3 .filter p span{color:var(--sub);font-weight:550}
+.s3 .vid{position:absolute;right:150px;top:110px;width:480px;height:853px;border-radius:44px;overflow:hidden;background:#0E0F11;box-shadow:0 50px 90px -40px rgba(11,11,13,.5)}
+.s3 .vid video{width:100%;height:100%;object-fit:cover;display:block}
+.s3 .vcap{position:absolute;right:150px;top:984px;width:480px;text-align:center;font-size:17px;color:var(--sub);font-weight:550}
+/* 4 principles */
+.grid4{position:absolute;left:120px;right:120px;top:300px;display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.pr{background:var(--surface);border-radius:26px;padding:36px 34px 36px;min-height:320px;display:flex;flex-direction:column}
+.pr .no{font-size:16px;font-weight:700;color:var(--faint);letter-spacing:.02em}
+.pr b{margin-top:18px;font-size:30px;font-weight:760;letter-spacing:-.035em;line-height:1.25}
+.pr p{margin-top:14px;font-size:20px;line-height:1.55;color:var(--sub);text-wrap:pretty}
+.pr p em{font-style:normal;color:var(--ink);font-weight:650}
+.pr.key{background:var(--ink);color:#fff}
+.pr.key .no{color:var(--accent)}
+.pr.key p{color:#C9CCD1}
+.pr.key p em{color:#fff}
+/* 5 flow */
+.flow{position:absolute;left:120px;top:290px;width:1680px;height:720px}
+.flow svg{position:absolute;inset:0;overflow:visible;z-index:3;pointer-events:none}
+.node{position:absolute;top:30px;width:288px;height:200px;background:var(--surface);border-radius:26px;padding:28px 28px 0}
+.node .nn{width:34px;height:34px;border-radius:50%;background:var(--fill);font-size:15px;font-weight:750;display:flex;align-items:center;justify-content:center;letter-spacing:0}
+.node b{display:block;margin-top:18px;font-size:27px;font-weight:760;letter-spacing:-.035em;line-height:1.25}
+.node p{margin-top:8px;font-size:18px;color:var(--sub);line-height:1.45}
+.node.core{background:var(--ink);color:#fff}
+.node.core .nn{background:var(--accent);color:var(--ink)}
+.node.core p{color:#BFC3C9}
+.pill{position:absolute;height:52px;padding:0 22px;border-radius:999px;background:transparent;border:1.5px dashed #C5C9CF;display:flex;align-items:center;font-size:18px;color:var(--sub);font-weight:600;white-space:nowrap}
+.pill b{color:var(--ink);font-weight:700;margin-left:6px}
+.loop{position:absolute;left:0;top:400px;width:1680px;height:300px;border-radius:32px;background:var(--accent-soft)}
+.loop .lt{position:absolute;left:40px;top:28px;font-size:20px;font-weight:720;display:flex;gap:12px;align-items:center}
+.loop .lt span{color:#5D6B2E;font-weight:550}
+.step{position:absolute;top:80px;width:340px;height:126px;background:rgba(255,255,255,.86);border-radius:22px;padding:22px 26px}
+.step b{display:block;font-size:23px;font-weight:740;letter-spacing:-.03em}
+.step p{margin-top:6px;font-size:17px;color:var(--sub);line-height:1.45}
+.flab{position:absolute;font-size:16px;font-weight:600;color:var(--sub);white-space:nowrap}
+/* 8 card */
+.s8 .wrap{position:absolute;left:120px;right:120px;top:272px;bottom:100px;display:grid;grid-template-columns:300px 500px 1fr;gap:64px}
+.s8 .phone{--w:300px}
+.s8 .rules{padding-top:4px}
+.ex{display:flex;flex-direction:column;gap:10px}
+.ex h4,.rules h4{font-size:18px;color:var(--sub);font-weight:650;margin-bottom:6px}
+.exc{background:var(--surface);border-radius:18px;padding:13px 22px 15px}
+.exc small{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--sub);font-weight:600}
+.exc small i{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 1px rgba(11,11,13,.15)}
+.exc p{margin-top:4px;font-size:18px;font-weight:620;line-height:1.45;letter-spacing:-.025em;color:var(--ink)}
+.exc.quiet{background:transparent;border:1.5px dashed #C5C9CF}
+.exc.quiet p{color:var(--ink2)}
+.rules .pts{gap:26px}
+.rules .pt b{font-size:24px}
+.rules .pt p{font-size:19px}
+/* 10 insights */
+.s10 .wrap{position:absolute;left:120px;right:120px;top:276px;bottom:100px;display:grid;grid-template-columns:300px 600px 1fr;gap:56px}
+.s10 .phone{--w:300px}
+.s10 .pts{gap:20px}
+.s10 .pt b{font-size:22px}
+.s10 .pt p{font-size:18px;margin-top:3px}
+.case{background:var(--ink);color:#fff;border-radius:30px;padding:36px 38px;display:flex;flex-direction:column}
+.case small{font-size:16px;color:var(--accent);font-weight:700;letter-spacing:.01em}
+.case h3{margin-top:12px;font-size:31px;line-height:1.3;font-weight:760;letter-spacing:-.035em}
+.case h3 s{color:#8D9198;text-decoration-thickness:2px}
+.nar{list-style:none;margin-top:26px;display:flex;flex-direction:column;gap:0;position:relative}
+.nar li{position:relative;padding:0 0 22px 40px;font-size:19px;line-height:1.45;color:#D6D9DE}
+.nar li::before{content:attr(data-n);position:absolute;left:0;top:0;width:26px;height:26px;border-radius:50%;background:#2A2D32;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.nar li::after{content:"";position:absolute;left:12.5px;top:30px;bottom:4px;width:1px;background:#3A3D42}
+.nar li:last-child::after{display:none}
+.nar li em{font-style:normal;color:#9EA3AA;font-size:15px;margin-left:6px}
+.nar li.res::before{background:var(--accent);color:var(--ink)}
+.nar li.res{color:#fff;font-weight:600}
+.case .guess{margin-top:auto;padding-top:18px;border-top:1px solid #2F3237;font-size:17px;color:#BFC3C9;line-height:1.5}
+.case .guess b{color:#fff;font-weight:650}
+/* 12 data */
+.s12 .wrap{position:absolute;left:120px;right:120px;top:300px;bottom:100px;display:grid;grid-template-columns:1fr 300px 470px;gap:56px;align-items:start}
+.s12 .phone{--w:300px}
+.dcol h4{font-size:18px;color:var(--sub);font-weight:650;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.drow{display:grid;grid-template-columns:230px 1fr;gap:24px;padding:20px 0;border-top:1px solid var(--line);align-items:baseline}
+.drow:last-of-type{border-bottom:1px solid var(--line)}
+.drow b{font-size:23px;font-weight:740;letter-spacing:-.03em}
+.drow p{font-size:19px;color:var(--sub);line-height:1.5}
+.badge{display:inline-flex;align-items:center;height:28px;padding:0 12px;border-radius:999px;background:var(--fill);font-size:14px;font-weight:650;color:var(--ink2);white-space:nowrap}
+.badge.lime{background:var(--accent)}
+.status{margin-top:22px;background:var(--surface);border-radius:20px;padding:20px 24px;font-size:18px;color:var(--ink2);line-height:1.5}
+/* 13 removed */
+.s13 .grid4 .pr{min-height:262px}
+.pr .x{width:34px;height:34px;border-radius:50%;border:1.5px solid #C5C9CF;display:flex;align-items:center;justify-content:center}
+.pr .x::before{content:"";width:14px;height:2px;background:var(--sub);border-radius:2px}
+.pr .x+b{margin-top:20px}
+.s13 .more{position:absolute;left:120px;right:120px;top:886px;font-size:19px;color:var(--sub);line-height:1.6}
+.s13 .more b{color:var(--ink2);font-weight:650}
+/* 14 next */
+.s14 .wrap{position:absolute;left:120px;right:120px;top:290px;display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.col{background:var(--surface);border-radius:30px;padding:40px 44px}
+.col.dark{background:var(--ink);color:#fff}
+.col h4{font-size:19px;font-weight:700;color:var(--sub);margin-bottom:10px}
+.col.dark h4{color:var(--accent)}
+.it{padding:22px 0;border-top:1px solid var(--line)}
+.col.dark .it{border-color:#2A2D32}
+.it:first-of-type{border-top:0}
+.it b{display:block;font-size:26px;font-weight:740;letter-spacing:-.03em}
+.it p{margin-top:6px;font-size:19px;color:var(--sub);line-height:1.5}
+.col.dark .it p{color:#BFC3C9}
+.names{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.names .chip{background:#1D1F23;border-color:#33363B;color:#fff}
+.names .chip.on{background:var(--accent);color:var(--ink);border-color:var(--accent)}
+.s14 .links{position:absolute;left:120px;right:120px;top:920px;display:flex;gap:40px;font-size:18px;color:var(--sub);font-weight:550}
+.s14 .links b{color:var(--ink);font-weight:650}
+.s14 .links a{color:inherit;text-decoration:none}
+
+/* print / pdf */
+body.print{overflow:visible;background:var(--bg);height:auto}
+body.print #stage{position:static;transform:none!important;width:1920px;height:auto}
+body.print .slide{position:relative;opacity:1;visibility:visible;transform:none;transition:none;width:1920px;height:1080px;break-after:page;page-break-after:always}
+body.print #bar,body.print #nav,body.clean #bar,body.clean #nav{display:none}
+@page{size:1920px 1080px;margin:0}
+@media print{body{overflow:visible}}
+</style>
+</head>
+<body>
+<div id="stage">
+
+<!-- 1 표지 -->
+<section class="slide s1" data-t="표지">
+  <div class="glow"></div>
+  <span class="mark mk"></span>
+  <h1>밥심</h1>
+  <p class="tag">찍어 두면, 놓치면 안 될 때만<br><span class="s">한 줄로 챙겨 드려요</span></p>
+  <div class="meta"><span class="chip dark">푸드 기반 헬스케어 앱</span><span class="chip">프로토타입 v10</span><span class="chip">제품 기획 · 전체 흐름</span><span class="chip">2026년 10월</span></div>
+  <p class="url">alskapark.github.io/bapsim-prototype</p>
+  <div class="phone p2"><img src="assets/ssanghwa.webp" alt="쌍화탕과 혈압약 한 줄 카드 화면"></div>
+  <div class="phone p1"><img src="assets/card-apap.webp" alt="타이레놀과 맥주 한 줄 카드 화면"></div>
+</section>
+
+<!-- 2 문제 -->
+<section class="slide s2" data-t="문제">
+  <div class="kicker"><i></i><b>02</b> 문제</div>
+  <h2>먹는 건 매일인데,<br>놓치면 안 되는 순간은 <span class="hl">아무도 챙겨 주지 않는다</span></h2>
+  <div class="moments">
+    <div class="mo"><div class="when">감기 기운이 있던 날 저녁</div><div class="pair">타이레놀 <i>+</i> 맥주</div><p>둘 다 간에서 처리돼서, 같이 들어가면 간에 부담이 될 수 있어요.</p></div>
+    <div class="mo"><div class="when">혈압약을 먹는데 감기가 왔을 때</div><div class="pair">혈압약 <i>+</i> 쌍화탕</div><p>쌍화탕의 감초는 혈압약을 먹는 동안엔 맞지 않을 수 있어요.</p></div>
+    <div class="mo"><div class="when">아침에 영양제를 챙긴 직후</div><div class="pair">철분제 <i>+</i> 커피</div><p>커피의 탄닌이 철분과 붙어서 흡수를 줄일 수 있어요.</p></div>
+  </div>
+  <div class="bottom"><span><b>먹는 기록</b>은 귀찮아서 안 남기고</span><span><b>약 정보</b>는 먹는 것과 따로 놀고</span><span><b>건강 팁</b>은 내 상황과 상관이 없어요</span></div>
+  <div class="foot"><span>밥심 · 제품 기획</span><span>2 / 14</span></div>
+</section>
+
+<!-- 3 컨셉 -->
+<section class="slide s3" data-t="한 문장 컨셉">
+  <div class="kicker"><i></i><b>03</b> 한 문장 컨셉</div>
+  <p class="q">아무 생각 없이 먹고 마신 걸 찍어 두면,<br>내 몸 상태나 먹는 약 때문에<br><span class="hl">놓치면 안 되는 순간에만 한 줄로</span><br>챙겨 주는 앱</p>
+  <div class="filter"><small>모든 요소가 통과해야 하는 질문</small><p>이게 없으면 그 한 줄을 <b>놓치거나, 믿지 못하거나, 찍기가 귀찮아지는가?</b> <span>아니면 뺀다.</span></p></div>
+  <div class="vid"><video id="demo" src="assets/demo.mp4" poster="assets/demo-poster.jpg" muted loop playsinline preload="metadata"></video></div>
+  <p class="vcap">34초 데모 · 찍기 → 한 줄 → 닫으면 오늘은 끝</p>
+  <div class="foot"><span>밥심 · 제품 기획</span><span>3 / 14</span></div>
+</section>
+
+<!-- 4 원칙 -->
+<section class="slide s4" data-t="원칙">
+  <div class="kicker"><i></i><b>04</b> 원칙</div>
+  <h2>모든 화면과 문구가 지키는 여덟 가지</h2>
+  <div class="grid4">
+    <div class="pr key"><span class="no">01</span><b>질문하지 않기</b><p>설정이 끝나면 묻지 않아요. <em>답 안 한 질문이 쌓이면 피로</em>가 되니까요.</p></div>
+    <div class="pr"><span class="no">02</span><b>수치 쓰지 않기</b><p>칼로리·그램·점수·몸무게 없음. 숫자는 집착을 불러요. <em>가격만 예외</em>예요.</p></div>
+    <div class="pr"><span class="no">03</span><b>바꾸지 않고, 보완하기</b><p>식습관을 고치라고 하지 않아요. 먹던 그대로에서 <em>조금이라도 더 나은 방향</em>만.</p></div>
+    <div class="pr"><span class="no">04</span><b>뜬금없지 않기</b><p>모든 말은 <em>내 기록에서 추적</em>돼요. 근거 줄에 그 사진이 함께 보여요.</p></div>
+    <div class="pr"><span class="no">05</span><b>뻔한 팁 금지</b><p>"물 많이 드세요"처럼 <em>누구나 아는 말</em>은 하지 않아요. 할 말이 없으면 조용히.</p></div>
+    <div class="pr"><span class="no">06</span><b>광고처럼 보이지 않기</b><p>제품은 <em>탭한 뒤에만</em>. 특가·BEST 없이 "꼭 사지 않아도 돼요".</p></div>
+    <div class="pr"><span class="no">07</span><b>한약·영양제도 똑같이</b><p>쌍화탕도 철분제도 커피와 <em>같은 카드 형식</em>. 특별 대우하지 않아요.</p></div>
+    <div class="pr"><span class="no">08</span><b>겸손하게 말하기</b><p>"~일 수 있어요", "조금이라도 도움이 될 수 있어요". <em>진단하지 않아요.</em></p></div>
+  </div>
+  <div class="foot"><span>밥심 · 제품 기획</span><span>4 / 14</span></div>
+</section>
+
+<!-- 5 전체 동선 -->
+<section class="slide s5" data-t="전체 동선">
+  <div class="kicker"><i></i><b>05</b> 전체 동선</div>
+  <h2>할 일은 찍는 것 하나, 나머지는 밥심이 조용히</h2>
+  <div class="flow">
+    <svg viewBox="0 0 1680 720" width="1680" height="720" aria-hidden="true">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#0B0B0D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+      <marker id="ahg" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#7A8A3A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+      <g stroke="#0B0B0D" stroke-width="2" fill="none" stroke-linecap="round">
+        <path d="M296 130 H340" marker-end="url(#ah)"/><path d="M644 130 H688" marker-end="url(#ah)"/><path d="M992 130 H1036" marker-end="url(#ah)"/><path d="M1340 130 H1384" marker-end="url(#ah)"/>
+      </g>
+      <g stroke="#B9BEC5" stroke-width="2" fill="none" stroke-dasharray="5 7" stroke-linecap="round">
+        <path d="M840 236 V290"/><path d="M1536 236 V290"/>
+      </g>
+      <g stroke="#7A8A3A" stroke-width="2" fill="none" stroke-linecap="round">
+        <path d="M492 236 V392" marker-end="url(#ahg)"/>
+        <path d="M418 543 H462" marker-end="url(#ahg)"/><path d="M818 543 H862" marker-end="url(#ahg)"/><path d="M1218 543 H1262" marker-end="url(#ahg)"/>
+        <path d="M1440 610 V650 Q1440 668 1422 668 H258 Q240 668 240 650 V614" marker-end="url(#ahg)"/>
+      </g>
+    </svg>
+    <div class="node" style="left:0"><span class="nn">1</span><b>찍기</b><p>앱 셔터 · 알림창 위젯 셔터 · 연필로 몸 상태 한 줄</p></div>
+    <div class="node" style="left:348px"><span class="nn">2</span><b>자동 인식 · 조용히 저장</b><p>'확인 중' → 이름표. 토스트도 질문도 없음</p></div>
+    <div class="node core" style="left:696px"><span class="nn">3</span><b>겹칠 때만 한 줄</b><p>내 약·몸 상태와 겹칠 때만. 하루 최대 하나</p></div>
+    <div class="node" style="left:1044px"><span class="nn">4</span><b>탭하면 이유 · 대안</b><p>이유 한 단락, 대신 이렇게, 제품은 접힌 채로</p></div>
+    <div class="node" style="left:1392px"><span class="nn">5</span><b>오늘까지 후 사라짐</b><p>쌓이는 목록 없음. 다음 날이면 사라져요</p></div>
+    <div class="pill" style="left:630px;top:290px;width:420px;justify-content:center">안 겹치면<b>“오늘은 챙길 게 없어요”</b></div>
+    <div class="pill" style="left:1312px;top:290px;width:368px;justify-content:center">닫으면<b>같은 종류 3일 조용</b></div>
+    <div class="flab" style="left:330px;top:300px;color:#5D6B2E">기록·메모가 쌓이면</div>
+    <div class="loop">
+      <div class="lt">나에 대해 알게 된 것 <span>· 몇 주에 걸쳐 천천히 도는 두 번째 고리</span></div>
+      <div class="step" style="left:70px"><b>기록 · 메모 쌓임</b><p>사진 + 불편·좋았던 날 칩</p></div>
+      <div class="step" style="left:470px"><b>2번 이상 같은 겹침</b><p>우연 한 번은 패턴이 아니에요</p></div>
+      <div class="step" style="left:870px"><b>한 문장으로 적어 둠</b><p>‘~였어요’ · 원인이라 단정하지 않음</p></div>
+      <div class="step" style="left:1270px;background:#fff"><b>원하면 며칠만 확인</b><p>빼보기 · 더 먹어보기 · 종류 바꾸기</p></div>
+      <div class="flab" style="left:840px;top:268px;transform:translate(-50%,-50%);background:var(--accent-soft);padding:0 14px;color:#5D6B2E">결과는 조용히 카드에 반영되고, 다시 기록으로</div>
+    </div>
+  </div>
+  <div class="foot"><span>밥심 · 제품 기획</span><span>5 / 14</span></div>
+</section>
+
+<!-- 6 처음 열기 -->
+<section class="slide s6" data-t="처음 열기와 설정">
+  <div class="kicker"><i></i><b>06</b> 처음 열기와 설정</div>
+  <h2>3초 안에 가치가 보이고, 설정은 한 장</h2>
+  <div class="feat">
+    <div class="pts">
+      <div class="pt"><span class="k">1</span><b>스플래시 없이 소개 3장</b><p>실제 순간 하나로 설명해요. <em>타이레놀 → 맥주 → 한 줄 카드.</em> 2장 ‘찍어 두기만 하세요’, 3장 ‘내 약과 몸에 맞춰서’.</p></div>
+      <div class="pt"><span class="k">2</span><b>약과 몸 상태는 칩으로</b><p>혈압약·고지혈증약·타이레놀·감기약·아스피린·와파린·철분제·항생제. 칩마다 <em>실제 상호작용 규칙</em>과 연결돼요.</p></div>
+      <div class="pt"><span class="k">3</span><b>비워 둬도 되는 버튼</b><p>아무것도 안 고르면 <em>‘나중에 할게요’</em>, 하나라도 고르면 ‘완료’. 샘플 기록으로 바로 둘러볼 수도 있어요.</p></div>
+      <div class="pt"><span class="k">4</span><b>이 휴대폰에만 저장돼요</b><p>약 정보는 민감해서 자물쇠와 함께 한 줄로 약속해요. 알레르기는 뺐어요. 본인이 이미 알고, 사진으로는 못 잡아요.</p></div>
+    </div>
+    <div class="phones">
+      <div class="ph"><div class="phone"><img src="assets/intro1.webp" alt=""></div><span class="cap"><span class="n">1</span>소개 · 타이레놀 + 맥주</span></div>
+      <div class="ph"><div class="phone"><img src="assets/intro3.webp" alt=""></div><span class="cap"><span class="n">2</span>소개 · 내 약에 맞춰서</span></div>
+      <div class="ph"><div class="phone"><img src="assets/setup.webp" alt=""></div><span class="cap"><span class="n">3</span>설정 · 약 칩 선택</span></div>
+    </div>
+  </div>
+  <div class="foot"><span>밥심 · 제품 기획</span><span>6 / 14</span></div>
+</section>
+
+<!-- 7 찍기와 인식 -->
+<section class="slide s7" data-t="찍기와 인식">
+  <div class="kicker"><i></i><b>07</b> 찍기와 인식</div>
+  <h2>찍으면 아무것도 뜨지 않는다. 알아보는 건 앱의 일</h2>
+  <div class="feat">
+    <div class="pts">
+      <div class="pt"><span class="k">1</span><b>큰 셔터 하나</b><p>엄지가 닿는 하단 중앙, 유일한 주 동작이에요. 기본 카메라라 <em>따로 권한을 묻지 않아요.</em></p></div>
+      <div class="pt"><span class="k">2</span><b>‘확인 중’ → 자동 이름표</b><p>썸네일에 작은 ‘확인 중’이 깜빡이다 약 1초 뒤 ‘타이레놀’로 바뀌어요. <em>토스트도, 고르기 트레이도 없어요.</em></p></div>
+      <div class="pt"><span class="k">3</span><b>확실하지 않으면 이름표 없음</b><p>틀린 이름표가 틀린 한 줄을 만들어요. 그래도 <em>묻지 않아요.</em></p></div>
+      <div class="pt"><span class="k">4</span><b>고치는 건 사진을 눌렀을 때만</b><p>이 사진의 <em>후보 2~3개 + 직접 적기</em>. 직접 적은 이름도 글자에서 성질(카페인·유제품 등)을 찾아 써요.</p></div>
+      <p class="note">프로토타입은 서버 없이 모의 인식(파일 이름 단서, 샘플 이름표). 실제 서비스에선 이미지 인식 모델이 들어가요.</p>
+    </div>
+    <div class="phones">
+      <div class="ph"><div class="phone"><img src="assets/recognizing.webp" alt=""></div><span class="cap"><span class="n">1</span>찍은 직후 · 확인 중</span></div>
+      <div class="ph"><div class="phone"><img src="assets/recognized.webp" alt=""></div><span class="cap"><span class="n">2</span>자동 이름표</span></div>
+      <div class="ph"><div class="phone"><img src="assets/picker.webp" alt=""></div><span class="cap"><span class="n">3</span>눌러서 바꾸기</span></div>
+    </div>
+  </div>
+  <div class="foot"><span>밥심 · 제품 기획</span><span>7 / 14</span></div>
+</section>
+
+<!-- 8 한 줄 카드 -->
+<section class="slide s8" data-t="한 줄 카드">
+  <div class="kicker"><i></i><b>08</b> 한 줄 카드</div>
+  <h2>겹칠 때만, 하루 하나, 오늘까지</h2>
+  <div class="wrap">
+    <div class="ph"><div class="phone"><img src="assets/card-apap.webp" alt=""></div><span class="cap">타이레놀 + 맥주 · 오늘까지</span></div>
+    <div class="rules"><h4>카드 규칙</h4>
+      <div class="pts">
+        <div class="pt"><span class="k">1</span><b>근거 줄 + 썸네일</b><p>“오늘 · 타이레놀 + 맥주”와 그 사진. 왜 지금 이 말을 하는지 바로 보여요.</p></div>
+        <div class="pt"><span class="k">2</span><b>하루 최대 하나, 질문 아님</b><p>본문은 한 줄 서술. 답할 필요가 없어서 쌓이지 않아요.</p></div>
+        <div class="pt"><span class="k">3</span><b>자세한 건 탭한 뒤에만</b><p>‘이유와 대안 보기’ → 이유 한 단락, 대신 이렇게, 접힌 제품 비교.</p></div>
+        <div class="pt"><span class="k">4</span><b>오늘까지, 닫으면 3일 조용</b><p>닫으면 그날은 끝, 같은 종류는 3일 동안 안 떠요. 그냥 둬도 다음 날 사라져요.</p></div>
+      </div>
+    </div>
+    <div class="ex"><h4>실제 문구 예시</h4>
+      <div class="exc"><small><i></i>오늘 · 타이레놀 + 맥주</small><p>타이레놀 먹은 날 맥주예요. 같이 들어가면 간에 부담이 될 수 있어서, 오늘 술은 여기까지가 좋아요.</p></div>
+      <div class="exc"><small><i></i>오늘 · 쌍화탕 + 혈압약</small><p>쌍화탕엔 감초가 들어 있어요. 혈압약을 드시는 동안엔 맞지 않을 수 있어서, 생강차나 대추차가 나아요.</p></div>
+      <div class="exc"><small><i></i>오늘 · 자몽주스 + 혈압약</small><p>자몽은 일부 혈압약의 효과를 세게 만들 수 있어요. 약을 드시는 동안엔 다른 과일 주스가 나아요.</p></div>
+      <div class="exc"><small><i></i>오늘 · 철분제 + 커피</small><p>철분제 먹은 날 커피도 있었어요. 둘 사이에 시간 차를 두면 철분이 조금 더 잘 흡수될 수 있어요.</p></div>
+      <div class="exc"><small><i></i>오늘 · 어젯밤 맥주</small><p>어젯밤 맥주 기록이 있어요. 오늘 오전엔 물을 평소보다 몇 잔 더 마시면 조금 편할 수 있어요.</p></div>
+      <div class="exc quiet"><small>조용한 날</small><p>오늘은 챙길 게 없어요 · 계속 찍어 두세요. 필요할 때만 알려 드릴게요.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>밥심 · 제품 기획</span><span>8 / 14</span></div>
+</section>
+
+<!-- 9 위젯과 메모 칩 -->
+<section class="slide s9" data-t="알림창 위젯과 메모 칩">
+  <div class="kicker"><i></i><b>09</b> 알림창 위젯과 메모 칩</div>
+  <h2>앱을 열지 않아도, 알림창에서 셔터 한 번</h2>
+  <div class="feat wide">
+    <div class="pts">
+      <div class="pt"><span class="k">1</span><b>가장 가까운 입구</b><p>하루에 수십 번 내려 보는 알림창. One UI 진행 중 알림처럼 <em>어두운 알약 카드</em>라 광고처럼 튀지 않아요.</p></div>
+      <div class="pt"><span class="k">2</span><b>기본은 ‘찍어 두기만 하세요’</b><p>할 말이 없으면 꾸며 내지 않아요. 한 줄이 있는 날만 <em>근거 + 짧은 한 줄</em>로 바뀌고, 누르면 이유 시트가 열려요.</p></div>
+      <div class="pt"><span class="k">3</span><b>셔터를 길게 누르면 메모 칩</b><p>불편(변비·설사·가스·소화 불편·뾰루지·두통·피곤)과 <em>좋았던 날</em>(속 편함·개운함·피부 좋음)을 같은 무게로.</p></div>
+      <div class="pt"><span class="k">4</span><b>자주 쓰는 순 · 직접 적기 · 음성</b><p>내 칩이 앞에 와요. 숫자·진행률·연속 기록, 몸무게는 뺐어요.</p></div>
+    </div>
+    <div class="phones">
+      <div class="ph"><div class="phone"><img src="assets/widget-note.webp" alt=""></div><span class="cap"><span class="n">1</span>한 줄이 있는 날</span></div>
+      <div class="ph"><div class="phone"><img src="assets/widget-longpress.webp" alt=""></div><span class="cap"><span class="n">2</span>기본 · 길게 누르기</span></div>
+      <div class="ph"><div class="phone"><img src="assets/composer.webp" alt=""></div><span class="cap"><span class="n">3</span>앱 안 메모 칩</span></div>
+    </div>
+  </div>
+  <div class="foot"><span>밥심 · 제품 기획</span><span>9 / 14</span></div>
+</section>
+
+<!-- 10 나에 대해 알게 된 것 -->
+<section class="slide s10" data-t="나에 대해 알게 된 것">
+  <div class="kicker"><i></i><b>10</b> 나에 대해 알게 된 것</div>
+  <h2>기록 목록이 아니라, 겹쳐 보인 것만 한 문장씩</h2>
+  <div class="wrap">
+    <div class="ph"><div class="phone"><img src="assets/insights.webp" alt=""></div><span class="cap">지켜보는 것: 속 불편</span></div>
+    <div class="pts">
+      <div class="pt"><span class="k">1</span><b>2번 이상 겹칠 때만</b><p>직접 적은 메모가 매번 같은 무리와 겹칠 때. 우연 한 번은 말하지 않아요.</p></div>
+      <div class="pt"><span class="k">2</span><b>인과를 단정하지 않기</b><p>‘~였어요’로만. 맨 아래 한 번, “기록이 겹쳤다는 뜻일 뿐, 원인을 뜻하지 않아요.”</p></div>
+      <div class="pt"><span class="k">3</span><b>몸 부위별 묶음</b><p>배·소화 / 피부 / 잠·기운 / 몸 / 약(챙겼던 조합은 옅은 라임으로 구분).</p></div>
+      <div class="pt"><span class="k">4</span><b>지켜보는 건 하나</b><p>불편 중 빈도 × 영향 + 최근성으로 하나만. 여러 개를 쫓으면 아무것도 안 가려져요.</p></div>
+      <div class="pt"><span class="k">5</span><b>사진으로 알 수 있는 것만</b><p>기름짐·유제품·카페인·탄산·술·매움·단맛 + 커피 종류(라떼·아메리카노·필터·디카페인). 영양소는 안 봐요.</p></div>
+      <div class="pt"><span class="k">6</span><b>며칠만 확인해 보기 → 결과 3종</b><p>빼보기·더 먹어보기·종류 바꾸기. 결과는 <em>확인됨 · 비슷함 · 계속 먹었음</em>. 진행은 점 일곱 개, 숫자 없음.</p></div>
+    </div>
+    <div class="case">
+      <small>대표 사례 · 커피</small>
+      <h3>믿었던 <s>카페인·수면</s>이 아니라, 커피 기름 → 소화</h3>
+      <ol class="nar">
+        <li data-n="1">피곤하고 속이 불편했던 날은 매번 커피가 있던 날이었어요.</li>
+        <li data-n="2">그날들 잠은 평소와 비슷했어요. <em>건강 데이터</em></li>
+        <li data-n="3">커피 없이 카페인만 있던 날(에너지 드링크)엔 피곤·속 불편 기록이 없었어요.</li>
+        <li data-n="4">‘필터 커피로만 며칠’ — 끊기가 아니라 종류만 바꿔 보기</li>
+        <li data-n="✓" class="res">직접 확인했어요 · 필터 커피로 바꾼 주에는 피곤함과 속 불편이 줄었어요.</li>
+      </ol>
+      <p class="guess"><b>조심스러운 추측까지만:</b> 카페인보다는 종이 필터에 걸러지는 커피 기름 성분이 맞지 않았을 수도 있어요. 커피는 그대로, 종류만 바꿔도 돼요.</p>
+    </div>
+  </div>
+  <div class="foot"><span>밥심 · 제품 기획</span><span>10 / 14</span></div>
+</section>
+
+<!-- 11 제품과 가격 -->
+<section class="slide s11" data-t="제품과 가격">
+  <div class="kicker"><i></i><b>11</b> 제품과 가격</div>
+  <h2>사고 싶은 사람에게만, 가장 싼 확인된 곳을</h2>
+  <div class="feat wide">
+    <div class="pts">
+      <div class="pt"><span class="k">1</span><b>탭 뒤에만, 같은 종류 2~3개</b><p>‘이유와 대안’ 안의 ‘제품으로 고른다면’을 펼친 사람만. 예) A사·B사 드립백, C사 필터+원두. <em>“꼭 사지 않아도 돼요.”</em></p></div>
+      <div class="pt"><span class="k">2</span><b>판매처 가격 범위 바</b><p>최저~최고를 한 막대에. 라임 점은 <em>확인된 곳 중 가장 싼 곳</em>, 더 싸도 확인 안 된 곳은 회색. 정품 확인이 가격보다 먼저예요.</p></div>
+      <div class="pt"><span class="k">3</span><b>가장 싼 곳 ↔ 가장 비싼 곳 나란히</b><p>차이를 바로 보게, 어느 쪽도 권하지 않아요. 링크는 확인된 가장 싼 곳 하나만.</p></div>
+      <div class="pt"><span class="k">4</span><b>3개월 그래프 · 내려가면 한 줄</b><p>“지금이 최근 최저가에 가까워요.” 지켜보기를 켜면 다른 한 줄이 없는 날에만 알려요. 숫자는 <em>가격만 예외</em>.</p></div>
+      <p class="note">모든 제품·가격은 예시 데이터예요.</p>
+    </div>
+    <div class="phones">
+      <div class="ph"><div class="phone"><img src="assets/products.webp" alt=""></div><span class="cap"><span class="n">1</span>범위 바 · 나란히</span></div>
+      <div class="ph"><div class="phone"><img src="assets/price-chart.webp" alt=""></div><span class="cap"><span class="n">2</span>3개월 가격 그래프</span></div>
+      <div class="ph"><div class="phone"><img src="assets/price-note.webp" alt=""></div><span class="cap"><span class="n">3</span>가격이 내려간 날</span></div>
+    </div>
+  </div>
+  <div class="foot"><span>밥심 · 제품 기획</span><span>11 / 14</span></div>
+</section>
+
+<!-- 12 데이터 -->
+<section class="slide s12" data-t="데이터">
+  <div class="kicker"><i></i><b>12</b> 데이터</div>
+  <h2>한 줄의 근거는 공식 데이터, 건강 데이터는 배경으로만</h2>
+  <div class="wrap">
+    <div class="dcol">
+      <h4>약과 겹침 · 식약처 공식 데이터 <span class="badge">연동 예정</span></h4>
+      <div class="drow"><b>DUR 병용금기</b><p>같이 쓰면 안 되는 약 조합. 약 + 약 한 줄의 1차 근거.</p></div>
+      <div class="drow"><b>e약은요</b><p>‘이 약을 사용하는 동안 주의해야 할 약 또는 음식’ 문장. 음식·술과의 겹침을 찾는 곳.</p></div>
+      <div class="drow"><b>의약품 허가정보</b><p>성분·주의사항 원문. 제품 이름을 성분으로 풀어요.</p></div>
+      <div class="drow"><b>의약품 낱알식별</b><p>모양·색·각인. 알약 사진을 알아보는 단서.</p></div>
+      <div class="drow"><b>그 밖의 공개 데이터</b><p>스크래핑으로 보강 예정.</p></div>
+      <p class="status">지금 프로토타입은 손으로 쓴 예시 규칙이에요. 모든 문구는 <b>약사 검수 전</b>이고, 시트마다 “진단·처방이 아닌 일반 정보예요”를 둬요.</p>
+    </div>
+    <div class="ph"><div class="phone"><img src="assets/health.webp" alt=""></div><span class="cap">설정 · 건강 데이터 연결</span></div>
+    <div class="pts">
+      <div class="pt"><span class="k">1</span><b>Health Connect · Apple 건강</b><p>수면·심박·활동(걸음 수)만 읽어요. <em>몸무게는 제외.</em> 설정 안의 선택 한 줄, 첫 화면엔 없어요.</p></div>
+      <div class="pt"><span class="k">2</span><b>배경으로만 써요</b><p>숫자·대시보드 없이 출처만. “이런 날이기도 했어요: 잠이 짧았던 날.”</p></div>
+      <div class="pt"><span class="k">3</span><b>원인을 가리지 못해요</b><p>잠과 겹쳤는지는 단정하지 않아요. 수면만으로는 한 줄을 띄우지 않아요(습관 교정이 되니까요).</p></div>
+      <div class="pt"><span class="k">4</span><b>읽기만, 휴대폰 밖으로 안 보냄</b><p>권한 화면에서 그대로 약속해요.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>밥심 · 제품 기획</span><span>12 / 14</span></div>
+</section>
+
+<!-- 13 일부러 뺀 것 -->
+<section class="slide s13" data-t="일부러 뺀 것">
+  <div class="kicker"><i></i><b>13</b> 일부러 뺀 것과 이유</div>
+  <h2>없어서 아쉬운 게 아니라, 일부러 뺀 것</h2>
+  <div class="grid4">
+    <div class="pr"><span class="x"></span><b>채팅 · 질문 흐름</b><p>답 안 한 질문이 쌓여 피로가 돼요. 한 문장 컨셉과도 무관해요.</p></div>
+    <div class="pr"><span class="x"></span><b>칼로리 · 영양 수치</b><p>숫자는 집착을 부르고, 앱이 식단 관리 앱으로 변해요.</p></div>
+    <div class="pr"><span class="x"></span><b>몸무게</b><p>숫자로 재는 항목이라 컨셉 밖. 메모 칩에서도 뺐어요.</p></div>
+    <div class="pr"><span class="x"></span><b>찍자마자 식단 분석</b><p>찍을 때마다 뭔가 뜨면 찍기가 귀찮아져요. 찍은 직후엔 아무것도 안 떠요.</p></div>
+    <div class="pr"><span class="x"></span><b>선물</b><p>‘놓치면 안 되는 순간’과 상관없고, 쇼핑 앱처럼 보여요.</p></div>
+    <div class="pr"><span class="x"></span><b>매일 팁 · 자동 카드</b><p>할 말이 없는데 채우면 뻔한 건강 상식이 돼요. 잔소리 → 알림 끔.</p></div>
+    <div class="pr"><span class="x"></span><b>병원 · 상담 연계</b><p>서버 없이는 가짜 버튼이고, 진단처럼 오해받아요. 컨셉과도 거리가 있어요.</p></div>
+    <div class="pr"><span class="x"></span><b>맛집 추천</b><p>내 약·몸과 겹치는 순간이 아니에요. 광고처럼 보이기 쉬워요.</p></div>
+  </div>
+  <p class="more"><b>그 밖에 뺀 것</b> · 찍을 때마다 뜨는 이름표 고르기 트레이 · 탭 메뉴·통계·점수 · 알레르기 입력 · 연속 기록·진행률 · 위젯의 닫기/더 보기 버튼 · 수면만으로 뜨는 한 줄</p>
+  <div class="foot"><span>밥심 · 제품 기획</span><span>13 / 14</span></div>
+</section>
+
+<!-- 14 다음 단계 -->
+<section class="slide s14" data-t="다음 단계와 열린 질문">
+  <div class="kicker"><i></i><b>14</b> 다음 단계와 열린 질문</div>
+  <h2>프로토타입에서 실제 서비스로</h2>
+  <div class="wrap">
+    <div class="col"><h4>다음 단계</h4>
+      <div class="it"><b>실제 이미지 인식</b><p>모의 인식을 모델로. 상위 후보 2~3개가 그대로 ‘바꾸기’ 후보가 돼요.</p></div>
+      <div class="it"><b>공식 데이터 연동 · 약사 검수</b><p>식약처 DUR·e약은요·허가정보·낱알식별을 붙이고, 모든 문구를 약사가 검수해요.</p></div>
+      <div class="it"><b>네이티브 위젯</b><p>지금은 웹 목업. Android 진행 중 알림과 셔터, 길게 누르기 메모 칩을 실제로.</p></div>
+    </div>
+    <div class="col dark"><h4>열린 질문</h4>
+      <div class="it"><b>지켜보는 것을 직접 바꾸게 할까?</b><p>지금은 빈도·영향·최근성으로 자동으로 하나만 골라요. 사용자가 직접 바꿀 수 있게 할지 정해야 해요.</p></div>
+      <div class="it"><b>컨디션 원탭 실험</b><p>질문 없이 한 번 탭으로 컨디션을 남기게 하면 겹침이 더 빨리 보일까?</p></div>
+      <div class="it"><b>앱 이름</b><p>지금 이름은 밥심. 후보 모두 상표 검색이 필요해요.</p>
+        <div class="names"><span class="chip">끼적끼적</span><span class="chip">대충끼</span><span class="chip">먹은김에</span></div></div>
+    </div>
+  </div>
+  <div class="links"><span><b>프로토타입</b> <a href="../">alskapark.github.io/bapsim-prototype</a></span><span><b>이 문서</b> <a href="./">…/bapsim-prototype/deck</a></span></div>
+  <div class="foot"><span>밥심 · 제품 기획</span><span>14 / 14</span></div>
+</section>
+
+</div>
+<div id="bar"></div>
+<div id="nav"><button id="pv" aria-label="이전">‹</button><span id="cnt"></span><button id="nx" aria-label="다음">›</button></div>
+<script>
+(() => {
+  const S = [...document.querySelectorAll('.slide')], st = document.getElementById('stage');
+  const print = /[?&]print/.test(location.search);
+  if (print) { document.body.classList.add('print'); return; }
+  if (/[?&]clean/.test(location.search)) document.body.classList.add('clean');
+  let i = 0;
+  const fit = () => { const s = Math.min(innerWidth / 1920, innerHeight / 1080); st.style.transform = `translate(-50%,-50%) scale(${s})`; st.style.transformOrigin = '50% 50%'; };
+  const v = document.getElementById('demo');
+  const go = n => {
+    n = Math.max(0, Math.min(S.length - 1, n)); i = n;
+    S.forEach((s, k) => { s.classList.toggle('on', k === n); s.classList.toggle('prev', k < n); s.setAttribute('aria-hidden', k !== n); });
+    document.getElementById('bar').style.width = ((n + 1) / S.length * 100) + '%';
+    document.getElementById('cnt').textContent = `${n + 1} / ${S.length}`;
+    document.title = `${n + 1}. ${S[n].dataset.t} — 밥심`;
+    if (location.hash !== '#' + (n + 1)) history.replaceState(null, '', '#' + (n + 1));
+    if (v) { if (S[n].contains(v)) v.play().catch(() => {}); else v.pause(); }
+  };
+  addEventListener('resize', fit); fit();
+  addEventListener('keydown', e => {
+    if (['ArrowRight','ArrowDown','PageDown',' ','Enter'].includes(e.key)) { e.preventDefault(); go(i + 1); }
+    else if (['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(e.key)) { e.preventDefault(); go(i - 1); }
+    else if (e.key === 'Home') go(0); else if (e.key === 'End') go(S.length - 1);
+  });
+  let x0 = null, y0 = 0;
+  addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+  addEventListener('touchend', e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) go(i + (dx < 0 ? 1 : -1)); x0 = null; }, { passive: true });
+  document.getElementById('pv').onclick = () => go(i - 1);
+  document.getElementById('nx').onclick = () => go(i + 1);
+  addEventListener('hashchange', () => { const n = parseInt(location.hash.slice(1)) - 1; if (!isNaN(n) && n !== i) go(n); });
+  const h = parseInt(location.hash.slice(1)); go(isNaN(h) ? 0 : h - 1);
+})();
+</script>
+</body>
+</html>

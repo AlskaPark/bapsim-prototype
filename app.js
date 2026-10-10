@@ -63,9 +63,9 @@ const hasMed = re => re.test([...S.profile.meds, S.profile.other].join(' '));
 
 // ---- 샘플 일주일 ----
 const SAMPLE = { meds:['혈압약'], shortSleep:[12,6,4], log:[
-  [13,'latte','09:00'],[13,'n','피곤'],[13,'n','커피 마시고 속이 불편함'],[13,'salad','12:40'],[12,'americano','08:30'],[12,'energy','15:40'],[12,'n','다리에 쥐 났음'],
+  [13,'latte','09:00'],[13,'n','피곤'],[13,'n','커피 마시고 속이 불편함'],[13,'salad','12:40'],[13,'n','개운함'],[5,'salad','12:30'],[5,'n','개운함'],[12,'americano','08:30'],[12,'energy','15:40'],[12,'n','다리에 쥐 났음'],
   [11,'chicken','20:00'],[9,'yogurt','08:10'],[9,'n','속 편함'],[9,'cola','21:00'],[8,'n','아침에 배에 가스 참'],[8,'snack','16:00'],[7,'samgyeop','12:30'],[7,'n','소화가 잘 안 됨'],[6,'n','턱에 뾰루지'],[11,'soju','21:30'],[10,'n','속이 더부룩함'],[10,'latte','10:00'],[10,'n','피곤'],[10,'n','커피 마시고 속이 불편함'],[9,'ramen','13:00'],[8,'americano','09:10'],[8,'n','피곤'],[11,'energy','15:00'],[7,'tofu','19:00'],
-  [6,'filter','08:40'],[6,'dosirak','12:30'],[6,'energy','16:10'],
+  [6,'filter','08:40'],[6,'iron','09:00'],[6,'dosirak','12:30'],[6,'energy','16:10'],
   [5,'yogurt','08:00'],[5,'n','속 편함'],[5,'filter','08:50'],[5,'banana','15:20'],[5,'n','다리에 쥐 났음'],
   [4,'filter','09:00'],[4,'onigiri','13:10'],[4,'energy','17:00'],
   [3,'tylenol','09:10'],[3,'pizza','20:10'],[3,'beer','21:00'],
@@ -80,7 +80,7 @@ function loadSample(){ S.entries = S.entries.filter(e => !e.sample).concat(SAMPL
   S.checks = {
     coffee: { mode:'swap', what:'커피', variant:'필터 커피', start: D(7), sample:true, result:'yes', line:'필터 커피로 바꾼 주에는 피곤함과 속 불편이 줄었어요.', health:'잠은 평소와 비슷했어요.', guess:'카페인보다는 종이 필터에 걸러지는 커피 기름 성분이 맞지 않았을 수도 있어요. 커피는 그대로, 종류만 바꿔도 돼요.' },
     gas: { mode:'avoid', what:'탄산', start: D(2), sample:true },
-    skin: { mode:'avoid', what:'단 것', start: D(27), sample:true, result:'same', line:'단 것을 빼봐도 비슷했어요. 단 것 때문은 아닌 것 같아요.' },
+    fresh: { mode:'more', what:'채소', start: D(27), sample:true, result:'same', line:'채소를 며칠 더 먹어봐도 비슷했어요. 채소 때문은 아닌 것 같아요.' },
     oily: { mode:'avoid', what:'기름진 음식', start: D(24), sample:true, result:'kept', line:'확인하는 동안에도 기름진 음식이 있었어요. 그래서 이번엔 판단하지 않을게요.' },
   }; S.dismissed = []; S.view = 0; save(); }
 const clearSample = () => { S.entries = S.entries.filter(e => !e.sample); S.sample = false; if (S.checks) for (const k in S.checks) if (S.checks[k].sample) delete S.checks[k]; if (S.health && S.health.sample) S.health = null; save(); };
@@ -102,8 +102,8 @@ function pick(){
     alts:[['물이나 꿀물','오늘 남은 저녁은 이쪽이 편해요'],['따뜻한 국물','속을 편하게 하는 데 조금이라도 도움이 될 수 있어요']] });
   const lic = [...on(t,'licorice'), ...on(y,'licorice')];
   if (lic.length && htn) C.push({ id:'lic', src:lic.slice(-1), pair:`${lic.at(-1).text} + 혈압약`,
-    msg:'쌍화탕엔 감초가 들어 있어요. 혈압약을 드시는 동안은 맞지 않을 수 있어서, 생강차나 대추차가 나아요.',
-    short:'쌍화탕 감초는 혈압약과 안 맞을 수 있어요', title:'쌍화탕과 혈압약', why:'감초 성분(글리시리진)은 몸에 나트륨과 물을 붙잡아 두는 쪽으로 작용할 수 있어요. 그래서 혈압약을 먹는 동안에는 감초가 든 차·탕을 피하라고 안내하는 경우가 많아요.', q:'감기 기운 있어요' });
+    msg:'쌍화탕엔 감초가 들어 있어요. 혈압약을 드시는 동안은 맞지 않을 수 있어요. 오늘은 따뜻한 물이면 충분해요.',
+    short:'쌍화탕 감초는 혈압약과 안 맞을 수 있어요', title:'쌍화탕과 혈압약', why:'감초 성분(글리시리진)은 몸에 나트륨과 물을 붙잡아 두는 쪽으로 작용할 수 있어요. 그래서 혈압약을 먹는 동안에는 감초가 든 차·탕을 피하라고 안내하는 경우가 많아요.', q:'감기 기운 있어요', srcs:'감초 성분과 혈압: 식약처 의약품 허가사항(감초 함유 제제 사용상 주의), 글리시리진 섭취와 혈압 체계적 문헌고찰(Penninkilampi 등, 2017)' });
   const gf = [...on(t,'grapefruit'), ...on(y,'grapefruit')];
   if (gf.length && (htn || lipid)) C.push({ id:'gf', src:gf.slice(-1), pair:`자몽주스 + ${lipid ? '고지혈증약' : '혈압약'}`,
     msg:`자몽은 일부 ${lipid ? '고지혈증약' : '혈압약'}의 효과를 세게 만들 수 있어요. 약을 드시는 동안엔 다른 과일 주스가 나아요.`,
@@ -189,12 +189,14 @@ function detail(n){
   let items = (n.alts || []).map(([a,b]) => ({ name:a, text:b }));
   let cmp = '';
   if (n.q) { const r = E.answer(n.q, profile(), { recentEntries: [] });
-    for (const g of r.groups || []) for (const i of g.items) { if (i.note) continue; items.push({ name:i.name, text: g.kind === 'food' ? i.effect : i.claim, v: i.variants }); }
+    for (const g of r.groups || []) for (const i of g.items) { if (i.note) continue; items.push({ name:i.name, text: g.kind === 'food' ? i.effect : i.claim + (/허가사항/.test(i.claim||'') ? ' · 출처: 식약처 의약품 허가사항' : ''), v: i.variants }); }
     items = items.slice(0, 4); }
   const body = items.map(i => `<div class="it"><b>${esc(i.name)}</b><span>${esc(i.text)}</span>${i.v ? variants(i.v) : ''}</div>`).join('');
   sheet(`<div class="s-eyebrow">${esc(n.pair)}</div><h2 class="s-title">${esc(n.title)}</h2>
     <div class="s-sec"${why('근거 없는 경고는 믿지 않아요. 왜 그런지 한 단락으로만.')}><h4>이유</h4><p>${esc(n.why)}</p></div>
     ${body ? `<div class="s-sec"${why('경고로 끝내지 않고, 지금 할 수 있는 작은 대안. 음식·차·제품 모두 같은 형식이고 범주 표시가 없어요.')}><h4>대신 이렇게</h4>${body}</div>` : ''}
+    ${(() => { const cs = CURATE.filter(c => c.on === n.id); return cs.length ? `<div class="cur">${cs.map(c => `<p>${esc(c.food)}</p><button class="pr-open" data-p="${esc(c.key)}">${esc(PRODUCTS[c.key].title.split(' · ')[0])} 제품 보기<i data-lucide="chevron-right"></i></button>`).join('')}</div>` : ''; })()}
+    ${n.srcs ? `<p class="src"${why('생약·한약 관련 내용은 현대 근거(허가사항·임상·체계적 문헌고찰)가 있을 때만 쓰고, 출처를 한 줄로 남겨요. 고전 문헌이나 \'전통적으로\'는 근거로 쓰지 않아요.')}>근거: ${esc(n.srcs)}</p>` : ''}
     <p class="disc">진단이나 처방이 아닌 일반 정보예요. 문구는 예시이며 약사 검수 전이에요. 약에 대해서는 약사·의사의 안내를 따라 주세요.</p>`);
   notesRefresh();
 }
@@ -268,7 +270,7 @@ function intro(again){
    <section class="slide"${why('다음 화면에서 약을 묻는 이유를 미리 보여 줘요. 설정이 설문처럼 느껴지지 않게.')}><div class="viz">
       <span class="chipviz" style="left:20px;top:20px;animation-delay:.1s"><i data-lucide="pill"></i>혈압약</span>
       <div class="ph" style="right:28px;top:12px;--r:5deg;animation-delay:.35s"><img src="img/ssanghwa.jpg" alt=""><span class="lb">쌍화탕</span></div>
-      <div style="position:absolute;left:0;right:0;bottom:0" class="mini-w">${note('오늘 · 쌍화탕 + 혈압약','쌍화탕엔 감초가 들어 있어요. 혈압약을 드시는 동안은 맞지 않을 수 있어서, 생강차나 대추차가 나아요.',['img/ssanghwa.jpg'])}</div></div>
+      <div style="position:absolute;left:0;right:0;bottom:0" class="mini-w">${note('오늘 · 쌍화탕 + 혈압약','쌍화탕엔 감초가 들어 있어요. 혈압약을 드시는 동안은 맞지 않을 수 있어요. 오늘은 따뜻한 물이면 충분해요.',['img/ssanghwa.jpg'])}</div></div>
       <h2>내 약과 몸에<br>맞춰서</h2><p>먹는 약을 알려 주시면, <b>그 약과 겹치는 순간</b>을 챙겨요.</p></section>
   </div><div class="in-bot"><div class="dots"><i class="on"></i><i></i><i></i></div><button class="primary" id="next">다음</button></div>`;
   document.body.appendChild(ov); icons();
@@ -349,8 +351,10 @@ function insights(){
   const days = [...new Set(es.map(e => e.day))];
   const ap = days.filter(d => es.some(e => e.day === d && (e.tags||[]).includes('apap')) && es.some(e => e.day === d && (e.tags||[]).includes('alcohol')));
   if (ap.length) out.push({ id:'apap', area:'med', inter:true, text:'타이레놀 먹은 날 술이 겹친 적이 있었어요. 감기약 먹는 날엔 밥심이 계속 챙길게요.', src: ap.flatMap(d => es.filter(e => e.day === d && ((e.tags||[]).includes('apap') || (e.tags||[]).includes('alcohol')))), latest: ap.sort().at(-1) });
+  const ir = days.filter(d => es.some(e => e.day === d && (e.tags||[]).includes('iron')) && es.some(e => e.day === d && (e.tags||[]).includes('coffee')));
+  if (ir.length) out.push({ id:'iron', area:'med', inter:true, text:'철분제 먹은 날 커피도 가까운 시간에 있었어요. 둘 사이를 조금 떼면 철분이 조금 더 잘 흡수될 수 있어요.', src: ir.flatMap(d => es.filter(e => e.day === d && ((e.tags||[]).includes('iron') || (e.tags||[]).includes('coffee')))), latest: ir.sort().at(-1) });
   const htn = S.profile.conds.includes('hypertension') || hasMed(/혈압/), lic = es.filter(e => (e.tags||[]).includes('licorice'));
-  if (htn && lic.length) out.push({ id:'lic', area:'med', inter:true, text:'혈압약을 드시는 중에 쌍화탕 기록이 있었어요. 감초 없는 생강차·대추차가 그 자리를 대신할 수 있어요.', src: lic, latest: lic.map(e => e.day).sort().at(-1) });
+  if (htn && lic.length) out.push({ id:'lic', area:'med', inter:true, text:'혈압약을 드시는 중에 쌍화탕 기록이 있었어요. 감기 기운엔 따뜻한 물·꿀물로도 충분할 수 있어요.', src: lic, latest: lic.map(e => e.day).sort().at(-1) });
   return out;
 }
 // 지금 지켜보는 불편 하나: 빈도 + 최근성 + 영향(일상에 주는 무게)
@@ -383,6 +387,63 @@ const PRODUCTS = { '필터 커피': { title:'드립백 · 필터 커피', why:'�
   { name:'A사 드립백 (10개입)', unit:'개당', sellers:[['A사 공식 스토어',8900,true,'공식 판매처'],['B마켓',8400,true,'정품 인증 판매자'],['C몰',7600,false,'판매자 정보 확인 안 됨']] },
   { name:'B사 드립백 (12개입)', unit:'개당', sellers:[['B사 공식 스토어',10800,true,'공식 판매처'],['B마켓',9900,true,'정품 인증 판매자']] },
   { name:'C사 종이 필터 + 원두 (200g)', unit:'세트', sellers:[['C사 공식 스토어',15000,true,'공식 판매처'],['D몰',13900,true,'정품 인증 판매자']] } ] } };
+// ---- 큐레이션 사례 (예시 데이터, 가상의 제품) ----
+// 각 사례는 기록에서 나온 카드/발견 하나에서만 열려요. 음식으로 충분하면 그 말을 먼저.
+const V = (n, s) => [n, s[0], true, '공식 판매처'], OK = (n, p) => [n, p, true, '정품 인증 판매자'], NO = (n, p) => [n, p, false, '판매자 정보 확인 안 됨'];
+Object.assign(PRODUCTS, {
+  '디카페인': { title:'디카페인 커피', why:'카페인을 대부분 걷어 낸 원두라, 피곤함이 카페인 때문인지 가려 볼 때 쓸 수 있어요.', items:[
+    { name:'A사 디카페인 드립백 (10개입)', unit:'개당', sellers:[['A사 공식 스토어',9900,true,'공식 판매처'],OK('B마켓',9300),NO('C몰',8200)] },
+    { name:'B사 디카페인 캡슐 (10개입)', unit:'개당', sellers:[['B사 공식 스토어',7900,true,'공식 판매처'],OK('D몰',7400)] },
+    { name:'C사 디카페인 원두 (200g)', unit:'봉', sellers:[['C사 공식 스토어',16000,true,'공식 판매처'],OK('B마켓',14500)] } ] },
+  '숙취해소 음료': { title:'숙취해소 음료', why:'물과 꿀물로도 충분한 날이 많아요. 고른다면 성분이 비슷한 것끼리 값만 비교해요.', items:[
+    { name:'A사 숙취 음료 (100ml × 10병)', unit:'병당', sellers:[['A사 공식 스토어',25000,true,'공식 판매처'],OK('B마켓',22800),NO('C몰',19900)] },
+    { name:'B사 숙취 젤리 스틱 (10개입)', unit:'개당', sellers:[['B사 공식 스토어',21000,true,'공식 판매처'],OK('D몰',19500)] } ] },
+  '마그네슘': { title:'마그네슘', why:'바나나·견과류·두부처럼 이미 드시는 음식에도 들어 있어요. 제품은 굳이 아니어도 돼요.', items:[
+    { name:'A사 마그네슘 (60정)', unit:'정당', sellers:[['A사 공식 스토어',14900,true,'공식 판매처 · 건강기능식품 신고 확인'],OK('B마켓',12900),NO('C몰',9900)] },
+    { name:'B사 마그네슘 + 비타민B6 (90정)', unit:'정당', sellers:[['B사 공식 스토어',21000,true,'공식 판매처 · 건강기능식품 신고 확인'],OK('D몰',18900)] } ] },
+  '유산균': { title:'유산균 · 균주와 기능 기준', why:'요거트를 이미 드시니 그걸로도 충분할 수 있어요. 고른다면 이름 말고 균주와 인정받은 기능이 같은 것끼리 비교해요.', items:[
+    { name:'A사 유산균 (30포) · 배변 활동 기능성', unit:'포당', sellers:[['A사 공식 스토어',29000,true,'공식 판매처 · 건강기능식품 신고 확인'],OK('B마켓',25900),NO('C몰',19900)] },
+    { name:'B사 유산균 (30캡슐) · 같은 기능성, 균주 다름', unit:'캡슐당', sellers:[['B사 공식 스토어',32000,true,'공식 판매처 · 건강기능식품 신고 확인'],OK('D몰',28500)] },
+    { name:'C사 유산균 (60캡슐) · 같은 기능성', unit:'캡슐당', sellers:[['C사 공식 스토어',45000,true,'공식 판매처 · 건강기능식품 신고 확인'],OK('B마켓',41000)] } ] },
+  '철분제': { title:'철분제 · 시간 맞추기 쉬운 형태', why:'커피와 시간을 떼기 쉬운 형태끼리 모았어요. 지금 드시는 걸 바꿀 필요는 없어요.', items:[
+    { name:'A사 철분 (하루 한 알, 30정)', unit:'정당', sellers:[['A사 공식 스토어',12900,true,'공식 판매처 · 건강기능식품 신고 확인'],OK('B마켓',11500),NO('C몰',8900)] },
+    { name:'B사 액상 철분 (20병)', unit:'병당', sellers:[['B사 공식 스토어',24000,true,'공식 판매처 · 건강기능식품 신고 확인'],OK('D몰',21900)] } ] },
+  '락토프리 우유': { title:'락토프리 우유', why:'유당을 미리 분해한 우유예요. 라떼를 그대로 드시면서 바꿔 볼 수 있어요.', items:[
+    { name:'A사 락토프리 우유 (930ml)', unit:'팩', sellers:[['A사 공식 스토어',3500,true,'공식 판매처'],OK('B마켓',3200),NO('C몰',2700)] },
+    { name:'B사 락토프리 우유 (190ml × 24팩)', unit:'팩당', sellers:[['B사 공식 스토어',23900,true,'공식 판매처'],OK('D몰',21500)] },
+    { name:'C사 오트 음료 (1L)', unit:'팩', sellers:[['C사 공식 스토어',4200,true,'공식 판매처'],OK('B마켓',3800)] } ] },
+  '저당 간식': { title:'단 게 당길 때 · 저당 간식', why:'단 걸 끊으라는 게 아니에요. 같은 자리에 둘 수 있는 것끼리만 모았어요. 과일이나 견과류로도 충분해요.', items:[
+    { name:'A사 저당 초콜릿 (12개입)', unit:'개당', sellers:[['A사 공식 스토어',11900,true,'공식 판매처'],OK('B마켓',10500),NO('C몰',8800)] },
+    { name:'B사 무가당 그릭요거트 (4개입)', unit:'개당', sellers:[['B사 공식 스토어',7900,true,'공식 판매처'],OK('D몰',7200)] },
+    { name:'C사 구운 견과 (20봉)', unit:'봉당', sellers:[['C사 공식 스토어',19900,true,'공식 판매처'],OK('B마켓',17900)] } ] },
+  '해열진통제': { title:'아세트아미노펜 말고 다른 선택지 (정보)', why:'술 마신 날 아세트아미노펜(타이레놀 계열) 대신 무엇이 맞는지는 약사에게 물어보는 게 가장 정확해요. 아래는 성분이 다른 일반의약품 예시와 값 정보일 뿐이에요.', items:[
+    { name:'A사 이부프로펜 정 (10정)', unit:'정당', sellers:[['약국 (참고가)',3500,true,'일반의약품 · 약국 판매'],OK('B약국',3000)] },
+    { name:'B사 나프록센 정 (10정)', unit:'정당', sellers:[['약국 (참고가)',4500,true,'일반의약품 · 약국 판매'],OK('C약국',4000)] } ] },
+});
+// 카드/발견 → 큐레이션 (음식 먼저 한 줄, 그다음 제품 보기)
+const CURATE = [
+  { key:'필터 커피', on:'coffee', food:'커피를 끊지 않고 내리는 방식만 바꿔 볼 수 있어요.', trig:'피곤·속 불편 메모 + 그날의 커피 사진 → 커피 종류 확인' },
+  { key:'디카페인', on:'coffee', food:'카페인 때문인지 가려 보려면 몇 잔만 디카페인으로 바꿔도 돼요.', trig:'피곤 메모 + 커피 사진, 잠은 평소와 비슷' },
+  { key:'숙취해소 음료', on:'bloat', food:'다음 날 아침엔 물과 꿀물이면 충분한 날이 많아요.', trig:'더부룩 메모 + 전날 밤 맥주·소주 사진' },
+  { key:'마그네슘', on:'cramp', food:'바나나·두부처럼 이미 드시는 음식으로도 조금 도움이 될 수 있어요.', trig:'다리에 쥐 메모 + 커피 잦던 며칠' },
+  { key:'락토프리 우유', on:'gas', when:x => /유제품/.test(x.what), food:'라떼는 그대로, 우유만 바꿔 볼 수 있어요.', trig:'아침 가스 메모 + 전날 라떼·우유 사진' },
+  { key:'유산균', on:'calm', food:'지금처럼 요거트면 충분해요. 제품은 굳이 아니어도 돼요.', trig:'속 편한 날 메모 + 그날 아침 요거트 사진' },
+  { key:'저당 간식', on:'skin', when:x => /단 것/.test(x.what), food:'단 게 당길 땐 과일이나 견과류를 같은 자리에 둘 수 있어요.', trig:'뾰루지 메모 + 며칠 전 단 것 사진' },
+  { key:'철분제', on:'iron', food:'철분제와 커피 사이를 한두 시간만 떼면 돼요.', trig:'철분제 사진 + 같은 시간대 커피 사진' },
+  { key:'해열진통제', on:'apap', food:'오늘은 술 대신 물. 다른 약이 필요하면 약사에게 물어보세요.', trig:'타이레놀 사진 + 같은 날 맥주 사진' },
+];
+const curFor = x => CURATE.filter(c => c.on === x.id && (!c.when || c.when(x)) && !(x.id === 'coffee' && c.key === '필터 커피' && checkState(x) && checkState(x).result === 'yes'));
+const curHTML = (x, first) => { const cs = curFor(x); if (!cs.length) return '';
+  return `<div class="cur"${first ? why('발견 하나마다 음식으로 충분한 방법을 먼저 한 줄로. 제품은 그 아래 작게, 누른 사람에게만. 사라는 말은 하지 않아요.') : ''}>${cs.map(c => `<p>${esc(c.food)}</p><button class="pr-open" data-p="${esc(c.key)}">${esc(PRODUCTS[c.key].title.split(' · ')[0])} 제품 보기<i data-lucide="chevron-right"></i></button>`).join('')}</div>`; };
+// 데모 전용 목록 (?products=1)
+function productsIndex(){ const ov = document.createElement('div'); ov.className = 'ov'; ov.id = 'pidx';
+  const ins = insights(), n0 = pick(); const isLive = c => ins.some(x => x.id === c.on && (!c.when || c.when(x)) && !(checkState(x) && checkState(x).result === 'same')) || (n0 && n0.id === c.on);
+  ov.innerHTML = `<div class="in-top" style="justify-content:flex-start"><button id="pib" aria-label="뒤로"><i data-lucide="chevron-left"></i></button></div><div class="su ins">
+    <h2>큐레이션 사례 (데모)</h2><p class="ins-sub">모두 예시 데이터예요. 각 사례가 어떤 기록에서 열리는지 함께 적었어요.</p>
+    ${CURATE.map(c => `<button class="pi" data-p="${esc(c.key)}"><b>${esc(PRODUCTS[c.key].title)}</b><span>${esc(c.trig)}</span><small>${isLive(c) ? '샘플 기록에서 지금 보여요' : '샘플 기록에 아직 없어요'} · 음식 먼저: ${esc(c.food)}</small></button>`).join('')}</div>`;
+  document.body.appendChild(ov); icons();
+  $$('.pi', ov).forEach(b => b.onclick = () => productSheet(b.dataset.p)); $('#pib', ov).onclick = () => ov.remove(); }
+
 const won = n => n.toLocaleString('ko-KR') + '원';
 // 가격 변동 (예시 데이터): 날짜로 정해지는 가상의 값
 const seedOf = str => [...str].reduce((a, c) => a + c.charCodeAt(0), 0);
@@ -448,6 +509,7 @@ function insightsPage(){
       ${x.hl ? `<p class="fd-hl"${why('건강 데이터는 원인으로 쓰지 않고, \'이런 날이기도 했어요\'처럼 곁들여 적기만 해요.')}><i data-lucide="heart-pulse"></i>${esc(x.hl)}</p>` : ''}
       ${stepsHTML(x)}
       ${c ? ckHTML(x, c) : act(x)}
+      ${curHTML(x, hero)}
       <div class="fd-f"${hero ? why('근거는 겹친 사진 몇 장으로만 보여 주고, 날짜별 기록은 원할 때만 펼쳐요. 숫자로 몇 번인지 세지 않아요.') : ''}>${stack(x.src)}<button class="fd-more">기록 보기<i data-lucide="chevron-down"></i></button></div>
       <div class="fd-ev">${tline(x.src)}</div></article>`; };
   let body = '';
@@ -548,6 +610,8 @@ function demoBar(){ if (!qs.has('demo')) return; document.body.classList.add('de
 (async () => { await loadUrls(); render(); notesToggle(); demoBar();
   if (!S.intro) intro(false); else if (!S.setup) setup(false);
   if (qs.has('widget')) widget();
+  if (qs.has('products')) productsIndex();
+  document.addEventListener('click', ev => { const b = ev.target.closest('.sh .pr-open'); if (b) productSheet(b.dataset.p); });
   if (qs.has('insights')) insightsPage();
   if (qs.has('memo')) composer();
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {}); })();
