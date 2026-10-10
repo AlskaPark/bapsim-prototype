@@ -545,26 +545,19 @@ function exHTML(x, c){ const ex = (S.expert || {})[x.id], who = ex && matchExper
   if (x.id === '_all') return '';
   return exNeeds(x, c) ? `<button class="ex-link" data-ex="${x.id}"${why('발견마다 작은 링크. 누르면 이 발견에 쓰인 기록이 미리 골라져 있어요. 진료 의뢰가 아니라 먹는 쪽 건강 컨설팅이에요.')}><i data-lucide="user-round"></i>전문가에게 기록 보여주기</button>` : ''; }
 function expertSheet(x0){
-  const list = insights().filter(exNeeds), t = today();
-  const recent = () => visible().filter(e => gap(e.day, t) <= 13).slice().reverse().slice(0, 12);
-  let sel = x0 ? x0.id : '_all', memo = '';
-  const pool = () => sel === '_all' ? recent() : ((list.find(y => y.id === sel) || x0).src || []).slice(0, 8);
-  const lab = y => y.rule && y.rule.sym ? y.rule.sym : y.what;
+  const t = today();
+  let sel = x0 ? x0.id : '_all', memo = x0 ? `${x0.text}` : '';
   const bg = sheet(`<div id="exb"></div>`);
-  const draw = () => { const items = pool();
+  const draw = () => {
     $('#exb', bg).innerHTML = `<div class="s-eyebrow">건강 컨설팅 · 프리미엄 · 예시</div><h2 class="s-title">전문가에게 기록 보여주기</h2>
-    <div class="s-sec"${why('무엇이 나가는지 먼저. 기본은 최근 2주, 발견 하나만 골라 보낼 수도 있어요. 하나씩 뺄 수 있어요.')}><h4>보낼 기록</h4>
-      <div class="ex-scopes">${[['_all','최근 2주'], ...list.map(y => [y.id, lab(y)])].map(([k, l]) => `<button class="ex-sc${sel===k?' on':''}" data-k="${k}">${esc(l)}</button>`).join('')}</div>
-      <div class="ex-items">${items.map(e => `<label class="ex-it"><input type="checkbox" checked data-id="${e.id}">${src(e) ? `<img src="${src(e)}" alt="">` : '<span class="m"><i data-lucide="pen-line"></i></span>'}<span>${esc(e.text)}<small>${esc(dayName(e.day, t))}</small></span></label>`).join('') || '<p class="ex-none">최근 2주 기록이 없어요.</p>'}</div></div>
+    <p class="ex-all"${why('무엇을 보낼지 고르게 하지 않아요. 기록은 통째로 함께 봐야 맥락이 보이고, 고르는 일 자체가 부담이에요.')}><i data-lucide="images"></i>지금까지의 기록을 전문가가 함께 봐요</p>
     <div class="s-sec"${why('적지 않아도 돼요. 질문지가 아니라 한 줄 메모 칸 하나.')}><h4>궁금한 것 한 줄 <small>안 적어도 돼요</small></h4><input id="exm" class="ex-memo" maxlength="60" placeholder="예: 저녁 먹고 더부룩한 게 신경 쓰여요" value="${esc(memo)}"></div>
     <div class="s-sec"${why('고를 목록을 보여 주지 않아요. 기록을 보고 서비스가 맞는 전문가를 연결해요. 누가 오든 범위는 같은 한 줄이에요.')}><h4>누가 보나요</h4><p class="ex-match">기록에 맞는 전문가를 밥심이 찾아 연결해요.</p><p class="ex-ver"><i data-lucide="badge-check"></i>검증된 자격을 가진 전문가예요</p><p class="ex-scope">${esc(SCOPE_LINE)}</p></div>
     <div class="ex-price"${why('가격은 보내기 전에 숨김없이.')}><span>${S.premium ? '프리미엄 이용 중 · 이번 달 남은 답장 2회' : '프리미엄 · 월 9,900원'}</span><small>예시 가격</small></div>
     <button class="primary" id="exgo"></button>`; icons();
-    const upd = () => { const n = $$('.ex-it input:checked', bg).length; $('#exgo', bg).disabled = !n; $('#exgo', bg).textContent = n ? `기록 ${n}개 보내기` : '보낼 기록을 골라 주세요'; };
-    $$('.ex-it input', bg).forEach(i => i.onchange = upd); upd();
+    $('#exgo', bg).textContent = '보내기';
     $('#exm', bg).oninput = ev => memo = ev.target.value;
-    $$('.ex-sc', bg).forEach(b => b.onclick = () => { sel = b.dataset.k; buzz(); draw(); });
-    $('#exgo', bg).onclick = () => { const ids = $$('.ex-it input:checked', bg).map(i => i.dataset.id); S.premium ? send(ids) : upgrade(ids); };
+    $('#exgo', bg).onclick = () => { const ids = 'all'; S.premium ? send(ids) : upgrade(ids); };
     notesRefresh(); };
   const upgrade = ids => {
     $('#exb', bg).innerHTML = `<div class="ex-up"${why('프리미엄이 아니면 같은 시트 안에서 조용히 한 단계. 광고 문구 없이 무엇이 포함되는지만. 고른 기록은 그대로 기다려요.')}><div class="s-eyebrow">프리미엄 · 예시</div><h2 class="s-title">전문가 연결은 프리미엄이에요</h2>
@@ -723,5 +716,5 @@ function expertDemo(){ if (!S.sample) { loadSample(); render(); } insightsPage()
     const had = !!navigator.serviceWorker.controller; let done = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => { if (had && !done) { done = true; location.reload(); } });
     navigator.serviceWorker.register('sw.js', { updateViaCache:'none' }).then(r => { r.update(); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') r.update(); }); }).catch(() => {}); } })();
-window.__bapsim = { S, render, v:'v47' };
+window.__bapsim = { S, render, v:'v48' };
 })();
