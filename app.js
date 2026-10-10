@@ -514,14 +514,14 @@ const exType = e => EXPERT_TYPES[e.type], exName = e => `${e.name.slice(1)} 전�
 const exNeeds = (x, c) => !x.inter && !x.pos && c && c.result === 'kept' && (x.src || []).filter(e => e.kind === 'memo').length >= 2;
 function exHTML(x, c){ const ex = (S.expert || {})[x.id], who = ex && matchExpert(ex);
   if (ex) { const t = today(); if (gap(ex.sent, t) < 1) return `<div class="ex-sent"${why('보낸 뒤엔 조용히 기다려요. 알림도, 대화창도 없어요. 답은 이 카드 안에 와요.')}><i data-lucide="loader"></i>기록에 맞는 전문가를 찾고 있어요. 답은 이 카드에 와요.</div>`;
-    return `<div class="ex-reply"${why('사람이 쓴 답이라 AI 표시가 없어요. 먹는 쪽 이야기만 하고, 다시 묻지 않아요.')}><div class="ex-h"><span class="ex-av">${esc(who.name[1])}</span><div><b>${esc(exName(who))}</b><small>답장 · 예시</small></div></div>
+    return `<div class="ex-reply"${why('사람이 쓴 답이라 AI 표시가 없어요. 먹는 쪽 이야기만 하고, 다시 묻지 않아요.')}><div class="ex-h"><span class="ex-av"><i data-lucide="user-round"></i></span><div><b>전문가</b><small>답장 · 예시</small></div><button class="ex-cred"${why('이름·경력 없이 자격 확인 표시만. 궁금한 사람만 눌러서 자격 종류를 봐요.')}><i data-lucide="badge-check"></i>자격 확인됨<span class="ex-lic" hidden>${esc(exType(who).label)} (예시)</span></button></div>
       <p>보내 주신 기록을 보면, 소화가 불편했던 날은 저녁에 기름진 메뉴가 있던 날이 많았지만 확인하는 동안에도 계속 드셔서 아직 가려지지 않았어요.</p><p>메뉴는 그대로 두셔도 돼요. 다음에 기름진 메뉴를 드신 날엔 먹은 시간만 함께 남겨 주시면, 양보다 시간과 겹치는지 다음 답에서 볼 수 있어요.</p>
       <small class="ex-scope">${esc(SCOPE_LINE)}</small></div>`; }
   return exNeeds(x, c) ? `<button class="ex-link" data-ex="${x.id}"${why('반복되는데 직접 해 봐도 가려지지 않을 때만 나타나는 작은 링크. 늘 떠 있는 상담 버튼은 두지 않아요. 진료 의뢰가 아니라 먹는 쪽 건강 컨설팅이에요.')}><i data-lucide="user-round"></i>전문가에게 기록 보여주기</button>` : ''; }
 function expertSheet(x){ const items = (x.src || []).slice(0, 8);
   const bg = sheet(`<div class="s-eyebrow">건강 컨설팅 · 예시</div><h2 class="s-title">전문가에게 기록 보여주기</h2>
     <div class="s-sec"${why('무엇이 나가는지 먼저. 이 발견에 쓰인 기록만, 하나씩 뺄 수 있어요.')}><h4>보낼 기록</h4><div class="ex-items">${items.map(e => `<label class="ex-it"><input type="checkbox" checked data-id="${e.id}">${src(e) ? `<img src="${src(e)}" alt="">` : '<span class="m"><i data-lucide="pen-line"></i></span>'}<span>${esc(e.text)}<small>${esc(dayName(e.day, today()))}</small></span></label>`).join('')}</div></div>
-    <div class="s-sec"${why('고를 목록을 보여 주지 않아요. 기록을 보고 서비스가 맞는 전문가를 연결하고, 사용자는 무엇을 보낼지만 정해요. 누가 오든 범위는 같은 한 줄이에요.')}><h4>누가 보나요</h4><p class="ex-match">기록에 맞는 전문가를 밥심이 찾아 연결해요.</p>
+    <div class="s-sec"${why('고를 목록을 보여 주지 않아요. 기록을 보고 서비스가 맞는 전문가를 연결하고, 사용자는 무엇을 보낼지만 정해요. 누가 오든 범위는 같은 한 줄이에요.')}><h4>누가 보나요</h4><p class="ex-match">기록에 맞는 전문가를 밥심이 찾아 연결해요.</p><p class="ex-ver"${why('직종을 내세우지 않고, 자격이 확인됐다는 사실만 한 줄로.')}><i data-lucide="badge-check"></i>검증된 자격을 가진 전문가예요</p>
       <p class="ex-scope">${esc(SCOPE_LINE)}</p></div>
     <div class="ex-price"><span>1회 9,900원</span><small>예시 가격</small></div>
     <button class="primary" id="exgo"${why('버튼은 하나. 보내고 나면 대화창 없이 답을 기다리기만 하면 돼요.')}>기록 보내기</button>`);
@@ -579,6 +579,7 @@ function insightsPage(){
   $$('.ck-go', ov).forEach(b => b.onclick = () => { const id = b.closest('.fd').dataset.id, x = list.find(y => y.id === id); startCheck(x, b.dataset.m, b.dataset.v || undefined); ov.remove(); insightsPage(); });
   $$('.ck-stop', ov).forEach(b => b.onclick = () => { delete S.checks[b.closest('.fd').dataset.id]; save(); ov.remove(); insightsPage(); });
   $$('.pr-open', ov).forEach(b => b.onclick = () => productSheet(b.dataset.p));
+  $$('.ex-cred', ov).forEach(b => b.onclick = () => { const l = b.querySelector('.ex-lic'); l.hidden = !l.hidden; buzz(); });
   $$('.ex-link', ov).forEach(b => b.onclick = () => expertSheet(list.find(y => y.id === b.dataset.ex)));
   $('#ib', ov).onclick = () => { ov.classList.add('out'); setTimeout(() => { ov.remove(); notesRefresh(); }, 250); };
   $('.su', ov).addEventListener('scroll', () => notesOn && notesRefresh(), { passive: true });
