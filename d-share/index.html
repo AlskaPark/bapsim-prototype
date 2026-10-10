@@ -20,7 +20,7 @@ body{background:#000;color:#fff;min-height:100vh;overflow:hidden}
 <div class="thumbs" id="th"></div>
 <div class="tb"><button id="sh" aria-label="공유"><i data-lucide="share"></i></button><span><i data-lucide="heart"></i></span><span><i data-lucide="info"></i></span><span><i data-lucide="trash-2"></i></span></div>
 <div class="share" id="share"><div class="hdr"><img id="shimg" src="../img/coffee.jpg" alt=""><div><b>사진 1장</b><small>옵션</small></div></div>
-<div class="apps"><div class="a"><i style="background:linear-gradient(#5BF675,#2BC94B)"><i data-lucide="message-circle"></i></i>메시지</div><div class="a"><i style="background:linear-gradient(#1E90FF,#0A6CF0)"><i data-lucide="mail"></i></i>메일</div><div class="a" id="tobap"><i style="background:linear-gradient(#F0905A,#E06A2E)"><i data-lucide="soup"></i></i>밥심</div><div class="a"><i style="background:linear-gradient(#FFD15C,#F5A623)"><i data-lucide="sticky-note"></i></i>메모</div><div class="a"><i style="background:linear-gradient(#8E8E93,#636366)"><i data-lucide="more-horizontal"></i></i>더 보기</div></div>
+<div class="apps"><div class="a"><i style="background:linear-gradient(#5BF675,#2BC94B)"><i data-lucide="message-circle"></i></i>메시지</div><div class="a"><i style="background:linear-gradient(#1E90FF,#0A6CF0)"><i data-lucide="mail"></i></i>메일</div><div class="a" id="tobap"><i style="background:#C6F432"><i data-lucide="sparkles"></i></i>밥심</div><div class="a"><i style="background:linear-gradient(#FFD15C,#F5A623)"><i data-lucide="sticky-note"></i></i>메모</div><div class="a"><i style="background:linear-gradient(#8E8E93,#636366)"><i data-lucide="more-horizontal"></i></i>더 보기</div></div>
 <div class="rows"><div>복사하기<i data-lucide="copy"></i></div><div>앨범에 추가<i data-lucide="folder-plus"></i></div></div></div>
 <div class="banner" id="ban"></div>
 <div class="mini" id="mini"><div id="sb2"></div><div class="top"><button id="mclose"><i data-lucide="chevron-left"></i>닫기</button></div><h3>밥심</h3><div id="rows"></div></div>
@@ -36,7 +36,7 @@ $('#share').onclick=e=>{ if(e.target===$('#share')) $('#share').style.display='n
 $('#tobap').onclick=()=>{ $('#share').style.display='none'; B.capture(st, render, { multiple:true }); };
 function render(){
   const n=B.nudge(st);
-  $('#ban').innerHTML=n?`<div class="noti" id="noti"><div class="hd"><span class="ai"><i data-lucide="soup"></i></span><b>밥심</b><span>지금</span></div><div class="m">${B.esc(n.text)}</div>${B.traceHTML(n.trace)}<button class="x" aria-label="닫기"><i data-lucide="x"></i></button></div>`:'';
+  $('#ban').innerHTML=n?`<div class="noti" id="noti"><div class="hd"><span class="ai"><i data-lucide="sparkles"></i></span><b>밥심</b><span>지금</span></div><div class="m">${B.esc(n.text)}</div>${B.traceHTML(n.trace)}<button class="x" aria-label="닫기"><i data-lucide="x"></i></button></div>`:'';
   if(n){ $('#noti .x').onclick=e=>{ e.stopPropagation(); $('#noti').classList.add('out'); setTimeout(()=>{ st.dismiss(n.id); render(); },260); }; $('#noti').onclick=()=>B.openSheet(B.detailHTML(n.tap.q, st)); }
   $('#rows').innerHTML=st.visible().slice().reverse().map(e=>`<div class="row">${B.src(e)?`<img src="${B.src(e)}" alt="">`:'<span class="mi"><i data-lucide="pen-line"></i></span>'}${B.esc(e.text)}<span class="d">${B.dayLabel(e.day,st.today())}</span></div>`).join('');
   B.icons();

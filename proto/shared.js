@@ -3,20 +3,20 @@
 const E = window.BapsimEngine;
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const SNAPS = {
-  coffee:{e:'☕',l:'커피',tags:['coffee']}, jjigae:{e:'🍲',l:'김치찌개',tags:[]}, tofu:{e:'🥘',l:'두부조림',tags:['mg']}, banana:{e:'🍌',l:'바나나',tags:['mg']},
-  bibim:{e:'🍚',l:'비빔밥',tags:[]}, ssanghwa:{e:'🫙',l:'쌍화탕',tags:['licorice']}, tylenol:{e:'💊',l:'타이레놀',tags:['apap']},
-  beer:{e:'🍺',l:'맥주',tags:['alcohol']}, soju:{e:'🍶',l:'소주',tags:['alcohol']}, samgyeop:{e:'🥓',l:'삼겹살',tags:[]}, ramen:{e:'🍜',l:'라면',tags:[]},
-  salad:{e:'🥗',l:'샐러드',tags:[]}, snack:{e:'🍪',l:'과자',tags:[]}, kimbap:{e:'🍙',l:'김밥',tags:[]},
+  coffee:{e:'',l:'커피',tags:['coffee']}, energy:{e:'',l:'에너지 드링크',tags:['coffee']}, dosirak:{e:'',l:'편의점 도시락',tags:[]}, onigiri:{e:'',l:'삼각김밥',tags:[]},
+  protein:{e:'',l:'프로틴바',tags:[]}, banana:{e:'',l:'바나나',tags:['mg']}, pizza:{e:'',l:'배달 피자',tags:[]}, chicken:{e:'',l:'치킨',tags:[]}, tteok:{e:'',l:'떡볶이',tags:[]},
+  cola:{e:'',l:'콜라',tags:[]}, beer:{e:'',l:'맥주',tags:['alcohol']}, soju:{e:'',l:'소주',tags:['alcohol']}, tylenol:{e:'',l:'타이레놀',tags:['apap']},
+  ramen:{e:'',l:'라면',tags:[]}, salad:{e:'',l:'샐러드',tags:[]}, tofu:{e:'',l:'두부',tags:['mg']}, ssanghwa:{e:'',l:'쌍화탕',tags:['licorice']},
 };
 // 데모 페르소나: 혈압약 복용 직장인, 7일치 기록. day = 오늘로부터 며칠 전
-const PERSONA = { name:'민수 (40대 · 혈압약 복용)', profile:{ conditions:['hypertension'], meds:'혈압약' },
+const PERSONA = { name:'지우 (20대 후반 · 직장인)', profile:{ conditions:[], meds:'' },
   log:[
-    [6,'coffee','08:40'],[6,'jjigae','12:30'],[6,'coffee','15:10'],
-    [5,'coffee','08:50'],[5,'tofu','19:20'],[5,'note','다리에 쥐 났음'],
-    [4,'coffee','09:00'],[4,'banana','16:00'],[4,'note','감기 기운'],
-    [3,'ssanghwa','20:30'],[3,'kimbap','12:40'],
-    [2,'tylenol','09:10'],[2,'beer','21:00'],[2,'samgyeop','20:40'],
-    [1,'soju','22:10'],[1,'note','팀 회식'],
+    [6,'coffee','08:40'],[6,'dosirak','12:30'],[6,'energy','16:10'],
+    [5,'coffee','08:50'],[5,'banana','15:20'],[5,'note','다리에 쥐 났음'],
+    [4,'coffee','09:00'],[4,'onigiri','13:10'],[4,'energy','17:00'],
+    [3,'tylenol','09:10'],[3,'pizza','20:10'],[3,'beer','21:00'],
+    [2,'coffee','08:45'],[2,'protein','15:00'],[2,'tteok','19:30'],
+    [1,'chicken','20:40'],[1,'soju','22:10'],[1,'note','팀 회식'],
     [0,'coffee','08:45'] ] };
 const qs = new URLSearchParams(location.search);
 const baseToday = qs.get('today') ? new Date(qs.get('today') + 'T09:00:00') : new Date();
@@ -58,7 +58,7 @@ function nudge(st){
   const week = tag => es.filter(e => between(e.day,t) <= 7 && (e.tags||[]).includes(tag));
   const cands = [];
   const apap = on(t,'apap'), alc = [...on(t,'alcohol')];
-  if (apap.length && alc.length) cands.push({ id:'apap-'+t, kind:'catch', text:'타이레놀 드신 날 맥주도 있었어요. 같은 날 겹치면 아세트아미노펜이 간에 부담이 될 수 있어요. 오늘은 술을 쉬어 주세요.', trace:tr([...apap,...alc]), tap:{ label:'자세히', q:'감기약 먹고 술 마셨어요' } });
+  if (apap.length && alc.length) cands.push({ id:'apap-'+t, kind:'catch', text:'오늘 타이레놀 드시고 맥주도 찍으셨어요. 같은 날 겹치면 아세트아미노펜이 간에 부담이 될 수 있어요. 오늘 술은 여기까지만요.', trace:tr([...apap,...alc]), tap:{ label:'자세히', q:'감기약 먹고 술 마셨어요' } });
   const lic = [...on(t,'licorice'), ...on(y,'licorice')];
   if (lic.length && htn) cands.push({ id:'lic-'+t, kind:'catch', text:'쌍화탕엔 감초가 들어 있어요. 혈압약 드시는 동안은 감초 없는 생강차·대추차가 나아요.', trace:tr(lic), tap:{ label:'감초 없는 대안 보기', q:'감기 기운 있어요' } });
   const ya = on(y,'alcohol');
@@ -66,7 +66,7 @@ function nudge(st){
   const cramp = es.filter(e => e.kind==='note' && /쥐/.test(e.text) && between(e.day,t) >= 1 && between(e.day,t) <= 2);
   const cof = week('coffee'), mg = week('mg');
   if (cramp.length && cof.length >= 3 && mg.length) { const foods = [...new Set(mg.map(e => e.text))].join('·');
-    cands.push({ id:'mg-'+t, kind:'care', text:`커피를 자주 드시는데 쥐가 났다고 하셨죠. 커피는 그대로 두시고, 이미 드시는 ${foods}를 하루 한 번 곁들이면 마그네슘에 조금이라도 도움이 될 수 있어요.`, trace:tr([...cramp, ...mg, ...cof.slice(-2)]), tap:{ label:'자세히', q:'다리에 쥐가 자주 나요' } }); }
+    cands.push({ id:'mg-'+t, kind:'care', text:`커피·에너지 드링크가 잦은 주에 쥐가 났다고 하셨죠. 마시던 건 그대로, 이미 드시는 ${foods} 하나만 매일 곁들이면 마그네슘에 조금이라도 도움이 될 수 있어요.`, trace:tr([...cramp, ...mg, ...cof.slice(-2)]), tap:{ label:'자세히', q:'다리에 쥐가 자주 나요' } }); }
   return cands.find(c => !st.s.dismissed.includes(c.id)) || null;
 }
 
@@ -100,7 +100,7 @@ function capture(st, onDone, opts={}){
   inp.click(); return inp;
 }
 async function saveBlob(st, blob, onDone){ const pid = 'p' + Date.now() + Math.random().toString(36).slice(2,6); await idbPut(pid, blob); URLS[pid] = URL.createObjectURL(blob); const e = st.addPhoto(pid); toast('저장했어요'); onDone && onDone(); labelChips(st, e, onDone); }
-const CHIP_KEYS = ['coffee','beer','soju','tylenol','ssanghwa','ramen','banana','tofu'];
+const CHIP_KEYS = ['coffee','energy','beer','soju','tylenol','dosirak','pizza','banana','ssanghwa'];
 function labelChips(st, e, onDone){
   document.querySelectorAll('.chips').forEach(x => x.remove());
   const d = document.createElement('div'); d.className = 'chips';
@@ -113,7 +113,7 @@ function onboard(st, onDone){
   if (st.s.onboarded) return false;
   const C = [['hypertension','고혈압'],['diabetes','당뇨'],['kidney','신장 질환'],['pregnant','임신·수유'],['anticoag','항응고제 복용']];
   const bg = document.createElement('div'); bg.className = 'ob';
-  bg.innerHTML = `<div class="obc"><div class="ob-ic"><i data-lucide="soup"></i></div><h2>밥심</h2><p>먹고 마신 걸 찍어 두기만 하세요.<br>필요한 순간에만 한 줄로 알려 드려요.</p>
+  bg.innerHTML = `<div class="obc"><div class="ob-ic"><i data-lucide="sparkles"></i></div><h2>밥심</h2><p>먹고 마신 걸 찍어 두기만 하세요.<br>필요한 순간에만 한 줄로 알려 드려요.</p>
   <div class="ob-l">맞지 않는 걸 걸러 드릴게요 (선택)</div><div class="ob-c">${C.map(([k,l]) => `<button data-c="${k}">${l}</button>`).join('')}</div>
   <input id="ob-meds" placeholder="드시는 약 (예: 혈압약, 타이레놀)"><input id="ob-al" placeholder="알레르기 (예: 새우, 땅콩)">
   <button class="ob-go" id="ob-go">시작하기</button><button class="ob-s" id="ob-s">샘플 기록으로 둘러보기</button><p class="ob-f">이 기기 안에만 저장돼요. 서버로 보내지 않아요.</p></div>`;
@@ -131,7 +131,7 @@ function detailHTML(q, st){
   if (r.type === 'stop') return `<div class="d-stop">${esc(r.title)} ${esc(r.text)}</div>`;
   let h = `<div class="d-eyebrow">밥심이 찾아본 것</div><p class="d-say">${esc((r.lines||[]).join(' '))}</p>`;
   for (const g of r.groups) for (const i of g.items) {
-    h += `<div class="d-it"><b>${esc(i.name)}</b> <span class="d-k">${/일반식품/.test(i.claim||'')?'식품':g.kind==='supp'?'건강기능식품':g.kind==='otc'?'일반의약품':'음식·차'}</span><div>${esc(g.kind==='food'?i.effect:i.claim)}</div>${i.note?`<div class="d-note">${esc(i.note)}</div>`:''}`;
+    h += `<div class="d-it"><b>${esc(i.name)}</b><div>${esc(g.kind==='food'?i.effect:i.claim)}</div>${i.note?`<div class="d-note">${esc(i.note)}</div>`:''}`;
     if (i.variants) { const v = i.variants; h += `<details><summary>제품으로 고른다면</summary>${r.enough&&g.kind==='food'?'<div class="d-note">집에서 만들어 드셔도 충분해요. 굳이 사지 않아도 돼요.</div>':''}<div class="d-demo">예시 데이터 · 가상의 제품·가격</div>
       <table class="d-cmp"><tr><th></th>${v.items.map(p=>`<th>${esc(p.name)}</th>`).join('')}</tr>${v.axis.map((ax,k)=>`<tr><th>${esc(ax)}</th>${v.items.map(p=>`<td>${esc(p.vals[k])}</td>`).join('')}</tr>`).join('')}
       <tr><th>좋은 점</th>${v.items.map(p=>`<td>${esc(p.pro||'-')}</td>`).join('')}</tr><tr><th>아쉬운 점</th>${v.items.map(p=>`<td>${esc(p.con||'-')}</td>`).join('')}</tr></table>
@@ -146,7 +146,7 @@ function detailHTML(q, st){
 const SHEET_CSS = '';
 function openSheet(html){ const bg = document.createElement('div'); bg.className='sh-bg'; bg.innerHTML=`<div class="sh"><div class="grab"></div><button class="x" aria-label="닫기"><i data-lucide="x"></i></button>${html}</div>`; bg.onclick=e=>{ if(e.target===bg||e.target.closest('.x')) { bg.classList.add('out'); setTimeout(()=>bg.remove(),220); } }; document.body.appendChild(bg); icons(); return bg; }
 function toast(t){ const d=document.createElement('div'); d.className='tst'; d.textContent=t; document.body.appendChild(d); setTimeout(()=>d.remove(),1400); }
-function demoBar(st, rerender){ const b=document.createElement('div'); b.className='demo'; document.body.appendChild(b);
+function demoBar(st, rerender){ if(!qs.has('demo')) return; const b=document.createElement('div'); b.className='demo'; document.body.appendChild(b);
   const draw=()=>{ b.innerHTML=`<span class="lbl">데모</span><button data-d="-1" aria-label="전날"><i data-lucide="chevron-left"></i></button><b id="dl">${st.s.view===0?'오늘':(-st.s.view)+'일 전'}</b><button data-d="1" aria-label="다음 날"><i data-lucide="chevron-right"></i></button><button data-s>${st.s.sample?'샘플 끄기':'샘플'}</button><a href="../compare/">비교</a>`; icons();
     b.querySelectorAll('[data-d]').forEach(x=>x.onclick=()=>{ st.s.view=Math.max(-4,Math.min(0,st.s.view+ +x.dataset.d)); st.save(); draw(); rerender(); });
     b.querySelector('[data-s]').onclick=()=>{ st.s.sample ? st.clearSample() : st.loadSample(); draw(); rerender(); }; };

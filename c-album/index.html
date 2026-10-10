@@ -8,7 +8,7 @@
 .cell.other{background:var(--fill);display:flex;align-items:center;justify-content:center;color:var(--faint)}.cell.other svg{width:22px;height:22px}
 .perm{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:60;animation:fade .2s both}
 .perm .d{background:rgba(242,242,247,.96);width:280px;border-radius:16px;text-align:center;overflow:hidden;animation:nIn .35s var(--ease) both}
-.perm .ai{width:52px;height:52px;margin:20px auto 8px;border-radius:13px;background:linear-gradient(#F0905A,#E06A2E);color:#fff;display:flex;align-items:center;justify-content:center}.perm .ai svg{width:26px;height:26px}
+.perm .ai{width:52px;height:52px;margin:20px auto 8px;border-radius:13px;background:#C6F432;color:#0B0B0D;display:flex;align-items:center;justify-content:center}.perm .ai svg{width:26px;height:26px}
 .perm p{padding:0 18px;margin:0;font-size:16px;font-weight:600;line-height:1.35}.perm small{display:block;color:var(--sub);padding:6px 18px 16px;font-size:13px;line-height:1.4}
 .perm button{display:block;width:100%;border:0;border-top:.5px solid rgba(60,60,67,.29);background:none;padding:12px;font-size:16px;color:#007AFF}.perm button.b{font-weight:600}
 </style></head><body>
@@ -17,7 +17,7 @@
 <div class="bar"><button id="shoot"><i data-lucide="images"></i>앨범에서 가져오기</button><button id="snap1"><i data-lucide="camera"></i>찍기</button><button id="lockbtn"><i data-lucide="lock"></i>잠금화면</button></div>
 <div id="g"></div>
 <div class="lock" id="lock"><div id="sbl" style="width:100%"></div><div class="dt" id="dt"></div><div class="tm">8:12</div><div id="nslot" style="width:100%;display:flex;justify-content:center"></div><div class="hint">알림은 하루 한 번까지, 다음 날이면 사라져요</div><button class="unl" id="unl">밀어서 열기</button></div>
-<div class="perm" id="perm" style="display:none!important"><div class="d"><div class="ai"><i data-lucide="soup"></i></div><p>‘밥심’이 사진에<br>접근하려고 합니다</p><small>음식·음료·약 사진만 골라 이 기기 안에 저장해요. 다른 사진은 보지 않아요. (목업)</small><button id="ok" class="b">모든 사진 허용</button><button id="no">허용 안 함</button></div></div>
+<div class="perm" id="perm" style="display:none!important"><div class="d"><div class="ai"><i data-lucide="sparkles"></i></div><p>‘밥심’이 사진에<br>접근하려고 합니다</p><small>음식·음료·약 사진만 골라 이 기기 안에 저장해요. 다른 사진은 보지 않아요. (목업)</small><button id="ok" class="b">모든 사진 허용</button><button id="no">허용 안 함</button></div></div>
 <div class="homebar"></div>
 <script src="../engine.js"></script><script src="../proto/shared.js"></script>
 <script>
@@ -28,7 +28,7 @@ function render(){
   const by={}; st.visible().filter(e=>e.kind==='photo').slice().reverse().forEach(e=>{ (by[e.day]=by[e.day]||[]).push(e); });
   $('#g').innerHTML=Object.entries(by).map(([d,es],i)=>`<div class="day">${B.dayLabel(d,st.today())}</div><div class="grid">${es.map(e=>`<div class="cell food" title="${B.esc(e.text)}" style="background-image:url(${B.src(e)})"></div>`).join('')}</div>`).join('');
   const n=B.nudge(st); $('#dt').textContent=new Date(st.today()+'T09:00:00').toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'});
-  $('#nslot').innerHTML=n?`<div class="noti" id="noti"><div class="hd"><span class="ai"><i data-lucide="soup"></i></span><b>밥심</b><span>지금</span></div><div class="m">${B.esc(n.text)}</div>${B.traceHTML(n.trace)}<button class="x" aria-label="닫기"><i data-lucide="x"></i></button></div>`:'<div class="quiet">알림 없음</div>';
+  $('#nslot').innerHTML=n?`<div class="noti" id="noti"><div class="hd"><span class="ai"><i data-lucide="sparkles"></i></span><b>밥심</b><span>지금</span></div><div class="m">${B.esc(n.text)}</div>${B.traceHTML(n.trace)}<button class="x" aria-label="닫기"><i data-lucide="x"></i></button></div>`:'<div class="quiet">알림 없음</div>';
   if(n){ $('#noti .x').onclick=e=>{ e.stopPropagation(); $('#noti').classList.add('out'); setTimeout(()=>{ st.dismiss(n.id); render(); },260); }; $('#noti').onclick=()=>{ $('#lock').style.display='none'; B.openSheet(B.detailHTML(n.tap.q, st)); }; }
   B.icons();
 }
