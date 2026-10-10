@@ -101,8 +101,8 @@ function pick(){
   C.push({ id:'apap', src:[...pk.slice(-1), ...alc.slice(-1)], pair:`${pk.at(-1).text} + ${alc.at(-1).text}`,
     msg: isN ? `${pk.at(-1).text} 먹은 날 술이 있었어요. 같이 먹으면 위출혈이 생길 수 있다고 안내돼 있어요.` : `${pk.at(-1).text} 먹은 날 술이 있었어요. 같이 먹으면 간에 부담이 될 수 있다고 안내돼 있어요.`,
     short:`${pk.at(-1).text} 먹은 날이에요. 술과는 같이 안 먹는 게 좋아요`, title:'진통제 먹은 날의 술',
-    why:'식약처 허가사항에는 매일 세 잔 이상 술을 마시는 사람이 해열진통제를 먹으면, 아세트아미노펜(타이레놀 등)은 간손상, 이부프로펜 같은 소염진통제는 위장출혈이 생길 수 있어 의사·약사와 상의하라고 적혀 있어요.',
-    srcs:'출처: 식약처 의약품 허가사항' }); }
+    why:'타이레놀 같은 아세트아미노펜은 간에, 이부프로펜 같은 소염진통제는 위에 부담이 될 수 있어서, 술을 자주 마신다면 먹기 전에 약사와 상의하라고 안내돼 있어요.',
+    srcs:'출처: 식약처 의약품 허가사항', quote:[{ t:'매일 세잔 이상 정기적으로 술을 마시는 사람이 이 약이나 다른 해열 진통제를 복용해야 할 경우 반드시 의사 또는 약사와 상의해야 한다. 이러한 사람이 이 약을 복용하면 간손상이 유발될 수 있다.', s:'타이레놀정500밀리그람(아세트아미노펜) 사용상의 주의사항' }, { t:'매일 세잔 이상 정기적으로 술을 마시는 사람이 이 약이나 다른 해열진통제를 복용해야 할 경우 반드시 의사 또는 약사와 상의해야 한다. 이러한 사람이 이 약을 복용하면 위장출혈이 유발될 수 있다.', s:'이부프로펜 제제 사용상의 주의사항' }] }); }
   const lic = [...on(t,'licorice'), ...on(y,'licorice')];
   if (lic.length && htn) C.push({ id:'lic', src:lic.slice(-1), pair:`${lic.at(-1).text} + 혈압약`,
     msg:'쌍화탕엔 감초가 들어 있어요. 혈압약을 드시는 동안은 맞지 않을 수 있어요. 오늘은 따뜻한 물이면 충분해요.',
@@ -139,7 +139,7 @@ function render(){
   const head = `<header class="hd"><div class="brand"${why('로고 아래 한 줄이 앱이 하는 일을 매번 상기시켜요. 다시 열었을 때 뭐 하는 앱인지 잊지 않게.')}><span class="mark"><i></i></span><div><h1>밥심</h1><p>찍어 두면, 놓치면 안 될 때만 알려 드려요</p></div></div>
     <button class="icon-btn" id="gear" aria-label="설정"${why('약이 바뀌면 안내도 바뀌어야 해서 수정할 곳이 필요해요. 그 외 설정은 두지 않았어요.')}><i data-lucide="settings-2"></i></button></header>`;
   const top = n ? `<article class="note" id="note"${why('하루에 최대 하나. 기록과 내 약에서 연결된 것만. 질문이 아니라서 답할 필요가 없어요.')}>
-      <div class="n-src"${why('왜 지금 이 말을 하는지 근거가 바로 보여야 무작위 건강 상식처럼 느껴지지 않아요.')}>${thumbs(n.src)}<span class="n-pair">${esc(dayName(t,t))} · ${esc(n.pair)}</span>${n.health?`<i data-lucide="heart-pulse" class="n-h"${why('수면 같은 건강 데이터는 숫자로 보여 주지 않고, 근거 줄의 작은 표시로만 드러나요.')}></i>`:''}</div>
+      <div class="n-src"${why('왜 지금 이 말을 하는지 근거가 바로 보여야 무작위 건강 상식처럼 느껴지지 않아요.')}>${thumbs(n.src)}<span class="n-pair">${esc(dayName(t,t))} · ${esc(n.pair)}</span><span class="ai" aria-label="AI가 쓴 문장"${why('AI 기본법에 따라 생성형 AI가 쓴 문장임을 알려요. 크게 드러내지 않고 근거 줄 끝에 작은 글자 두 개로만, 어디서나 같은 자리에.')}>AI</span>${n.health?`<i data-lucide="heart-pulse" class="n-h"${why('수면 같은 건강 데이터는 숫자로 보여 주지 않고, 근거 줄의 작은 표시로만 드러나요.')}></i>`:''}</div>
       <p class="n-msg">${esc(n.msg)}</p>
       <div class="n-foot"><button class="n-more" id="more"${why('자세한 이유와 대안은 원할 때만. 카드가 길어지지 않게 탭 뒤로 숨겼어요.')}>${n.product ? '가격 보기' : '이유와 대안 보기'}<i data-lucide="chevron-right"></i></button><span class="n-exp"${why('스스로 사라진다는 걸 알려서, 쌓일까 봐 부담 갖지 않게 해요.')}>오늘까지</span></div>
       <button class="x" id="nx" aria-label="닫기"${why('무시할 권리. 닫으면 그날은 더 이상 아무것도 뜨지 않고, 같은 종류는 3일 동안 조용해요.')}><i data-lucide="x"></i></button></article>`
@@ -199,6 +199,8 @@ function detail(n){
     <div class="s-sec"${why('근거 없는 경고는 믿지 않아요. 왜 그런지 한 단락으로만.')}><h4>이유</h4><p>${esc(n.why)}</p></div>
     ${body ? `<div class="s-sec"${why('경고로 끝내지 않고, 지금 할 수 있는 작은 대안. 음식·차·제품 모두 같은 형식이고 범주 표시가 없어요.')}><h4>대신 이렇게</h4>${body}</div>` : ''}
     ${(() => { const cs = CURATE.filter(c => c.on === n.id); return cs.length ? `<div class="cur">${cs.map(c => `<p>${esc(c.food)}</p><button class="pr-open" data-p="${esc(c.key)}">${esc(PRODUCTS[c.key].title.split(' · ')[0])} 제품 보기<i data-lucide="chevron-right"></i></button>`).join('')}</div>` : ''; })()}
+    ${n.quote ? `<div class="s-sec"${why('허가사항 원문은 AI 문장과 섞지 않고 인용으로 따로. 무엇이 AI 문장이고 무엇이 공식 문구인지 바로 구분돼요.')}><h4>허가사항 원문</h4>${n.quote.map(q => `<blockquote class="qt"><p>“${esc(q.t)}”</p><cite>${esc(q.s)}</cite></blockquote>`).join('')}</div>` : ''}
+    <p class="ai-f"${why('출처 줄 바로 옆에 한 줄. 원문 인용을 뺀 문장은 AI가 썼다는 걸 알려요.')}><span class="ai">AI</span>AI가 내 기록을 보고 쓴 문장이에요${n.quote ? '. 따옴표 안은 허가사항 원문이에요' : ''}.</p>
     ${n.srcs ? `<p class="src"${why('생약·한약 관련 내용은 현대 근거(허가사항·임상·체계적 문헌고찰)가 있을 때만 쓰고, 출처를 한 줄로 남겨요. 고전 문헌이나 \'전통적으로\'는 근거로 쓰지 않아요.')}>${/^출처/.test(n.srcs) ? '' : '근거: '}${esc(n.srcs)}</p>` : ''}
     <p class="disc">진단이나 처방이 아닌 일반 정보예요. 문구는 예시이며 약사 검수 전이에요. 약에 대해서는 약사·의사의 안내를 따라 주세요.</p>`);
   notesRefresh();
@@ -213,7 +215,8 @@ function photoView(id){
   const e = S.entries.find(x => x.id === id); if (!e) return;
   const bg = sheet(`<div class="pv"><div class="meta">${esc(dayName(e.day, today()))}${e.time ? ' · ' + esc(e.time) : ''}</div><div class="pv-ph"${why('세로·가로 사진 모두 잘리지 않게 원래 비율 그대로, 화면 높이에 맞춰요. 닫기 버튼과 겹치지 않게 사진은 제목 줄 아래에서 시작해요.')}><img src="${src(e)}" alt=""></div>
     <button class="curtag" id="ct"${why('고치는 건 선택이고, 사진을 눌러 본 사람만 발견해요. 찍을 때마다 묻지 않기 위해서예요.')}>${e.k ? `<img src="${IMGK(e.k)}" alt="">` : ''}${e.k || e.custom ? esc(e.text) : '이름표 없음'}<span>${e.k || e.custom ? '바꾸기' : '붙이기'}</span></button>
-    <div class="pick" id="tg" hidden${why('긴 목록 대신, 이 사진에 그럴듯한 후보 두세 개만 보여 줘요(인식기의 상위 후보). 없으면 직접 짧게 적으면 돼요.')}><div class="tags">${candidates(e).map(k => `<button class="tag${e.k===k?' on':''}" data-k="${k}"><img src="${IMGK(k)}" alt="">${ITEMS[k].l}</button>`).join('')}</div>
+    ${e.k && e.auto !== false ? `<p class="ai-tag"${why('자동으로 붙은 이름표는 AI 인식 결과라는 걸 사진을 열었을 때만 작게. 타임라인엔 아무것도 더하지 않아요.')}><span class="ai">AI</span>AI가 사진을 보고 붙인 이름표예요</p>` : ''}
+    <div class="pick" id="tg" hidden${why('긴 목록 대신, 이 사진에 그럴듯한 후보 두세 개만 보여 줘요(인식기의 상위 후보). 없으면 직접 짧게 적으면 돼요.')}><p class="pick-h">AI가 고른 후보</p><div class="tags">${candidates(e).map(k => `<button class="tag${e.k===k?' on':''}" data-k="${k}"><img src="${IMGK(k)}" alt="">${ITEMS[k].l}</button>`).join('')}</div>
       <form class="pick-f" id="pf"><input id="pi" placeholder="직접 적기 (예: 오트 라떼)" maxlength="20" autocomplete="off"><button type="submit" id="pok" disabled>저장</button></form></div>
     <button class="danger" id="del">이 기록 지우기</button></div>`);
   $('#ct', bg).onclick = () => { $('#tg', bg).hidden = false; $('#ct', bg).hidden = true; notesRefresh(); };
@@ -261,13 +264,13 @@ function settings(){
 // ---- 소개 ----
 function intro(again){
   const ov = document.createElement('div'); ov.className = 'ov'; ov.id = 'intro';
-  const note = (pair, msg, srcs) => `<div class="mini"><div class="n-src"><span class="n-thumbs">${srcs.map(s => `<img src="${s}" alt="">`).join('')}</span><span class="n-pair">${pair}</span></div><p class="n-msg">${msg}</p></div>`;
+  const note = (pair, msg, srcs) => `<div class="mini"><div class="n-src"><span class="n-thumbs">${srcs.map(s => `<img src="${s}" alt="">`).join('')}</span><span class="n-pair">${pair}</span><span class="ai">AI</span></div><p class="n-msg">${msg}</p></div>`;
   ov.innerHTML = `<div class="in-top"><button id="skip">건너뛰기</button></div><div class="slides" id="slides">
    <section class="slide"${why('추상적인 설명보다 실제 순간 하나가 3초 안에 이해돼요. 그래서 첫 장이 바로 예시예요.')}><div class="viz">
       <div class="ph" style="left:24px;top:8px;--r:-6deg;animation-delay:.1s"><img src="img/tylenol.jpg" alt=""><span class="lb">타이레놀</span></div>
       <div class="ph" style="right:24px;top:28px;--r:5deg;animation-delay:.3s"><img src="img/beer.jpg" alt=""><span class="lb">맥주</span></div>
       <div style="position:absolute;left:0;right:0;bottom:0;animation-delay:.9s" class="mini-w">${note('오늘 · 타이레놀 + 맥주','타이레놀 먹은 날 맥주예요. 같이 들어가면 간에 부담이 될 수 있어서, 오늘 술은 여기까지가 좋아요.',['img/tylenol.jpg','img/beer.jpg'])}</div></div>
-      <h2>놓치면 안 될 때만,<br>한 줄로</h2><p>타이레놀 먹은 날 맥주를 찍으면, <b>간에 부담이 될 수 있다고</b> 바로 챙겨 드려요.</p></section>
+      <h2>놓치면 안 될 때만,<br>한 줄로</h2><p>타이레놀 먹은 날 맥주를 찍으면, <b>간에 부담이 될 수 있다고</b> AI가 내 기록을 보고 한 줄로 챙겨 드려요.</p></section>
    <section class="slide"${why('할 일은 찍는 것뿐이라는 걸 보여 줘요. 기록 앱처럼 입력 부담이 있다고 오해하지 않게.')}><div class="viz"><div class="g9">${['coffee','dosirak','energy','banana','pizza','beer','tylenol','tteok','soju'].map((k,i) => `<span style="animation-delay:${.05+i*.06}s"><img src="img/${k}.jpg" alt=""></span>`).join('')}<div class="lock"><i data-lucide="lock"></i>이 휴대폰에만 저장돼요</div></div></div>
       <h2>찍어 두기만<br>하세요</h2><p>밥, 커피, 술, 약까지 뭐든요. <b>분석도, 질문도 없이</b> 조용히 모아 둬요.</p></section>
    <section class="slide"${why('다음 화면에서 약을 묻는 이유를 미리 보여 줘요. 설정이 설문처럼 느껴지지 않게.')}><div class="viz">
@@ -509,7 +512,7 @@ function insightsPage(){
       ${stepsHTML(x)}
       ${c ? ckHTML(x, c) : act(x)}
       ${curHTML(x, hero)}
-      <div class="fd-f"${hero ? why('근거는 겹친 사진 몇 장으로만 보여 주고, 날짜별 기록은 원할 때만 펼쳐요. 숫자로 몇 번인지 세지 않아요.') : ''}>${stack(x.src)}<button class="fd-more">기록 보기<i data-lucide="chevron-down"></i></button></div>
+      <div class="fd-f"${hero ? why('근거는 겹친 사진 몇 장으로만 보여 주고, 날짜별 기록은 원할 때만 펼쳐요. 숫자로 몇 번인지 세지 않아요.') : ''}>${stack(x.src)}<span class="ai" aria-label="AI가 쓴 문장"${hero ? why('알게 된 것의 문장도 AI가 기록을 보고 써요. 근거 사진 옆, 같은 작은 표시.') : ''}>AI</span><button class="fd-more">기록 보기<i data-lucide="chevron-down"></i></button></div>
       <div class="fd-ev">${tline(x.src)}</div></article>`; };
   let body = '';
   if (list.length) {
@@ -562,7 +565,7 @@ function widget(){
     <div class="sh-bright"><i data-lucide="sun"></i><span><i style="width:62%"></i></span></div>
     <div class="ow ${n ? 'has' : ''}" id="ow"${why('늘 떠 있는 진행 중 알림 위젯. 앱을 열지 않고 알림창을 내린 김에 바로 찍게 해요. 찍는 습관이 끊기지 않게 하는 입구예요.')}>
       <span class="ow-ic"${why('어떤 앱인지 한눈에. 로고 하나면 충분해서 앱 이름 줄은 따로 두지 않았어요.')}><i></i></span>
-      <button class="ow-line" id="owl"${why(n ? '한 줄 카드와 같은 내용을 더 짧게. 누르면 앱에서 이유와 대안이 열려요. 다음 날이면 스스로 기본 문구로 돌아가요.' : '기본 상태는 할 일 하나만: 찍어 두기. 정보가 없을 땐 아무 정보도 보여 주지 않아요.')}>${n ? `<small>${esc(n.pair)}</small>${esc(n.short)}` : '찍어 두기만 하세요'}</button>
+      <button class="ow-line" id="owl"${why(n ? '한 줄 카드와 같은 내용을 더 짧게. 누르면 앱에서 이유와 대안이 열려요. 다음 날이면 스스로 기본 문구로 돌아가요.' : '기본 상태는 할 일 하나만: 찍어 두기. 정보가 없을 땐 아무 정보도 보여 주지 않아요.')}>${n ? `<small>${esc(n.pair)}<span class="ai" aria-label="AI가 쓴 문장">AI</span></small>${esc(n.short)}` : '찍어 두기만 하세요'}</button>
       <button class="ow-shot" id="ows" aria-label="찍어 두기 (길게 누르면 몸 상태 적기)"${why('유일한 동작. 셔터 모양이라 설명이 필요 없어요. 누르면 카메라, 길게 누르면 몸 상태 칩이 나와요.')}><i data-lucide="camera"></i></button>
     </div>
     <div class="sh-n"><span class="ic"><i data-lucide="message-circle"></i></span><div><b>메시지</b><span>오늘 저녁 7시 괜찮아?</span></div><em>방금</em></div>

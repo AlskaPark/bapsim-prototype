@@ -373,3 +373,10 @@ img{image-orientation:from-image}
 .pi{display:flex;flex-direction:column;gap:3px;width:100%;text-align:left;background:var(--surface);border-radius:16px;padding:14px 16px;margin-top:10px}
 .pi b{font-size:15.5px;font-weight:700}.pi span{font-size:13.5px;color:var(--ink2)}.pi small{font-size:12px;color:var(--faint)}
 .src{font-size:12px;line-height:1.5;color:var(--sub);margin:14px 0 0}
+.ai{display:inline-flex;align-items:center;justify-content:center;height:15px;padding:0 4px;margin-left:6px;border-radius:4px;box-shadow:inset 0 0 0 1px currentColor;font-size:9.5px;font-weight:700;letter-spacing:.02em;line-height:1;color:var(--faint);vertical-align:middle;flex:none}
+.ow-line small .ai{color:rgba(255,255,255,.55);margin-left:5px}
+.fd-f .ai{margin-left:auto;margin-right:8px}
+.ai-f,.ai-tag{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--sub);margin:14px 0 0}.ai-f .ai,.ai-tag .ai{margin-left:0}
+.ai-tag{margin:8px 0 0}.pick-h{font-size:12px;color:var(--faint);margin:0 0 8px}
+.qt{margin:8px 0 0;padding:10px 14px;border-left:2px solid var(--line);background:var(--bg);border-radius:0 12px 12px 0}
+.qt p{margin:0;font-size:13.5px;line-height:1.6;color:var(--ink2)}.qt cite{display:block;margin-top:6px;font-style:normal;font-size:11.5px;color:var(--faint)}
