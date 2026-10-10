@@ -206,185 +206,126 @@ function ruleBased(messages, profile) {
   };
 }
 
-// ---------- 대화 오케스트레이션 ----------
-let handleChat = async function({ messages = [], profile = null }) {
-  const last = (messages.filter(m => m.role === 'user').pop() || {}).content || '';
-  if (RED_FLAGS.some(k => last.includes(k))) {
-    return { type: 'notice', level: 'danger', text: '말씀하신 내용은 먹는 것으로 관리할 범위를 넘어 보여요. 이런 경우엔 음식이나 일반의약품 추천을 드리지 않아요. 의료진 상담이 필요해요. 증상이 심하거나 급하면 119에 연락하세요.' };
-  }
-  if (OUT_OF_SCOPE.some(k => last.includes(k)) && !matchTopics(last).length) {
-    return { type: 'notice', text: '저희는 운동이나 생활습관은 다루지 않고, 오직 "먹는 것"만 안내해요. 지금 컨디션이나 원하는 목표(예: 피로, 소화, 환절기 컨디션)를 말씀해 주시면 먹거리로 추천해 드릴게요.' };
-  }
-  if (!profile) {
-    return { type: 'safety', text: '추천 전에 안전하게 고를 수 있도록 몇 가지만 확인할게요. 해당되는 것을 선택해 주세요. (일반의약품·건강기능식품도 체질이나 복용 중인 약에 따라 맞지 않을 수 있어요)' };
-  }
-  return ruleBased(messages, profile);
-}
-
-
-
-// ---------- (1) 식단 기록 · 칼로리 ----------
-// ⚠️ 1인분 기준 '대략적인 예시값'입니다 (실제 값은 레시피·양에 따라 크게 달라짐).
-const MEAL_FOODS = [
-  { id:'rice', name:'흰쌀밥 1공기', kcal:300, carb:66, prot:5, fat:1, fiber:1, na:5, veg:0 },
-  { id:'kimbap', name:'김밥 1줄', kcal:420, carb:65, prot:12, fat:11, fiber:3, na:900, veg:0.5 },
-  { id:'ramen', name:'라면 1개', kcal:510, carb:78, prot:10, fat:17, fiber:2, na:1800, veg:0 },
-  { id:'jjigae', name:'김치찌개 1인분', kcal:300, carb:12, prot:18, fat:20, fiber:4, na:1900, veg:1 },
-  { id:'jeyuk', name:'제육볶음 정식', kcal:780, carb:95, prot:32, fat:28, fiber:4, na:1600, veg:1 },
-  { id:'tteok', name:'떡볶이 1인분', kcal:480, carb:95, prot:9, fat:6, fiber:2, na:1400, veg:0 },
-  { id:'chicken', name:'후라이드치킨 3조각', kcal:600, carb:25, prot:38, fat:38, fiber:1, na:1100, veg:0 },
-  { id:'samgyup', name:'삼겹살 1인분(200g)', kcal:660, carb:0, prot:34, fat:58, fiber:0, na:120, veg:0 },
-  { id:'sandwich', name:'샌드위치 1개', kcal:380, carb:42, prot:16, fat:16, fiber:3, na:800, veg:0.5 },
-  { id:'salad', name:'채소 샐러드 1접시', kcal:120, carb:10, prot:3, fat:8, fiber:4, na:200, veg:2 },
-  { id:'egg', name:'삶은 계란 2개', kcal:150, carb:1, prot:12, fat:10, fiber:0, na:140, veg:0, tags:['egg'] },
-  { id:'milk', name:'우유 1컵(200ml)', kcal:130, carb:10, prot:6, fat:7, fiber:0, na:100, veg:0, tags:['dairy'] },
-  { id:'banana', name:'바나나 1개', kcal:90, carb:23, prot:1, fat:0, fiber:3, na:1, veg:1 },
-  { id:'sweetpotato', name:'고구마 1개', kcal:130, carb:31, prot:2, fat:0, fiber:4, na:10, veg:1 },
-  { id:'latte', name:'카페라떼', kcal:180, carb:15, prot:9, fat:9, fiber:0, na:120, veg:0, tags:['dairy'] },
-  { id:'americano', name:'아메리카노', kcal:10, carb:2, prot:0, fat:0, fiber:0, na:5, veg:0 },
-];
-const MEAL_REF = { kcal:2000, fiber:25, na:2000, veg:5 }; // 성인 일반 참고 예시값
-const GAP_FOODS = {
-  protein: [
-    { name:'두부 반 모', comp:'식물성 단백질·이소플라본', effect:'콩 단백질은 근육 등 신체조직의 구성성분으로, 부족한 단백질을 채우는 데 도움이 될 수 있어요', tags:['soy'] },
-    { name:'닭가슴살 100g', comp:'단백질', effect:'지방이 적은 단백질 공급원으로, 하루 단백질 섭취를 채우는 데 도움이 될 수 있어요', tags:[] },
-    { name:'고등어구이 1토막', comp:'단백질·EPA/DHA', effect:'단백질과 함께 오메가3 지방산을 섭취할 수 있어요', tags:['fish','omega3'] },
-    { name:'그릭요거트 1컵', comp:'단백질·유산균', effect:'단백질과 유산균을 함께 섭취할 수 있어요', tags:['dairy'] },
-  ],
-  fiber: [
-    { name:'시금치·콩나물 나물', comp:'식이섬유·엽산', effect:'채소의 식이섬유는 연구에서 배변 활동 관련 개선 작용이 보고되어 있어요', tags:[] },
-    { name:'현미·잡곡밥', comp:'식이섬유·비타민B1', effect:'흰쌀밥 대신 먹으면 같은 양에서 식이섬유를 더 섭취할 수 있어요', tags:[] },
-    { name:'사과 1개(껍질째)', comp:'펙틴', effect:'사과의 펙틴 성분이 연구에서 장내 환경 관련 작용이 보고되어 있어요', tags:[] },
-  ],
-  veg: [
-    { name:'채소 쌈·샐러드 한 접시', comp:'식이섬유·비타민·칼륨', effect:'채소·과일 섭취 횟수를 늘리는 가장 쉬운 방법이에요', tags:[] },
-    { name:'방울토마토 한 줌', comp:'라이코펜·비타민C', effect:'라이코펜 성분이 연구에서 항산화 작용이 보고되어 있어요', tags:[] },
-  ],
-  sodium: [
-    { name:'바나나·감자', comp:'칼륨', effect:'칼륨은 연구에서 나트륨 배설 관련 작용이 보고되어, 짠 식사가 많은 날 균형에 도움이 될 수 있어요', tags:['potassium'] },
-    { name:'무가당 두유·우유', comp:'칼륨·칼슘', effect:'국물 대신 곁들이면 나트륨 섭취를 줄이면서 칼륨·칼슘을 섭취할 수 있어요', tags:['dairy','soy'] },
-  ],
-  fatHigh: [
-    { name:'다음 끼니는 생선구이·나물 위주 한식', comp:'저지방 단백질·식이섬유', effect:'지방 비중이 높은 날, 다음 끼니 구성을 가볍게 맞추는 데 참고할 수 있어요', tags:['fish'] },
-  ],
-};
-const GAP_SUPP = {
-  fiber: { name:'식이섬유(난소화성말토덱스트린 등)', claim:'배변활동 원활에 도움을 줄 수 있음', tags:[] },
-  protein: { name:'단백질 보충 식품(건강기능식품 단백질)', claim:'근육, 결합조직 등 신체조직의 구성성분', tags:['dairy'] },
-};
 const EXTRA_RULES = [
   { cond:'kidney', tag:'potassium', action:'warn', msg:'신장질환이 있으면 칼륨 섭취 제한이 필요할 수 있어 양을 약사·영양사와 확인하세요.' },
   { cond:'allergy:대두', tag:'soy', action:'exclude', msg:'대두 알레르기로 제외했어요.' },
   { cond:'allergy:계란', tag:'egg', action:'exclude', msg:'계란 알레르기로 제외했어요.' },
   { cond:'anticoag', tag:'garlic', action:'warn', msg:'흑마늘 등 마늘 농축 제품은 항응고제와 함께 섭취 시 출혈 경향이 보고되어 약사와 확인하세요.' },
-  { cond:'diabetes', tag:'sugar', action:'warn', msg:'당 함량이 높아 혈당 관리 중이라면 다른 선물이 무난해요.' },
 ];
 SAFETY_RULES.push(...EXTRA_RULES);
 
-function analyzeMeals(ids, profile) {
-  const items = ids.map(id => MEAL_FOODS.find(f => f.id === id)).filter(Boolean);
-  const sum = k => items.reduce((a, f) => a + (f[k] || 0), 0);
-  const t = { kcal:sum('kcal'), carb:sum('carb'), prot:sum('prot'), fat:sum('fat'), fiber:sum('fiber'), na:sum('na'), veg:sum('veg') };
-  const e = t.carb*4 + t.prot*4 + t.fat*9 || 1;
-  const ratio = { carb:Math.round(t.carb*400/e), prot:Math.round(t.prot*400/e), fat:Math.round(t.fat*900/e) };
-  const gaps = [];
-  if (ratio.prot < 15) gaps.push({ key:'protein', label:`단백질 비율 ${ratio.prot}% (참고 15~20%)보다 적어 보여요` });
-  if (t.fiber < MEAL_REF.fiber * 0.6) gaps.push({ key:'fiber', label:`식이섬유 약 ${t.fiber}g (하루 참고 ${MEAL_REF.fiber}g)으로 적어 보여요` });
-  if (t.veg < 3) gaps.push({ key:'veg', label:`채소·과일 약 ${t.veg}회분 (참고 ${MEAL_REF.veg}회분)으로 적어 보여요` });
-  if (t.na > MEAL_REF.na) gaps.push({ key:'sodium', label:`나트륨 약 ${t.na.toLocaleString()}mg (하루 참고 ${MEAL_REF.na.toLocaleString()}mg)을 넘었어요` });
-  if (ratio.fat > 30) gaps.push({ key:'fatHigh', label:`지방 비율 ${ratio.fat}% (참고 15~30%)로 높은 편이에요` });
-  const conds = profileConds(profile);
-  const warnings = [], excluded = [];
-  let foods = [];
-  gaps.forEach(g => foods.push(...applySafety(GAP_FOODS[g.key], conds, warnings, excluded).slice(0, 2).map(f => ({ ...f, gap:g.label }))));
-  const supplements = applySafety(gaps.map(g => GAP_SUPP[g.key]).filter(Boolean), conds, warnings, excluded);
-  return { type:'mealresult', items, total:t, ratio, ref:MEAL_REF, gaps, foods, supplements, warnings:[...new Set(warnings)], excluded,
-    intro: gaps.length ? '오늘 기록 기준으로 아래 부분을 채우면 균형이 좋아 보여요. 다음 끼니에 참고해 보세요.' : '오늘 기록 기준으로 큰 불균형은 보이지 않아요. 지금처럼 다양하게 드셔 보세요.' };
-}
+// ---------- 검진 결과(선택) 규칙: 결과를 조용히 조정 ----------
+SAFETY_RULES.push(
+  { cond:'chk:bp', tag:'licorice', action:'exclude', msg:'검진에서 혈압이 높게 나왔다면 감초 함유 제제는 혈압 상승과 관련이 보고되어 제외했어요.' },
+  { cond:'chk:bp', tag:'ephedra', action:'exclude', msg:'검진에서 혈압이 높게 나왔다면 마황 함유 제제는 제외했어요.' },
+  { cond:'chk:glucose', tag:'sugar', action:'warn', msg:'검진에서 혈당이 높게 나왔다면 당이 많은 음식은 양을 줄이는 게 좋아요.' },
+  { cond:'chk:glucose', tag:'ginseng', action:'warn', msg:'혈당 관련 약을 드신다면 홍삼의 혈당 저하 작용에 주의하세요.' },
+  { cond:'chk:liver', tag:'herbalext', action:'warn', msg:'간 수치가 높게 나왔다면 농축 추출물 제품은 의사·약사와 먼저 확인하세요.' },
+);
+const CHECKUPS = [['bp','혈압 높음'],['glucose','혈당 높음'],['lipid','콜레스테롤·중성지방 높음'],['liver','간 수치 높음'],['anemia','빈혈 소견']];
 
-// ---------- (2) 건강식품 선물 추천 ----------
-const GIFTS = [
-  { name:'홍삼정·홍삼 스틱', kind:'건강기능식품', claim:'면역력 증진·피로개선·혈소판 응집억제를 통한 혈액흐름에 도움을 줄 수 있음', purposes:['energy','general'], ages:['40s','60s','70s'], tags:['ginseng'] },
-  { name:'루테인', kind:'건강기능식품', claim:'노화로 인해 감소될 수 있는 황반색소밀도를 유지하여 눈 건강에 도움을 줄 수 있음', purposes:['eye','general'], ages:['40s','60s','70s','young'], tags:[] },
-  { name:'칼슘·비타민D', kind:'건강기능식품', claim:'(칼슘) 뼈와 치아 형성에 필요 · (비타민D) 칼슘과 인이 흡수되고 이용되는데 필요, 골다공증발생 위험 감소에 도움을 줌', purposes:['bone','general'], ages:['60s','70s'], tags:[] },
-  { name:'rTG 오메가3', kind:'건강기능식품', claim:'혈중 중성지질 개선·혈행 개선에 도움을 줄 수 있음', purposes:['blood','general'], ages:['40s','60s','70s'], tags:['omega3','fish'] },
-  { name:'프로바이오틱스', kind:'건강기능식품', claim:'유산균 증식 및 유해균 억제에 도움을 줄 수 있음, 배변활동 원활에 도움을 줄 수 있음', purposes:['gut','general'], ages:['young','40s','60s','70s'], tags:[] },
-  { name:'멀티비타민·미네랄', kind:'건강기능식품', claim:'(비타민B군) 에너지 대사에 필요 · (비타민C) 유해산소로부터 세포를 보호하는데 필요', purposes:['energy','general'], ages:['young','40s','60s','70s'], tags:[] },
-  { name:'대추·생강·감초 한방차 세트', kind:'식품', claim:'따뜻하게 우려 마시는 전통 차 선물 (질병 효능 표방 없음)', purposes:['general'], ages:['60s','70s','40s'], tags:['licorice'] },
-  { name:'흑마늘 진액', kind:'식품', claim:'흑마늘의 S-알릴시스테인 성분이 연구에서 항산화 작용이 보고되어 있어요', purposes:['energy'], ages:['40s','60s','70s'], tags:['garlic'] },
-  { name:'국산 견과 선물세트', kind:'식품', claim:'견과류의 불포화지방산·비타민E 성분이 연구에서 항산화 작용이 보고되어 있어요', purposes:['general','blood'], ages:['young','40s','60s','70s'], tags:['nuts'] },
-  { name:'제철 과일 바구니', kind:'식품', claim:'과일의 비타민C·폴리페놀을 즐길 수 있는 무난한 선물', purposes:['general'], ages:['young','40s','60s','70s'], tags:['sugar'] },
-  { name:'아카시아 꿀 세트', kind:'식품', claim:'전통적으로 선물로 많이 찾는 품목 (효능 표방 없음)', purposes:['general'], ages:['40s','60s','70s'], tags:['sugar'] },
-];
-function giftRecommend(g) {
-  const conds = [...(g.conditions || [])];
-  if (g.meds && /와파린|아스피린|항응고|항혈소판|클로피도그렐|플라빅스|엘리퀴스|자렐토/.test(g.meds)) conds.push('anticoag');
-  else if (g.meds && g.meds.trim()) conds.push('otherMeds');
-  (g.allergies || []).forEach(a => conds.push('allergy:' + a));
-  let list = GIFTS.filter(x => x.ages.includes(g.age || '60s'));
-  const purpose = g.purpose || 'general';
-  list.sort((a, b) => (b.purposes.includes(purpose) - a.purposes.includes(purpose)));
-  const warnings = [], excluded = [];
-  const items = applySafety(list, conds, [], excluded).slice(0, 6);
-  items.filter(i => i.note).forEach(i => warnings.push(`${i.name}: ${i.note}`));
-  const notes = [];
-  if (g.unknown) notes.push('받는 분의 지병·복용약을 잘 모르면, 건강기능식품보다 일반 식품 선물이 무난하고 드시기 전 약사와 확인하도록 권해 주세요.');
-  if ((g.conditions||[]).includes('pregnant')) notes.push('임신·수유 중인 분께는 건강기능식품보다 일반 식품 선물이 무난해요.');
-  return { type:'giftresult', items, warnings:[...new Set(warnings)], excluded, notes,
-    intro: `${g.recipientLabel || '받는 분'}께 드리기 좋은 먹거리 선물을 골라봤어요. 받는 분 건강 정보에 맞지 않는 성분은 걸러냈어요.` };
-}
-
-const MEAL_INTENT = ['식단 기록','식단기록','먹은 거 기록','먹은거 기록','칼로리','오늘 먹은','식단 관리','기록할래'];
-const GIFT_INTENT = ['선물'];
-const _handleChat = handleChat;
-handleChat = async function (state) {
-  const last = ((state.messages || []).filter(m => m.role === 'user').pop() || {}).content || '';
-  if (!RED_FLAGS.some(k => last.includes(k))) {
-    if (GIFT_INTENT.some(k => last.includes(k))) return { type:'gift', text:'선물 받으실 분에 대해 알려주세요. 받는 분의 건강 정보에 맞지 않는 성분은 걸러서 추천해 드릴게요.' };
-    if (MEAL_INTENT.some(k => last.includes(k))) return { type:'meallog', text:'오늘 드신 걸 눌러서 담아 주세요. 대략적인 칼로리와 영양 균형을 보여드리고, 부족한 부분을 채울 먹거리를 추천해 드릴게요.' };
-  }
-  return _handleChat(state);
+// ---------- 평소 한 끼 (괜찮아요 · 뭐 먹을까) : 시간대별 ----------
+const EVERYDAY = {
+  morning: [
+    { name:'달걀 · 토마토 스크램블', comp:'단백질·라이코펜', effect:'아침 단백질은 포만감 유지와 관련이 보고되어 있고, 토마토의 라이코펜은 연구에서 항산화 작용이 보고되어 있어요', tags:['egg'], boost:['glucose','anemia'] },
+    { name:'오트밀 · 바나나', comp:'베타글루칸·칼륨', effect:'귀리의 베타글루칸 성분이 연구에서 혈중 콜레스테롤 관련 개선 작용이 보고되어 있어요', tags:['potassium'], boost:['lipid'] },
+    { name:'두부 된장국 · 잡곡밥', comp:'콩 단백질·식이섬유', effect:'잡곡의 식이섬유는 연구에서 식후 혈당 상승 완화 작용이 보고되어 있어요', tags:['soy'], boost:['glucose','lipid'] },
+    { name:'플레인 요거트 · 견과 한 줌', comp:'유산균·불포화지방산', effect:'요거트의 유산균과 견과의 불포화지방산을 함께 섭취할 수 있어요', tags:['dairy','nuts'] },
+  ],
+  lunch: [
+    { name:'생선구이 · 나물 정식', comp:'EPA/DHA·식이섬유', effect:'등푸른생선의 EPA·DHA는 연구에서 혈중 중성지질 관련 개선 작용이 보고되어 있어요', tags:['fish','omega3'], boost:['lipid','bp'] },
+    { name:'채소 듬뿍 비빔밥 (잡곡)', comp:'식이섬유·비타민', effect:'다양한 채소의 식이섬유는 연구에서 식후 혈당 상승 완화 작용이 보고되어 있어요', tags:['egg'], boost:['glucose'] },
+    { name:'소고기 미역국 · 잡곡밥', comp:'철분·단백질', effect:'소고기의 헴철은 체내 산소운반과 혈액생성에 필요한 철분의 흡수율이 높은 공급원이에요', tags:[], boost:['anemia'] },
+    { name:'닭가슴살 샐러드 · 고구마', comp:'단백질·식이섬유', effect:'지방이 적은 단백질과 식이섬유를 함께 섭취할 수 있는 가벼운 한 끼예요', tags:['potassium'], boost:['glucose','lipid'] },
+  ],
+  evening: [
+    { name:'두부 · 버섯 전골 (싱겁게)', comp:'콩 단백질·베타글루칸', effect:'버섯의 베타글루칸 성분이 연구에서 면역 관련 작용이 보고되어 있고, 저녁에 부담이 적은 구성이에요', tags:['soy'], boost:['bp','lipid','glucose'] },
+    { name:'고등어구이 · 쌈채소', comp:'EPA/DHA·칼륨', effect:'등푸른생선의 오메가3 지방산과 채소의 칼륨을 함께 섭취할 수 있어요', tags:['fish','omega3','potassium'], boost:['lipid','bp'] },
+    { name:'시금치 · 소고기 볶음', comp:'철분·엽산', effect:'철분과 엽산은 혈액생성에 필요한 영양소로 알려져 있어요', tags:[], boost:['anemia'] },
+  ],
+  night: [
+    { name:'따뜻한 두유 한 잔', comp:'콩 단백질·이소플라본', effect:'늦은 시간엔 소화 부담이 적은 따뜻한 음료가 무난해요', tags:['soy'], boost:['glucose'] },
+    { name:'바나나 반 개', comp:'트립토판·칼륨', effect:'트립토판은 세로토닌·멜라토닌 합성의 원료로 알려져 있어요', tags:['potassium'] },
+    { name:'따뜻한 우유 한 잔', comp:'트립토판·칼슘', effect:'트립토판 성분이 연구에서 수면 관련 작용이 보고되어 있어요', tags:['dairy'] },
+  ],
 };
+// 기존 주제 음식에 검진 가중치
+const BOOST = { '시금치 · 소고기':['anemia'], '양배추':['glucose'], '무(무즙·뭇국)':['bp'], '콩나물국':['liver'], '고등어 · 연어':['lipid'], '블루베리':['glucose'] };
 
-// ---------- 탭 앱용 API ----------
-function recommendTopic(topicId, profile) {
-  const t = TOPICS.find(x => x.id === topicId);
-  return ruleBased([{ role:'user', content: t.keywords[0] }], profile);
+function slotOf(h){ return h>=5&&h<11?'morning': h>=11&&h<16?'lunch': h>=16&&h<21?'evening':'night'; }
+const SLOT_LABEL = { morning:'아침', lunch:'점심', evening:'저녁', night:'늦은 밤' };
+const DOW = ['일','월','화','수','목','금','토'];
+function seasonOf(m){ return m>=3&&m<=5?'spring': m>=6&&m<=8?'summer': m>=9&&m<=11?'autumn':'winter'; }
+const SEASON_LABEL = { spring:'봄', summer:'여름', autumn:'가을', winter:'겨울' };
+const isTransition = m => [3,4,9,10,11].includes(m);
+const SEASONAL = {
+  spring: { name:'냉이·달래 된장국', comp:'비타민C·식이섬유', effect:'봄나물의 비타민C·식이섬유를 제철에 섭취할 수 있어요', tags:['soy'] },
+  summer: { name:'오이냉국 · 콩국수', comp:'수분·콩 단백질', effect:'더운 날 수분과 콩 단백질을 함께 섭취할 수 있는 시원한 한 끼예요', tags:['soy'] },
+  autumn: { name:'버섯 · 무 들깨국', comp:'베타글루칸·디아스타제', effect:'버섯의 베타글루칸 성분이 연구에서 면역 관련 작용이 보고되어 있어요', tags:[] },
+  winter: { name:'무 · 배 생강차', comp:'진저롤·루테올린', effect:'생강의 진저롤 성분이 연구에서 체온 관련 작용이 보고되어, 몸을 따뜻하게 하는 데 도움이 될 수 있어요', tags:['ginger'] },
+};
+const MOMENT_TITLE = { everyday:null, hangover:'혹시 어젯밤 한잔하셨다면', digest:'속이 무거운 날엔', fatigue:'한 주를 시작하는 날엔', chill:'아침저녁 쌀쌀한 환절기엔', sleep:'하루를 마무리하는 시간엔', eye:'눈이 피로한 날엔' };
+const MOMENT_LABEL = { everyday:'평소 한 끼', hangover:'숙취 케어', digest:'속 편한 한 끼', fatigue:'기운 보충', chill:'따뜻하게', sleep:'편안한 밤', eye:'눈 휴식' };
+
+// 앱이 이미 아는 맥락으로 '오늘의 순간' 후보를 순위대로 만든다 (질문 없음)
+function buildContext(now, profile, signals) {
+  const d = new Date(now), h = d.getHours(), m = d.getMonth()+1, dow = d.getDay();
+  const slot = slotOf(h), season = seasonOf(m), trans = isTransition(m);
+  const cands = []; const add = (moment, why) => { if (!cands.find(c => c.moment === moment)) cands.push({ moment, why }); };
+  const sig = (signals || []).find(x => x.daysAgo <= 1);
+  if (sig) add(sig.topic, `어제 알려주신 내용을 이어서 '${MOMENT_LABEL[sig.topic]}' 쪽으로`);
+  if ((dow === 6 || dow === 0) && slot === 'morning') add('hangover', `${DOW[dow]}요일 아침이라, 어젯밤 모임이 있었을 수 있어요`);
+  if (slot === 'night') add('sleep', '늦은 시간이라 부담 없는 것 위주로');
+  if (trans && (slot === 'morning' || slot === 'evening')) add('chill', `${SEASON_LABEL[season]} 환절기, 일교차가 큰 시기예요`);
+  if (season === 'winter' && slot !== 'lunch') add('chill', '추운 겨울이에요');
+  if (dow === 1 && slot === 'morning') add('fatigue', '월요일 아침이에요');
+  if (dow === 5 && slot === 'evening') add('everyday', '금요일 저녁, 가볍게 시작해요');
+  add('everyday', `${DOW[dow]}요일 ${SLOT_LABEL[slot]} 다음 끼니`);
+  ['fatigue','digest','chill','sleep','hangover','eye'].forEach(x => add(x, '오늘은 다른 쪽이 필요할 수도 있어요'));
+  return { now:d.toISOString(), hour:h, month:m, dow, slot, season, trans,
+    label: `${m}월 · ${DOW[dow]}요일 ${SLOT_LABEL[slot]}${trans ? ' · 환절기' : ' · ' + SEASON_LABEL[season]}`, cands };
 }
-const PRODUCTS = [
-  { name:'쌍화탕', kind:'한방 일반의약품', claim:'피로회복, 허약체질, 병후의 체력저하 (대표 품목 허가사항 요약)', ingredients:'작약·숙지황·황기·당귀·천궁·계피·감초·생강·대추', tags:['licorice'] },
-  { name:'갈근탕', kind:'한방 일반의약품', claim:'감기, 코감기, 두통, 어깨결림, 근육통 (대표 품목 허가사항 요약)', ingredients:'갈근·마황·계지·작약·감초·생강·대추', tags:['licorice','ephedra'] },
-  { name:'소청룡탕', kind:'한방 일반의약품', claim:'기관지염, 비염, 감기의 콧물·재채기·기침 (대표 품목 허가사항 요약)', ingredients:'마황·작약·건강·감초·계지·세신·오미자·반하', tags:['licorice','ephedra'] },
-  { name:'평위산', kind:'한방 일반의약품', claim:'식욕부진, 소화불량, 위부팽만감 (대표 품목 허가사항 요약)', ingredients:'창출·후박·진피·감초·생강·대추', tags:['licorice'] },
-  { name:'천왕보심단', kind:'한방 일반의약품', claim:'신경쇠약, 불면, 건망증, 가슴두근거림 (대표 품목 허가사항 요약)', ingredients:'지황·인삼·당귀·산조인·백자인·천문동·맥문동 등', tags:['licorice'] },
-  { name:'홍삼', kind:'건강기능식품', claim:'면역력 증진·피로개선·혈소판 응집억제를 통한 혈액흐름·기억력 개선·항산화에 도움을 줄 수 있음', ingredients:'홍삼농축액(진세노사이드)', tags:['ginseng'] },
-  { name:'오메가3 (EPA·DHA)', kind:'건강기능식품', claim:'혈중 중성지질 개선·혈행 개선에 도움을 줄 수 있음, 건조한 눈을 개선하여 눈 건강에 도움을 줄 수 있음', ingredients:'EPA 및 DHA 함유 유지(어유)', tags:['omega3','fish'] },
-  { name:'비타민C', kind:'건강기능식품', claim:'결합조직 형성과 기능유지에 필요, 철의 흡수에 필요, 항산화 작용을 하여 유해산소로부터 세포를 보호하는데 필요', ingredients:'비타민C', tags:['vitc'] },
-  { name:'아연', kind:'건강기능식품', claim:'정상적인 면역기능에 필요, 정상적인 세포분열에 필요', ingredients:'아연', tags:['zinc'] },
-  { name:'마그네슘', kind:'건강기능식품', claim:'에너지 이용에 필요, 신경과 근육 기능 유지에 필요', ingredients:'마그네슘', tags:['magnesium'] },
-  { name:'프로바이오틱스', kind:'건강기능식품', claim:'유산균 증식 및 유해균 억제에 도움을 줄 수 있음, 배변활동 원활에 도움을 줄 수 있음', ingredients:'유산균', tags:[] },
-  { name:'루테인', kind:'건강기능식품', claim:'노화로 인해 감소될 수 있는 황반색소밀도를 유지하여 눈 건강에 도움을 줄 수 있음', ingredients:'마리골드꽃추출물(루테인)', tags:['ragweed'] },
-  { name:'밀크씨슬', kind:'건강기능식품', claim:'간 건강에 도움을 줄 수 있음', ingredients:'밀크씨슬(카르두스 마리아누스) 추출물', tags:['ragweed'] },
-  { name:'L-테아닌', kind:'건강기능식품', claim:'스트레스로 인한 긴장완화에 도움을 줄 수 있음', ingredients:'L-테아닌', tags:[] },
-  { name:'칼슘·비타민D', kind:'건강기능식품', claim:'(칼슘) 뼈와 치아 형성에 필요 · (비타민D) 칼슘과 인이 흡수되고 이용되는데 필요, 골다공증발생 위험 감소에 도움을 줌', ingredients:'칼슘·비타민D', tags:[] },
-  { name:'비타민B군', kind:'건강기능식품', claim:'탄수화물과 에너지 대사에 필요', ingredients:'비타민B1·B2·B6·B12 등', tags:[] },
-];
-function checkProduct(name, profile) {
-  const pr = PRODUCTS.find(x => x.name === name);
+
+function resultFor(moment, ctx, profile) {
   const conds = profileConds(profile);
-  const hits = SAFETY_RULES.filter(r => conds.includes(r.cond) && pr.tags.includes(r.tag));
-  const avoid = [...new Set(hits.filter(h => h.action === 'exclude').map(h => h.msg))];
-  const caution = [...new Set(hits.filter(h => h.action === 'warn').map(h => h.msg))];
-  const level = avoid.length ? 'avoid' : caution.length ? 'caution' : 'ok';
-  const general = pr.kind === '한방 일반의약품'
-    ? '일반의약품이에요. 제품 설명서의 용법·용량과 주의사항을 확인하고 약사와 상담 후 복용하세요.'
-    : '건강기능식품은 질병의 예방·치료를 위한 의약품이 아니에요. 제품 표시사항의 섭취량을 지켜 주세요.';
-  return { product: pr, level, avoid, caution, general };
+  const chk = (profile && profile.checkups) || [];
+  chk.forEach(c => conds.push('chk:' + c));
+  let foods, extras = [];
+  if (moment === 'everyday') {
+    foods = [SEASONAL[ctx.season], ...EVERYDAY[ctx.slot]].map(f => ({ ...f }));
+    if (ctx.slot === 'night') foods = EVERYDAY.night.map(f => ({ ...f }));
+  } else {
+    const t = TOPICS.find(x => x.id === moment);
+    foods = t.foods.map(f => ({ ...f, boost: BOOST[f.name] || [] }));
+    extras = [...t.otc.map(o => ({ ...o, kind:'한방 일반의약품' })), ...t.supplements.map(s => ({ ...s, kind:'건강기능식품' }))];
+  }
+  foods.sort((a,b) => (b.boost||[]).filter(x=>chk.includes(x)).length - (a.boost||[]).filter(x=>chk.includes(x)).length);
+  const warnings = [], excluded = [];
+  const safeFoods = applySafety(foods, conds, warnings, excluded);
+  const safeExtras = applySafety(extras, conds, warnings, excluded);
+  const top = safeFoods[0], alts = [];
+  if (safeFoods[1]) alts.push({ ...safeFoods[1], kind:'음식' });
+  if (safeExtras[0]) alts.push(safeExtras[0]); else if (safeFoods[2]) alts.push({ ...safeFoods[2], kind:'음식' });
+  const notes = [];
+  if (chk.length) notes.push('검진 결과를 반영해 순서를 조정했어요. 검진 결과에 대해서는 의사의 안내를 우선 따라 주세요.');
+  const title = MOMENT_TITLE[moment] ? MOMENT_TITLE[moment] : `오늘 ${SLOT_LABEL[ctx.slot]}엔 이렇게`;
+  return { type:'result', moment, momentLabel:MOMENT_LABEL[moment], title, top, alts, excluded, notes, disclaimer:DISCLAIMER };
 }
 
-window.BapsimEngine = { chat: async (state) => ({ ...(await handleChat(state)), disclaimer: DISCLAIMER }),
-  analyzeMeals: (ids, profile) => ({ ...analyzeMeals(ids, profile), disclaimer: DISCLAIMER }),
-  giftRecommend: (g) => ({ ...giftRecommend(g), disclaimer: DISCLAIMER }), MEAL_FOODS,
-  recommendTopic: (id, p) => ({ ...recommendTopic(id, p), disclaimer: DISCLAIMER }), checkProduct, PRODUCTS, DISCLAIMER,
-  TOPICS: TOPICS.map(t => ({ id: t.id, label: t.label })) };
+// 질문 없이 오늘 카드 만들기. swap: '오늘은 좀 달라요' 누른 횟수, text: 선택 한 줄 피드백
+function autoCard(now, profile, { swap = 0, text = '', signals = [] } = {}) {
+  const ctx = buildContext(now, profile, signals);
+  let cand = ctx.cands[swap % ctx.cands.length], fb = null;
+  if (text) {
+    if (RED_FLAGS.some(k => text.includes(k))) return { type:'stop', ctx, title:'먹는 것으로 챙길 범위를 넘어 보여요', text:'열이 높거나 통증이 심하면 음식·일반의약품 추천을 드리지 않아요. 의료진 상담이 필요해요. 급하면 119에 연락하세요.' };
+    const t = matchTopics(text)[0];
+    if (t) { cand = { moment:t.id, why:`'${text}'라고 알려주셔서` }; fb = t.id; }
+    else if (OUT_OF_SCOPE.some(k => text.includes(k))) cand = { ...cand, why: cand.why + ' · 운동·생활습관은 다루지 않아요' };
+    else cand = { ...cand, why: cand.why + ' · 알려주신 내용은 잘 몰라서 기본 추천을 보여드려요' };
+  }
+  const r = resultFor(cand.moment, ctx, profile);
+  return { ...r, ctx, why: cand.why, feedbackTopic: fb, swappable: !text };
+}
+
+window.BapsimEngine = { CHECKUPS, autoCard, buildContext, slotOf, SLOT_LABEL, DISCLAIMER };
 })();

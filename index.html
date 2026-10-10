@@ -4,162 +4,134 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#2f8f5b" />
-<title>밥심 · 먹는 것으로 챙기는 내 컨디션</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="밥심" />
+<title>밥심 · 오늘의 한 끼</title>
 <style>
 :root{--g:#2f8f5b;--g2:#e8f5ee;--bg:#f6f4ef;--ink:#1f2a24;--mut:#6b766f;--warn:#b4610e;--wbg:#fff4e5;--red:#c0392b;--rbg:#fdecea;--line:#ebe7de}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;font-family:'Pretendard','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif;background:#dfe7e1;color:var(--ink)}
-.app{max-width:480px;min-height:100vh;margin:0 auto;background:var(--bg);position:relative;padding-bottom:76px}
-.top{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line);padding:12px 16px;display:flex;align-items:center;gap:10px}
-.top .back{border:0;background:none;font-size:20px;cursor:pointer;padding:0 4px;color:var(--ink)}
-.top h1{font-size:17px;margin:0;flex:1}
-.top .demo{font-size:11px;padding:4px 8px;border-radius:99px;background:#fff3d6;color:#8a5a00;display:none}
-.screen{display:none;padding:16px}
-.screen.on{display:block}
-h2{font-size:20px;margin:4px 0 6px} .sub{color:var(--mut);font-size:13.5px;margin:0 0 14px;line-height:1.5}
-.sec{font-size:12.5px;color:var(--mut);margin:16px 0 8px;font-weight:600}
+.app{max-width:480px;min-height:100vh;margin:0 auto;background:var(--bg);padding-bottom:28px}
+.top{display:flex;align-items:center;gap:8px;padding:14px 16px 6px}
+.top h1{font-size:17px;margin:0;flex:1;display:flex;align-items:center;gap:8px}.top h1 img{width:26px;height:26px;border-radius:8px}
+.top button{border:0;background:none;font-size:20px;cursor:pointer;color:var(--mut);padding:4px}
+.demo{font-size:11px;padding:3px 8px;border-radius:99px;background:#fff3d6;color:#8a5a00;display:none}
+.screen{display:none;padding:10px 16px}.screen.on{display:block}
+.w{background:#fff;border-radius:26px;padding:22px 18px;box-shadow:0 8px 28px rgba(31,42,36,.07);border:1px solid var(--line)}
+.hint{font-size:12px;color:var(--mut);margin-bottom:6px}
+.q{font-size:24px;font-weight:800;margin:0 0 18px;letter-spacing:-.3px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:center;gap:14px;border:1px solid var(--line);background:#faf9f6;border-radius:18px;padding:14px 16px;cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%}
+.opt i{font-style:normal;font-size:28px}.opt b{font-size:16px;display:block}.opt span{font-size:12px;color:var(--mut)}
+.opt:active{transform:scale(.98)}.opt.pref{border-color:#bcdcc9;background:var(--g2)}
+.ropt{padding:16px}.ropt b{font-size:15.5px}
+.backq{border:0;background:none;color:var(--mut);font-size:13px;margin-top:14px;cursor:pointer;padding:0}
+.ctx{font-size:12px;color:var(--g);font-weight:700;margin-bottom:4px}
+.title{font-size:20px;font-weight:800;margin:0 0 14px;letter-spacing:-.3px}
+.topk{background:var(--g2);border-radius:18px;padding:16px}
+.topk .lb{font-size:11.5px;color:var(--g);font-weight:700}
+.topk b{display:block;font-size:20px;margin:4px 0 6px}
+.topk p,.alt p{margin:0;font-size:13px;line-height:1.55;color:#33413a}
+.comp{display:inline-block;font-size:11px;background:#fff;color:var(--g);border-radius:6px;padding:1px 6px;margin-bottom:6px}
+.alts{margin-top:10px}.alt{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:8px}
+.alt b{font-size:15px}.tag{font-size:10.5px;padding:2px 6px;border-radius:6px;margin-left:5px;vertical-align:1px}
+.t-food{background:#eee;color:#555}.t-mfds{background:#3567b5;color:#fff}.t-otc{background:#8a5a2b;color:#fff}
+.note{font-size:12px;color:var(--warn);margin-top:4px;line-height:1.5}
+.ex{font-size:12.5px;color:#7a1f15;background:var(--rbg);border-radius:12px;padding:10px 12px;margin-top:12px;line-height:1.55}
+.ex details summary{cursor:pointer;list-style:none}.ex details summary::after{content:' ›';}
+.nt{font-size:12.5px;color:#1f4d33;background:#eef6f1;border-radius:12px;padding:10px 12px;margin-top:8px;line-height:1.55}
+.disc{font-size:11px;color:var(--mut);line-height:1.5;margin-top:12px}
+.again{display:block;width:100%;margin-top:14px;border:1px solid #cfe3d7;background:#fff;color:var(--g);border-radius:14px;padding:12px;font-size:14px;cursor:pointer}
+.stop{background:var(--rbg);color:#7a1f15;border-radius:18px;padding:16px;font-size:14px;line-height:1.6}
+.lnk{display:block;text-align:center;font-size:12.5px;color:var(--mut);margin:20px 0 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px;background:none;border:0;width:100%}
+h2{font-size:21px;margin:6px 0}.sub{color:var(--mut);font-size:13.5px;margin:0 0 10px;line-height:1.55}
+.sec{font-size:12.5px;color:var(--mut);margin:18px 0 8px;font-weight:700}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{display:inline-flex;align-items:center;gap:4px;padding:9px 13px;border:1px solid #dcd7cc;border-radius:99px;font-size:13.5px;background:#fff;cursor:pointer;user-select:none}
-.chip input{display:none}
-.chip:has(input:checked),.chip.on{background:var(--g2);border-color:var(--g);color:var(--g);font-weight:600}
-input[type=text],input[type=search]{width:100%;padding:12px 14px;border:1px solid #dcd7cc;border-radius:12px;font-size:14.5px;background:#fff;outline:none}
-.btn{display:block;width:100%;background:var(--g);color:#fff;border:0;border-radius:14px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;margin-top:16px}
-.btn.ghost{background:#fff;color:var(--g);border:1px solid #cfe3d7}
-.btn:disabled{opacity:.45}
-.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
-.hello{background:linear-gradient(135deg,#2f8f5b,#4aa874);color:#fff;border:0}
-.hello .p{font-size:12.5px;opacity:.95;margin-top:8px;line-height:1.5}
-.hello a{color:#fff;text-decoration:underline;cursor:pointer}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.entry{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px 14px;cursor:pointer;min-height:120px;display:flex;flex-direction:column;gap:6px}
-.entry .ic{font-size:28px} .entry b{font-size:15px} .entry span{font-size:12px;color:var(--mut);line-height:1.4}
-.entry:active{transform:scale(.98)}
-.ask{display:flex;align-items:center;gap:8px;margin-top:14px;padding:12px 14px;border-radius:14px;border:1px dashed #cfd8d2;color:var(--mut);font-size:13px;cursor:pointer;background:transparent}
-.cond{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.cond .chip{justify-content:center;padding:14px 8px;border-radius:14px;font-size:14px}
-.rh{font-size:14px;font-weight:700;color:var(--g);margin:2px 0 8px;display:flex;align-items:center;gap:6px}
-.rh.w{color:var(--warn)} .rh.x{color:var(--red)}
-.item{padding:10px 12px;border-radius:12px;background:#faf9f6;margin-bottom:8px;font-size:13.5px;line-height:1.55}
-.item b{font-size:14.5px}
-.tag{font-size:10.5px;padding:2px 6px;border-radius:6px;margin-left:5px;vertical-align:1px}
-.t-comp{background:var(--g2);color:var(--g)} .t-mfds{background:#3567b5;color:#fff} .t-otc{background:#8a5a2b;color:#fff} .t-food{background:#eee;color:#555} .t-ap{background:#9a8f7a;color:#fff}
-.note{margin-top:4px;font-size:12.5px;color:var(--warn)}
-.excl div{font-size:13px;margin-bottom:6px;line-height:1.5} .excl s{color:#999}
-.warnbox{background:var(--wbg);border-radius:12px;padding:10px 12px;color:#6d3b05;font-size:13px;line-height:1.55}
-.disc{font-size:11.5px;color:var(--mut);line-height:1.5;padding:4px 2px 10px}
-.bar{height:8px;border-radius:6px;background:#eee;overflow:hidden;margin:4px 0 10px}.bar>i{display:block;height:100%;background:var(--g)}
-.stack{display:flex;height:16px;border-radius:8px;overflow:hidden;margin:6px 0;font-size:10.5px;color:#fff}.stack>i{display:grid;place-items:center;font-style:normal}
-.kv{display:flex;justify-content:space-between;font-size:13px}.big{font-size:24px;font-weight:800;color:var(--g)}
-.addgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.add{padding:11px 10px;border:1px solid #dcd7cc;border-radius:12px;background:#fff;font-size:13px;cursor:pointer;text-align:left;position:relative}
-.add .n{position:absolute;right:8px;top:8px;background:var(--g);color:#fff;border-radius:99px;font-size:11px;min-width:18px;height:18px;display:none;place-items:center;padding:0 5px}
-.add.has{border-color:var(--g);background:var(--g2)} .add.has .n{display:grid}
-.add small{display:block;color:var(--mut);font-size:11px;margin-top:2px}
-.sticky{position:sticky;bottom:76px;background:var(--bg);padding:8px 0 4px}
-.plist .row{display:flex;align-items:center;justify-content:space-between;padding:13px 4px;border-bottom:1px solid var(--line);cursor:pointer;font-size:14.5px}
-.plist .row span{font-size:11.5px;color:var(--mut)}
-.verdict{border-radius:14px;padding:14px;font-size:14px;line-height:1.55;margin-bottom:12px}
-.v-ok{background:var(--g2);color:#1f5a3b}.v-caution{background:var(--wbg);color:#6d3b05}.v-avoid{background:var(--rbg);color:#7a1f15}
-.verdict b{font-size:16px;display:block;margin-bottom:4px}
+.chip{display:inline-flex;padding:9px 13px;border:1px solid #dcd7cc;border-radius:99px;font-size:13.5px;background:#fff;cursor:pointer;user-select:none}
+.chip input{display:none}.chip:has(input:checked){background:var(--g2);border-color:var(--g);color:var(--g);font-weight:700}
+input[type=text]{width:100%;padding:12px 14px;border:1px solid #dcd7cc;border-radius:12px;font-size:14.5px;background:#fff;outline:none}
+.btn{display:block;width:100%;background:var(--g);color:#fff;border:0;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-top:18px}
+.btn.ghost{background:#fff;color:var(--g);border:1px solid #cfe3d7;margin-top:10px}
 .persona{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#fff;margin-bottom:8px;cursor:pointer}
-.persona .e{font-size:24px} .persona b{font-size:14px} .persona div div{font-size:12px;color:var(--mut)}
-.persona.on{border-color:var(--g);background:var(--g2)}
-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#fff;border-top:1px solid var(--line);display:flex;padding:6px 0 calc(8px + env(safe-area-inset-bottom));z-index:10}
-nav button{flex:1;border:0;background:none;font-size:11px;color:#8a938d;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px 0}
-nav button i{font-style:normal;font-size:20px}
-nav button.on{color:var(--g);font-weight:700}
-.chat{display:flex;flex-direction:column;gap:10px;min-height:50vh}
-.msg{max-width:88%;padding:10px 13px;border-radius:16px;font-size:14px;line-height:1.55;white-space:pre-wrap}
-.msg.u{align-self:flex-end;background:var(--g);color:#fff;border-bottom-right-radius:4px}
-.msg.b{align-self:flex-start;background:#fff;border:1px solid var(--line);border-bottom-left-radius:4px}
-.msg.b.danger{background:var(--rbg);color:#7a1f15}
-.chatin{position:sticky;bottom:76px;display:flex;gap:8px;padding:10px 0;background:var(--bg)}
-.chatin button{background:var(--g);color:#fff;border:0;border-radius:12px;padding:0 16px;font-size:14px}
-.pill{display:inline-block;font-size:12px;padding:4px 9px;border-radius:99px;background:#fff;border:1px solid var(--line);margin:3px 4px 0 0}
-.onb nav{display:none}
+.persona .e{font-size:22px}.persona b{font-size:14px}.persona div div{font-size:12px;color:var(--mut)}.persona.on{border-color:var(--g);background:var(--g2)}
+/* 위젯 목업 */
+.phone{width:340px;margin:0 auto;border-radius:44px;padding:14px 16px 18px;background:linear-gradient(160deg,#b9d7c5,#e9d8b8 60%,#d9c2d8);box-shadow:inset 0 0 0 8px #1f2a24}
+.phone.and{border-radius:32px;background:linear-gradient(160deg,#c9d6e8,#e6e0cf 60%,#cfe3d4)}
+.sb{display:flex;justify-content:space-between;font-size:12px;font-weight:700;padding:8px 16px 12px}
+.row2{display:flex;gap:14px;align-items:flex-start}
+.wg{background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-radius:22px;padding:12px;box-shadow:0 2px 10px rgba(0,0,0,.08);display:flex;flex-direction:column;overflow:hidden}
+.and .wg{border-radius:26px;background:#f4f7f3}
+.wsm{width:146px;height:146px}.wmd{width:100%;height:146px;margin-top:14px}
+.wh{font-size:10.5px;font-weight:800;color:var(--g);display:flex;align-items:center;gap:4px}.wh img{width:14px;height:14px;border-radius:4px}
+.wq{font-size:14px;font-weight:800;margin:6px 0 6px}
+.wo{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:auto}
+.wmd .wo{grid-template-columns:repeat(4,1fr)}
+.wo button{border:0;background:#fff;border-radius:10px;padding:5px 2px;cursor:pointer;font-size:9.5px;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.wo button i{font-style:normal;font-size:18px}
+.wsm .wo button span{display:none}
+.wr{font-size:10.5px;color:var(--mut)}.wt{font-size:14px;font-weight:800;margin:3px 0 2px;line-height:1.3}
+.wa{font-size:10.5px;color:#33413a;line-height:1.4}.wx{font-size:10px;color:var(--red);margin-top:auto}
+.wro{display:flex;flex-direction:column;gap:4px;margin-top:auto}.wro button{border:0;background:#fff;border-radius:9px;padding:6px 8px;font-size:11px;text-align:left;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.wmd .wro{flex-direction:row}.wmd .wro button{flex:1;text-align:center}
+.apps{display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1}
+.apps div{display:flex;flex-direction:column;align-items:center;font-size:10px;gap:4px}
+.apps span,.apps img{width:54px;height:54px;border-radius:15px;background:rgba(255,255,255,.55)}
+.wlabel{font-size:12px;color:var(--mut);margin:20px 0 8px;text-align:center;font-weight:700}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:18px;font-size:13px;line-height:1.65}
+.why{font-size:12px;color:var(--mut);margin:-8px 0 14px;line-height:1.5}
+.fb{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.fb #swap{flex-basis:100%}
+.fb button{border:1px solid #cfe3d7;background:#fff;color:var(--g);border-radius:12px;padding:10px 12px;font-size:13px;cursor:pointer;white-space:nowrap}
+.fb input{flex:1;padding:10px 12px;border:1px solid #dcd7cc;border-radius:12px;font-size:13px;min-width:0}
+.fbt{font-size:12px;color:var(--g);margin-top:10px}.fbt a{color:var(--mut);cursor:pointer;margin-left:6px}
+.sim{display:grid;gap:8px}.sim label{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;font-size:13.5px;cursor:pointer}
+.sim label:has(input:checked){border-color:var(--g);background:var(--g2);font-weight:700}
+.wb{margin-top:auto;display:flex;justify-content:space-between;align-items:center}.wb button{border:0;background:#fff;border-radius:99px;padding:3px 8px;font-size:10px;color:var(--g);cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 </style>
 </head>
 <body>
-<div class="app" id="app">
-  <div class="top"><button class="back" id="back" style="display:none">‹</button><h1 id="ttl">밥심</h1><span class="demo" id="demoBadge">데모</span></div>
+<div class="app">
+  <div class="top">
+    <button id="back" style="display:none" aria-label="뒤로">‹</button>
+    <h1 id="ttl"><img src="icons/icon-192.png" alt="">밥심</h1>
+    <span class="demo" id="demo"></span>
+    <button id="gear" aria-label="설정">⚙️</button>
+  </div>
 
-  <!-- 온보딩 -->
   <section class="screen" id="s-onboard">
-    <h2>안전하게 고르기 위해<br>딱 한 번만 알려주세요</h2>
-    <p class="sub">밥심은 음식·건강기능식품·한방 일반의약품처럼 <b>먹는 것</b>만 추천해요. 아래 정보로 맞지 않는 성분을 걸러드려요. 정보는 이 기기에만 저장돼요.</p>
-    <div id="profileForm"></div>
-    <button class="btn" id="saveProfile">저장하고 시작하기</button>
-    <button class="btn ghost" id="toDemo">데모 페르소나로 둘러보기</button>
+    <h2>먼저, 안전하게 고르기 위한 정보</h2>
+    <p class="sub">한 번만 알려주시면 맞지 않는 음식·성분을 걸러드려요. 이 기기에만 저장돼요.</p>
+    <div id="pf1"></div>
+    <button class="btn" id="save1">시작하기</button>
   </section>
 
-  <!-- 홈 -->
   <section class="screen" id="s-home">
-    <div class="card hello"><div style="font-size:18px;font-weight:700">오늘은 뭘 먹으면 좋을까요? 🍚</div><div class="p" id="homeProfile"></div></div>
-    <div class="grid">
-      <div class="entry" data-go="condition"><div class="ic">🌡️</div><b>오늘 컨디션 체크</b><span>컨디션을 누르면 먹거리를 골라드려요</span></div>
-      <div class="entry" data-go="meal"><div class="ic">🍱</div><b>식단 기록·칼로리</b><span>먹은 걸 담고 영양 균형 확인</span></div>
-      <div class="entry" data-go="gift"><div class="ic">🎁</div><b>건강식품 선물</b><span>받는 분에게 맞는 선물 찾기</span></div>
-      <div class="entry" data-go="product"><div class="ic">🔍</div><b>제품 확인</b><span>쌍화탕·홍삼, 나에게 괜찮을까?</span></div>
-    </div>
-    <button class="ask" data-go="chat">💬 직접 물어보기 <span style="margin-left:auto">›</span></button>
-    <p class="disc" style="margin-top:14px">ⓘ 밥심은 진단·처방을 하지 않으며 운동·생활습관은 다루지 않아요.</p>
+    <div class="w" id="w"></div>
+    <button class="lnk" id="toWidget">📱 홈 화면 위젯 미리보기 · 앱으로 설치</button>
   </section>
 
-  <!-- 컨디션 -->
-  <section class="screen" id="s-condition">
-    <h2>지금 어떤 컨디션인가요?</h2><p class="sub">하나를 누르면 내 안전 정보에 맞춘 먹거리를 보여드려요.</p>
-    <div class="cond" id="condChips"></div>
-    <div id="condResult" style="margin-top:16px"></div>
+  <section class="screen" id="s-widget">
+    <p class="sub" style="text-align:center">앱과 똑같은 오늘의 카드가 위젯에 바로 떠요. ↻ 를 누르면 다른 추천으로 바뀌어요.</p>
+    <div class="wlabel">iOS 스타일 · 소형 / 중형</div><div class="phone" id="ph1"></div>
+    <div class="wlabel">Android 스타일 · 소형 / 중형</div><div class="phone and" id="ph2"></div>
+    <div class="card"><b>홈 화면에 추가하기</b><br>• iPhone(Safari): 공유 → <b>홈 화면에 추가</b><br>• Android(Chrome): ⋮ → <b>앱 설치</b>
+      <button class="btn" id="install" style="display:none">앱 설치하기</button>
+      <div style="font-size:11.5px;color:var(--mut);margin-top:6px">※ 실제 OS 위젯은 네이티브 앱 단계에서 구현 예정이며, 지금은 웹앱(PWA)으로 설치돼요.</div></div>
   </section>
 
-  <!-- 식단 -->
-  <section class="screen" id="s-meal">
-    <h2>오늘 뭐 드셨어요?</h2><p class="sub">눌러서 담아 주세요. 여러 번 누르면 추가돼요. 수치는 1인분 기준 <b>대략적인 예시값</b>이에요.</p>
-    <div class="addgrid" id="mealGrid"></div>
-    <div class="sticky"><div class="card" style="margin:8px 0 0;padding:10px 14px"><div class="kv"><span>대략 합계 <span class="tag t-ap">예시값</span></span><span class="big" id="mealKcal" style="font-size:20px">0 kcal</span></div></div>
-      <div style="display:flex;gap:8px"><button class="btn ghost" id="mealReset" style="flex:1">비우기</button><button class="btn" id="mealGo" style="flex:2" disabled>영양 균형 보기</button></div></div>
-    <div id="mealResult" style="margin-top:12px"></div>
-  </section>
-
-  <!-- 선물 -->
-  <section class="screen" id="s-gift">
-    <h2>누구에게 선물하세요?</h2><p class="sub">받는 분의 건강 정보에 맞지 않는 성분은 걸러서 추천해요. (내 프로필과는 별개)</p>
-    <div id="giftForm"></div>
-    <button class="btn" id="giftGo">선물 추천 받기</button>
-    <div id="giftResult" style="margin-top:16px"></div>
-  </section>
-
-  <!-- 제품 확인 -->
-  <section class="screen" id="s-product">
-    <h2>이 제품, 나에게 괜찮을까?</h2><p class="sub">한방 일반의약품·건강기능식품을 고르면 내 안전 정보 기준 주의사항을 알려드려요.</p>
-    <input type="search" id="pq" placeholder="예: 쌍화탕, 홍삼, 오메가3" />
-    <div id="pdetail" style="margin-top:14px"></div>
-    <div class="plist" id="plist"></div>
-  </section>
-
-  <!-- 내 정보 -->
-  <section class="screen" id="s-profile">
-    <h2>내 안전 정보</h2><p class="sub">모든 추천에 반영돼요. 이 기기(localStorage)에만 저장돼요.</p>
-    <div id="profileForm2"></div>
-    <button class="btn" id="saveProfile2">저장</button>
-    <div class="sec">🎭 데모 모드 — 예시 페르소나 불러오기</div>
+  <section class="screen" id="s-settings">
+    <h2>설정</h2>
+    <p class="sub">모든 추천에 반영돼요. 이 기기(localStorage)에만 저장돼요.</p>
+    <div id="pf2"></div>
+    <button class="btn" id="save2">저장</button>
+    <div class="sec">🕒 데모: 시간·상황 시뮬레이터</div>
+    <div class="sim" id="sim"></div>
+    <div class="sec">🎭 데모 페르소나</div>
     <div id="personas"></div>
-    <button class="btn ghost" id="resetAll">모든 정보 지우고 처음부터</button>
+    <button class="btn ghost" id="reset">모든 정보 지우기</button>
   </section>
-
-  <!-- 직접 물어보기 -->
-  <section class="screen" id="s-chat">
-    <div class="chat" id="chat"></div>
-    <div class="chatin"><input type="text" id="cin" placeholder="예: 요즘 너무 피곤해요" /><button id="csend">보내기</button></div>
-  </section>
-
-  <nav id="nav">
-    <button data-tab="home"><i>🏠</i>홈</button>
-    <button data-tab="condition"><i>🌡️</i>컨디션</button>
-    <button data-tab="meal"><i>🍱</i>식단</button>
-    <button data-tab="product"><i>🔍</i>제품</button>
-    <button data-tab="profile"><i>👤</i>내 정보</button>
-  </nav>
 </div>
 
 <script src="engine.js"></script>
@@ -167,173 +139,119 @@ nav button.on{color:var(--g);font-weight:700}
 const E = window.BapsimEngine;
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const KEY = 'bapsim.profile.v1';
-const CONDS = [['pregnant','임신·수유 중'],['hypertension','고혈압'],['diabetes','당뇨'],['heart','심장질환'],['kidney','신장질환'],['thyroid','갑상선기능항진증']];
-const ALLERGIES = ['유제품','견과류','생선','대두','계란','국화과','감귤류'];
-const PERSONAS = [
-  { id:'none', e:'🙂', name:'특이사항 없음', desc:'지병·복용약·알레르기 없음', p:{ conditions:[], meds:'', allergies:[] } },
-  { id:'htn', e:'🩺', name:'고혈압 · 혈압약 복용', desc:'감초·마황 함유 한방제제 제외', p:{ conditions:['hypertension'], meds:'혈압약', allergies:[] } },
-  { id:'preg', e:'🤰', name:'임신 중 · 유제품 알레르기', desc:'한방제제·홍삼 제외, 유제품 제외', p:{ conditions:['pregnant'], meds:'', allergies:['유제품'] } },
-  { id:'asp', e:'💊', name:'아스피린 복용 · 견과류 알레르기', desc:'홍삼 제외, 오메가3·생강 주의', p:{ conditions:[], meds:'아스피린', allergies:['견과류'] } },
-  { id:'dm', e:'🩸', name:'당뇨 · 당뇨약 복용', desc:'홍삼 저혈당 주의, 당 많은 음식 주의', p:{ conditions:['diabetes'], meds:'당뇨약', allergies:[] } },
-  { id:'ckd', e:'🫘', name:'신장질환', desc:'마그네슘 보충제 제외, 칼륨·감초 주의', p:{ conditions:['kidney'], meds:'', allergies:[] } },
+const PKEY='bapsim.profile.v2';
+const CONDS=[['pregnant','임신·수유 중'],['hypertension','고혈압'],['diabetes','당뇨'],['heart','심장질환'],['kidney','신장질환'],['thyroid','갑상선기능항진증']];
+const ALLERGIES=['유제품','견과류','생선','대두','계란','국화과','감귤류'];
+const PERSONAS=[
+  { id:'none', e:'🙂', name:'특이사항 없음', desc:'지병·약·알레르기 없음', p:{} },
+  { id:'htn', e:'🩺', name:'고혈압 · 혈압약', desc:'감초·마황 함유 한방제제 제외', p:{ conditions:['hypertension'], meds:'혈압약' } },
+  { id:'preg', e:'🤰', name:'임신 중 · 유제품 알레르기', desc:'한방제제·홍삼·유제품 제외', p:{ conditions:['pregnant'], allergies:['유제품'] } },
+  { id:'asp', e:'💊', name:'아스피린 복용', desc:'홍삼 제외, 오메가3·생강 주의', p:{ meds:'아스피린' } },
+  { id:'chk', e:'📋', name:'검진: 혈압·혈당 높음', desc:'결과 순서 조정 + 의사 안내 우선', p:{ checkups:['bp','glucose'] } },
 ];
-const NAMES = Object.fromEntries(CONDS);
-let profile = load();
-function load(){ try { return JSON.parse(localStorage.getItem(KEY)); } catch { return null; } }
-function save(p){ profile = p; localStorage.setItem(KEY, JSON.stringify(p)); refreshProfileUI(); }
-function summary(p){ if(!p) return '미설정'; const a=[...p.conditions.map(c=>NAMES[c]), p.meds&&('약: '+p.meds), ...(p.allergies||[]).map(x=>x+' 알레르기')].filter(Boolean); return a.length?a.join(' · '):'특이사항 없음'; }
+const NM=Object.fromEntries([...CONDS, ...E.CHECKUPS.map(([v,l])=>['chk:'+v,'검진 '+l])]);
+const norm=p=>({ conditions:[], allergies:[], meds:'', checkups:[], demo:null, ...p });
+let profile=(()=>{ try{ const p=JSON.parse(localStorage.getItem(PKEY)); return p?norm(p):null; }catch{ return null; } })();
+const qs=new URLSearchParams(location.search);
+
+function saveProfile(p){ profile=norm(p); localStorage.setItem(PKEY, JSON.stringify(profile)); $('#demo').style.display=profile.demo?'inline-block':'none'; $('#demo').textContent=profile.demo?'데모':''; }
+function summary(){ const p=profile; const a=[...p.conditions.map(c=>NM[c]), p.meds&&('약: '+p.meds), ...p.allergies.map(x=>x+' 알레르기'), ...p.checkups.map(c=>NM['chk:'+c])].filter(Boolean); return a.length?a.join(' · '):'특이사항 없음'; }
 
 // ---------- 프로필 폼 ----------
-function profileFormHTML(prefix){
-  return `<div class="sec">🤰 임신·지병</div><div class="chips">${CONDS.map(([v,l])=>`<label class="chip"><input type="checkbox" name="${prefix}c" value="${v}">${l}</label>`).join('')}</div>
-  <div class="sec">💊 복용 중인 약 (없으면 비워두세요)</div><input type="text" id="${prefix}meds" placeholder="예: 아스피린, 혈압약, 와파린">
-  <div class="sec">⚠️ 알레르기</div><div class="chips">${ALLERGIES.map(a=>`<label class="chip"><input type="checkbox" name="${prefix}a" value="${a}">${a}</label>`).join('')}</div>`;
-}
-function fillForm(prefix,p){ p=p||{conditions:[],allergies:[],meds:''}; $$(`input[name=${prefix}c]`).forEach(i=>i.checked=p.conditions.includes(i.value)); $$(`input[name=${prefix}a]`).forEach(i=>i.checked=(p.allergies||[]).includes(i.value)); $('#'+prefix+'meds').value=p.meds||''; }
-function readForm(prefix){ return { conditions:$$(`input[name=${prefix}c]:checked`).map(i=>i.value), allergies:$$(`input[name=${prefix}a]:checked`).map(i=>i.value), meds:$('#'+prefix+'meds').value.trim(), demo:null }; }
-$('#profileForm').innerHTML = profileFormHTML('o'); $('#profileForm2').innerHTML = profileFormHTML('p');
-$('#saveProfile').onclick = () => { save(readForm('o')); go('home'); };
-$('#saveProfile2').onclick = () => { save(readForm('p')); toast('저장했어요'); };
-$('#toDemo').onclick = () => { go('profile'); };
-$('#resetAll').onclick = () => { localStorage.removeItem(KEY); profile=null; mealPicked.length=0; go('onboard'); };
-function renderPersonas(){ $('#personas').innerHTML = PERSONAS.map(x=>`<div class="persona ${profile&&profile.demo===x.id?'on':''}" data-id="${x.id}"><div class="e">${x.e}</div><div><b>${x.name}</b><div>${x.desc}</div></div></div>`).join('');
-  $$('#personas .persona').forEach(el=>el.onclick=()=>{ const x=PERSONAS.find(p=>p.id===el.dataset.id); save({...JSON.parse(JSON.stringify(x.p)), demo:x.id}); fillForm('p',profile); toast(`'${x.name}' 페르소나를 불러왔어요`); go('home'); }); }
-function refreshProfileUI(){
-  $('#homeProfile').innerHTML = `🛡️ 내 안전 정보: <b>${esc(summary(profile))}</b> · <a data-go="profile">수정</a>`;
-  $('#demoBadge').style.display = profile&&profile.demo ? 'inline-block' : 'none';
-  $('#demoBadge').textContent = profile&&profile.demo ? '데모 · '+PERSONAS.find(p=>p.id===profile.demo).name.split(' ')[0] : '';
-  bindGo(); renderPersonas();
-}
-function toast(t){ const d=document.createElement('div'); d.textContent=t; d.style.cssText='position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#1f2a24;color:#fff;padding:9px 14px;border-radius:99px;font-size:13px;z-index:20;opacity:.92'; document.body.appendChild(d); setTimeout(()=>d.remove(),1600); }
+const pfHTML=x=>`<div class="sec">🤰 임신·지병</div><div class="chips">${CONDS.map(([v,l])=>`<label class="chip"><input type="checkbox" name="${x}c" value="${v}">${l}</label>`).join('')}</div>
+  <div class="sec">💊 복용 중인 약</div><input type="text" id="${x}m" placeholder="없으면 비워두세요 (예: 아스피린, 혈압약)">
+  <div class="sec">⚠️ 알레르기</div><div class="chips">${ALLERGIES.map(a=>`<label class="chip"><input type="checkbox" name="${x}a" value="${a}">${a}</label>`).join('')}</div>
+  <div class="sec">📋 최근 건강검진 결과 <span style="font-weight:400">(선택)</span></div><div class="chips">${E.CHECKUPS.map(([v,l])=>`<label class="chip"><input type="checkbox" name="${x}k" value="${v}">${l}</label>`).join('')}</div>
+  <div style="font-size:11.5px;color:var(--mut);margin-top:6px">결과 순서를 조용히 조정하는 데만 써요. 검진 결과는 의사의 안내를 우선 따라 주세요.</div>`;
+const readPF=x=>({ conditions:$$(`input[name=${x}c]:checked`).map(i=>i.value), allergies:$$(`input[name=${x}a]:checked`).map(i=>i.value), checkups:$$(`input[name=${x}k]:checked`).map(i=>i.value), meds:$('#'+x+'m').value.trim(), demo:null });
+function fillPF(x){ const p=profile||norm({}); $$(`input[name=${x}c]`).forEach(i=>i.checked=p.conditions.includes(i.value)); $$(`input[name=${x}a]`).forEach(i=>i.checked=p.allergies.includes(i.value)); $$(`input[name=${x}k]`).forEach(i=>i.checked=p.checkups.includes(i.value)); $('#'+x+'m').value=p.meds; }
+$('#pf1').innerHTML=pfHTML('a'); $('#pf2').innerHTML=pfHTML('b');
+$('#save1').onclick=()=>{ saveProfile(readPF('a')); go('home'); };
+$('#save2').onclick=()=>{ saveProfile(readPF('b')); go('home'); };
+$('#reset').onclick=()=>{ localStorage.clear(); profile=null; go('onboard'); };
+function renderPersonas(){ $('#personas').innerHTML=PERSONAS.map(x=>`<div class="persona ${profile&&profile.demo===x.id?'on':''}" data-id="${x.id}"><div class="e">${x.e}</div><div><b>${x.name}</b><div>${x.desc}</div></div></div>`).join('');
+  $$('.persona').forEach(el=>el.onclick=()=>{ const x=PERSONAS.find(p=>p.id===el.dataset.id); saveProfile({ ...JSON.parse(JSON.stringify(x.p)), demo:x.id }); go('home'); }); }
 
 // ---------- 라우팅 ----------
-const TITLES = { onboard:'밥심 시작하기', home:'밥심', condition:'오늘 컨디션 체크', meal:'식단 기록·칼로리', gift:'건강식품 선물', product:'제품 확인', profile:'내 정보', chat:'직접 물어보기' };
-let cur = null;
-function go(name, push=true){
-  if (!profile && name!=='onboard' && name!=='profile') name='onboard';
-  cur = name;
-  $$('.screen').forEach(s=>s.classList.toggle('on', s.id==='s-'+name));
-  $$('nav button').forEach(b=>b.classList.toggle('on', b.dataset.tab===name));
-  $('#nav').style.display = name==='onboard' ? 'none' : 'flex';
-  $('#ttl').textContent = TITLES[name];
-  $('#back').style.display = ['gift','chat'].includes(name) ? 'block' : 'none';
-  if (name==='profile') fillForm('p', profile);
-  if (push && location.hash !== '#'+name) history.replaceState(null,'','#'+name);
+function go(n){
+  if(!profile && n!=='onboard') n='onboard';
+  $$('.screen').forEach(s=>s.classList.toggle('on', s.id==='s-'+n));
+  $('#back').style.display = ['settings','widget'].includes(n)?'block':'none';
+  $('#gear').style.display = n==='home'?'block':'none';
+  if(n==='home') renderHome(); if(n==='settings'){ fillPF('b'); renderPersonas(); renderSim(); } if(n==='widget') renderPhones();
   window.scrollTo(0,0);
 }
-function bindGo(){ $$('[data-go]').forEach(el=>el.onclick=()=>go(el.dataset.go)); }
-$$('nav button').forEach(b=>b.onclick=()=>go(b.dataset.tab));
-$('#back').onclick=()=>go('home');
+$('#back').onclick=()=>go('home'); $('#gear').onclick=()=>go('settings'); $('#toWidget').onclick=()=>go('widget');
 
-// ---------- 결과 카드 렌더러 (음식 / 건기식 / 한방 / 제외·주의) ----------
-function recCards(r){
-  let h='';
-  if (r.intro) h+=`<div class="card" style="font-size:14px;line-height:1.55">${esc(r.intro)}</div>`;
-  if (r.foods?.length) h+=`<div class="card"><div class="rh">🥣 음식</div>`+r.foods.map(f=>`<div class="item"><b>${esc(f.name)}</b>${f.comp?`<span class="tag t-comp">${esc(f.comp)}</span>`:''}<div>${esc(f.effect)}</div>${f.note?`<div class="note">⚠️ ${esc(f.note)}</div>`:''}</div>`).join('')+`</div>`;
-  if (r.supplements?.length) h+=`<div class="card"><div class="rh">💊 건강기능식품</div>`+r.supplements.map(s=>`<div class="item"><b>${esc(s.name)}</b><span class="tag t-mfds">식약처 인정 기능성</span><div>“${esc(s.claim)}”</div>${s.note?`<div class="note">⚠️ ${esc(s.note)}</div>`:''}</div>`).join('')+`</div>`;
-  if (r.otc?.length) h+=`<div class="card"><div class="rh">🌿 한방 일반의약품</div>`+r.otc.map(o=>`<div class="item"><b>${esc(o.name)}</b><span class="tag t-otc">일반의약품</span><div>효능·효과: ${esc(o.claim)}</div>${o.note?`<div class="note">ℹ️ ${esc(o.note)}</div>`:''}</div>`).join('')+`</div>`;
-  if (r.excluded?.length || r.warnings?.length) {
-    h+=`<div class="card">`;
-    if (r.excluded?.length) h+=`<div class="rh x">🚫 제외</div><div class="excl">`+r.excluded.map(e=>`<div>• <s>${esc(e.name)}</s> — ${esc(e.reason)}</div>`).join('')+`</div>`;
-    if (r.warnings?.length) h+=`<div class="rh w" style="margin-top:8px">⚠️ 주의</div><div class="warnbox">`+[...new Set(r.warnings)].map(w=>'• '+esc(w)).join('<br>')+`</div>`;
-    h+=`</div>`;
-  }
-  h+=`<p class="disc">ⓘ ${esc(r.disclaimer||E.DISCLAIMER)}</p>`;
-  return h;
+// ---------- 시간·상황 (실제 or 시뮬레이터) ----------
+const SKEY='bapsim.sim.v1', FKEY='bapsim.feedback.v1', HKEY='bapsim.signals.v1';
+const SIMS=[
+  ['now','지금 (실제 시간)',null],
+  ['mon-am','월요일 아침 8시 · 10월 환절기','2026-10-12T08:00'],
+  ['wk-lunch','평일 점심 12시','2026-10-14T12:10'],
+  ['fri-eve','금요일 저녁 7시','2026-10-09T19:00'],
+  ['sat-am','금요일 밤 다음날 · 토요일 아침 9시','2026-10-10T09:00'],
+  ['summer','한여름 점심 · 7월','2026-07-15T12:00'],
+  ['winter','겨울 늦은 밤 11시 · 1월','2026-01-20T23:00'],
+];
+const simId=()=>qs.get('sim')||localStorage.getItem(SKEY)||'now';
+const nowDate=()=>{ const x=SIMS.find(s=>s[0]===simId()); return x&&x[2]?new Date(x[2]):new Date(); };
+const dayKey=d=>d.toLocaleDateString('sv');
+function getFB(){ try{ const f=JSON.parse(localStorage.getItem(FKEY)); if(f&&f.day===dayKey(nowDate())) return f; }catch{} return { swap:0, text:'' }; }
+function setFB(f){ localStorage.setItem(FKEY, JSON.stringify({ ...f, day:dayKey(nowDate()) })); }
+function signals(){ const now=nowDate(); let h=[]; try{ h=JSON.parse(localStorage.getItem(HKEY))||[]; }catch{}
+  return h.map(x=>({ topic:x.topic, daysAgo:Math.round((new Date(dayKey(now))-new Date(x.day))/864e5) })).filter(x=>x.daysAgo>=1&&x.daysAgo<=2); }
+function card(){ const f=getFB(); return E.autoCard(nowDate(), profile, { swap:f.swap, text:f.text, signals:signals() }); }
+function swap(){ const f=getFB(); setFB({ swap:f.swap+1, text:'' }); }
+function tell(text){ const f=getFB(); setFB({ swap:f.swap, text }); const r=card();
+  if(r.feedbackTopic){ let h=[]; try{ h=JSON.parse(localStorage.getItem(HKEY))||[]; }catch{} h=h.filter(x=>x.day!==dayKey(nowDate())); h.push({ day:dayKey(nowDate()), topic:r.feedbackTopic }); localStorage.setItem(HKEY, JSON.stringify(h.slice(-14))); } }
+function renderSim(){ $('#sim').innerHTML=SIMS.map(([id,l])=>`<label><input type="radio" name="sim" value="${id}" ${simId()===id?'checked':''} hidden>${l}</label>`).join('');
+  $$('#sim input').forEach(i=>i.onchange=()=>{ localStorage.setItem(SKEY,i.value); go('home'); }); }
+
+// ---------- 홈: 오늘의 카드 (질문 없음) ----------
+function renderHome(){
+  const r=card(), f=getFB(), w=$('#w');
+  w.innerHTML=cardHTML(r)+`<div class="fb"><button id="swap">↻ 오늘은 좀 달라요</button><input id="tl" placeholder="한 줄로 알려주기 (선택)" value=""><button id="tlgo">확인</button></div>
+    ${f.text?`<div class="fbt">💬 알려주신 내용: "${esc(f.text)}"<a id="tlx">지우기</a></div>`:''}`;
+  $('#swap').onclick=()=>{ swap(); renderHome(); };
+  const send=()=>{ const v=$('#tl').value.trim(); if(v){ tell(v); renderHome(); } };
+  $('#tlgo').onclick=send; $('#tl').onkeydown=e=>{ if(e.key==='Enter'&&!e.isComposing) send(); };
+  if($('#tlx')) $('#tlx').onclick=()=>{ setFB({ swap:f.swap, text:'' }); renderHome(); };
+  const sm=SIMS.find(x=>x[0]===simId()); $('#demo').style.display=(profile.demo||simId()!=='now')?'inline-block':'none'; $('#demo').textContent=simId()!=='now'?'시뮬레이션':'데모';
+}
+function cardHTML(r){
+  if(r.type==='stop') return `<div class="stop"><b>🚑 ${esc(r.title)}</b><br>${esc(r.text)}</div>`;
+  const t=r.top, kindTag=a=>a.kind==='건강기능식품'?'<span class="tag t-mfds">식약처 인정 기능성</span>':a.kind==='한방 일반의약품'?'<span class="tag t-otc">일반의약품</span>':'<span class="tag t-food">음식</span>';
+  const altBody=a=>a.kind==='건강기능식품'?`“${esc(a.claim)}”`:a.kind==='한방 일반의약품'?`효능·효과: ${esc(a.claim)} · 설명서 확인, 약사 상담 후 복용`:esc(a.effect);
+  return `<div class="ctx">${esc(r.ctx.label)} · ${esc(r.momentLabel)}</div><div class="title">${esc(r.title)}</div><div class="why">💡 ${esc(r.why)}</div>
+    <div class="topk"><div class="lb">오늘의 한 가지</div><b>${esc(t.name)}</b><span class="comp">${esc(t.comp)}</span><p>${esc(t.effect)}</p>${t.note?`<div class="note">⚠️ ${esc(t.note)}</div>`:''}</div>
+    <div class="alts">${r.alts.map(a=>`<div class="alt"><b>${esc(a.name)}</b>${kindTag(a)}<p>${altBody(a)}</p>${a.note?`<div class="note">⚠️ ${esc(a.note)}</div>`:''}</div>`).join('')}</div>
+    ${r.excluded.length?`<div class="ex"><details><summary>🚫 내 정보 기준 제외: ${r.excluded.map(e=>esc(e.name)).join(', ')}</summary><div style="margin-top:6px">${r.excluded.map(e=>'• '+esc(e.reason)).join('<br>')}</div></details></div>`:''}
+    ${r.notes.map(n=>`<div class="nt">📋 ${esc(n)}</div>`).join('')}
+    <div class="disc">ⓘ ${esc(r.disclaimer)}</div>`;
 }
 
-// ---------- 컨디션 ----------
-const CICON = { chill:'🍂', fatigue:'😮‍💨', digest:'🍚', sleep:'🌙', eye:'👀', hangover:'🍺' };
-$('#condChips').innerHTML = E.TOPICS.map(t=>`<div class="chip" data-t="${t.id}">${CICON[t.id]||''} ${esc(t.label)}</div>`).join('');
-$$('#condChips .chip').forEach(c=>c.onclick=()=>{
-  $$('#condChips .chip').forEach(x=>x.classList.toggle('on', x===c));
-  const r = E.recommendTopic(c.dataset.t, profile);
-  $('#condResult').innerHTML = `<div class="sec">🛡️ ${esc(summary(profile))} 기준</div>` + recCards(r);
-  $('#condResult').scrollIntoView({behavior:'smooth', block:'start'});
-});
-
-// ---------- 식단 ----------
-const mealPicked = [];
-$('#mealGrid').innerHTML = E.MEAL_FOODS.map(f=>`<button class="add" data-id="${f.id}"><span class="n">0</span>${esc(f.name)}<small>약 ${f.kcal} kcal</small></button>`).join('');
-function mealUpdate(){
-  $$('#mealGrid .add').forEach(b=>{ const n=mealPicked.filter(x=>x===b.dataset.id).length; b.classList.toggle('has', n>0); b.querySelector('.n').textContent=n; });
-  $('#mealKcal').textContent = mealPicked.reduce((a,id)=>a+E.MEAL_FOODS.find(f=>f.id===id).kcal,0).toLocaleString()+' kcal';
-  $('#mealGo').disabled = !mealPicked.length;
+// ---------- 위젯 목업 (같은 오늘의 카드) ----------
+function widget(size){
+  const r=card(), head=`<div class="wh"><img src="icons/icon-192.png" alt="">밥심 · ${esc(r.ctx.label.split(' · ')[1])}</div>`, cls=`wg ${size==='s'?'wsm':'wmd'}`;
+  if(r.type==='stop') return `<div class="${cls}">${head}<div class="wt" style="color:#7a1f15">🚑 의료진 상담이 필요해요</div><div class="wa">먹는 것으로 챙길 범위를 넘어 보여요</div></div>`;
+  if(size==='s') return `<div class="${cls}">${head}<div class="wr" style="margin-top:6px">${esc(r.momentLabel)} · 오늘의 한 가지</div><div class="wt">${esc(r.top.name)}</div>${r.excluded.length?`<div class="wx" style="margin-top:2px">🚫 ${esc(r.excluded[0].name)}${r.excluded.length>1?' 외':''} 제외</div>`:`<div class="wa">${esc(r.top.comp)}</div>`}<div class="wb"><span></span><button data-wswap="1">↻ 달라요</button></div></div>`;
+  return `<div class="${cls}">${head}<div class="wr" style="margin-top:6px">${esc(r.title)}</div><div class="wt">${esc(r.top.name)}</div><div class="wa">또는 ${r.alts.map(a=>esc(a.name)).join(' · ')}</div><div class="wb"><span class="wx" style="margin:0">${r.excluded.length?'🚫 '+r.excluded.map(e=>esc(e.name)).join(', ')+' 제외':''}</span><button data-wswap="1">↻ 오늘은 좀 달라요</button></div></div>`;
 }
-$$('#mealGrid .add').forEach(b=>b.onclick=()=>{ mealPicked.push(b.dataset.id); mealUpdate(); });
-$('#mealReset').onclick=()=>{ mealPicked.length=0; mealUpdate(); $('#mealResult').innerHTML=''; };
-$('#mealGo').onclick=()=>{
-  const r = E.analyzeMeals(mealPicked, profile), t=r.total, pct=(v,ref)=>Math.min(100,Math.round(v/ref*100));
-  let h = `<div class="card"><div class="kv"><span>오늘 대략 섭취 열량 <span class="tag t-ap">예시값</span></span><span class="big">${t.kcal.toLocaleString()} kcal</span></div>
-    <div class="bar"><i style="width:${pct(t.kcal,r.ref.kcal)}%"></i></div><div style="font-size:11.5px;color:var(--mut)">성인 하루 참고 예시 ${r.ref.kcal.toLocaleString()} kcal (나이·성별·활동량에 따라 달라요)</div>
-    <div class="rh" style="margin-top:14px">⚖️ 탄·단·지 비율</div>
-    <div class="stack"><i style="width:${r.ratio.carb}%;background:#e0a33a">탄 ${r.ratio.carb}%</i><i style="width:${r.ratio.prot}%;background:#2f8f5b">단 ${r.ratio.prot}%</i><i style="width:${r.ratio.fat}%;background:#c0623b">지 ${r.ratio.fat}%</i></div>
-    <div style="font-size:11.5px;color:var(--mut);margin-bottom:12px">참고 범위 예시: 탄 55~65% · 단 7~20% · 지 15~30%</div>
-    <div class="kv"><span>식이섬유</span><span>${t.fiber}g / ${r.ref.fiber}g</span></div><div class="bar"><i style="width:${pct(t.fiber,r.ref.fiber)}%"></i></div>
-    <div class="kv"><span>채소·과일</span><span>${t.veg}회 / ${r.ref.veg}회</span></div><div class="bar"><i style="width:${pct(t.veg,r.ref.veg)}%"></i></div>
-    <div class="kv"><span>나트륨</span><span>${t.na.toLocaleString()}mg / ${r.ref.na.toLocaleString()}mg</span></div><div class="bar"><i style="width:${pct(t.na,r.ref.na)}%;background:${t.na>r.ref.na?'#c0392b':'var(--g)'}"></i></div>`;
-  if (r.gaps.length) h+=`<div class="warnbox" style="background:#eef6f1;color:#1f4d33">`+r.gaps.map(g=>'• '+esc(g.label)).join('<br>')+`</div>`;
-  h+=`</div>`;
-  h += recCards({ ...r, disclaimer: '칼로리·영양 수치는 1인분 기준 대략적인 예시값이며 실제와 다를 수 있어요. ' + r.disclaimer });
-  $('#mealResult').innerHTML = h;
-  $('#mealResult').scrollIntoView({behavior:'smooth', block:'start'});
-};
-
-// ---------- 선물 ----------
-const radio=(name,list)=>`<div class="chips">`+list.map(([v,l],i)=>`<label class="chip"><input type="radio" name="${name}" value="${v}" ${i===0?'checked':''}>${l}</label>`).join('')+`</div>`;
-$('#giftForm').innerHTML = `<div class="sec">🎁 받는 분</div>${radio('gr',[['부모님','부모님'],['조부모님','조부모님'],['지인·동료','지인·동료'],['친구·연인','친구·연인']])}
-  <div class="sec">🎂 연령대</div>${radio('ga',[['60s','60대'],['70s','70대 이상'],['40s','40~50대'],['young','20~30대']])}
-  <div class="sec">🩺 알고 있는 건강 정보</div><div class="chips">${[['hypertension','고혈압'],['diabetes','당뇨'],['heart','심장질환'],['kidney','신장질환'],['pregnant','임신·수유'],['unknown','잘 모름']].map(([v,l])=>`<label class="chip"><input type="checkbox" name="gc" value="${v}">${l}</label>`).join('')}</div>
-  <div class="sec">💊 드시는 약 (아는 경우)</div><input type="text" id="gmeds" placeholder="예: 아스피린, 혈압약">
-  <div class="sec">⚠️ 알레르기</div><div class="chips">${['견과류','생선','유제품'].map(a=>`<label class="chip"><input type="checkbox" name="gal" value="${a}">${a}</label>`).join('')}</div>
-  <div class="sec">✨ 선물 테마</div>${radio('gp',[['general','무난하게'],['energy','기력'],['eye','눈 건강'],['bone','뼈 건강'],['blood','혈행'],['gut','장 건강']])}`;
-$('#giftGo').onclick=()=>{
-  const val=n=>($(`input[name=${n}]:checked`)||{}).value, cs=$$('input[name=gc]:checked').map(i=>i.value);
-  const r=E.giftRecommend({ recipientLabel:val('gr'), age:val('ga'), purpose:val('gp'), conditions:cs.filter(c=>c!=='unknown'), unknown:cs.includes('unknown'), meds:$('#gmeds').value.trim(), allergies:$$('input[name=gal]:checked').map(i=>i.value) });
-  let h=`<div class="card" style="font-size:14px;line-height:1.55">${esc(r.intro)}</div><div class="card"><div class="rh">🎁 추천 선물</div>`+r.items.map(i=>`<div class="item"><b>${esc(i.name)}</b>${i.kind==='건강기능식품'?'<span class="tag t-mfds">식약처 인정 기능성</span>':'<span class="tag t-food">식품</span>'}<div>${i.kind==='건강기능식품'?'“'+esc(i.claim)+'”':esc(i.claim)}</div>${i.note?`<div class="note">⚠️ ${esc(i.note)}</div>`:''}</div>`).join('')+`</div>`;
-  if (r.excluded.length||r.warnings.length||r.notes.length){ h+=`<div class="card">`; if(r.excluded.length) h+=`<div class="rh x">🚫 제외</div><div class="excl">`+r.excluded.map(e=>`<div>• <s>${esc(e.name)}</s> — ${esc(e.reason)}</div>`).join('')+`</div>`; if(r.warnings.length||r.notes.length) h+=`<div class="rh w" style="margin-top:8px">⚠️ 주의</div><div class="warnbox">`+[...r.notes,...r.warnings].map(w=>'• '+esc(w)).join('<br>')+`</div>`; h+=`</div>`; }
-  h+=`<p class="disc">ⓘ 건강기능식품은 질병의 예방·치료를 위한 의약품이 아니에요. 받는 분이 드시는 약이 있다면 섭취 전 약사와 확인하도록 안내해 주세요.</p>`;
-  $('#giftResult').innerHTML=h; $('#giftResult').scrollIntoView({behavior:'smooth', block:'start'});
-};
-
-// ---------- 제품 확인 ----------
-function renderPList(q=''){
-  const list=E.PRODUCTS.filter(p=>!q||p.name.includes(q)||p.ingredients.includes(q));
-  $('#plist').innerHTML = `<div class="sec">${q?'검색 결과':'전체 제품'} (${list.length})</div>`+list.map(p=>`<div class="row" data-n="${esc(p.name)}"><div>${esc(p.name)} <span>${p.kind}</span></div><span>›</span></div>`).join('') || '<p class="sub">찾는 제품이 없어요.</p>';
-  $$('#plist .row').forEach(r=>r.onclick=()=>showProduct(r.dataset.n));
+function renderPhones(){
+  const apps=`<div class="apps"><div><img src="icons/icon-192.png" alt="">밥심</div><div><span></span>사진</div><div><span></span>캘린더</div><div><span></span>메모</div></div>`;
+  for(const [id,and] of [['#ph1',false],['#ph2',true]]) $(id).innerHTML=`<div class="sb"><span>${String(nowDate().getHours()).padStart(2,'0')}:${String(nowDate().getMinutes()).padStart(2,'0')}</span><span>${and?'▾ ◢ ▮':'●●● ▮'}</span></div><div class="row2">${widget('s')}${apps}</div>${widget('m')}`;
+  $$('[data-wswap]').forEach(b=>b.onclick=()=>{ swap(); renderPhones(); });
 }
-function showProduct(name){
-  const r=E.checkProduct(name, profile), p=r.product;
-  const V={ ok:['v-ok','✅ 내 정보 기준 특별한 주의사항은 없어요','제품 표시사항의 섭취량·용법을 지켜 주세요.'], caution:['v-caution','⚠️ 주의가 필요해요','아래 내용을 확인하고 약사와 상담 후 드세요.'], avoid:['v-avoid','🚫 내 정보 기준으로는 피하는 게 좋아요','아래 이유로 추천 목록에서도 제외하고 있어요.'] }[r.level];
-  $('#pdetail').innerHTML = `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">${esc(p.name)}</b><span class="tag ${p.kind==='건강기능식품'?'t-mfds':'t-otc'}">${p.kind}</span></div>
-    <div style="font-size:13px;color:var(--mut);margin:6px 0 10px">성분: ${esc(p.ingredients)}</div>
-    <div class="item">${p.kind==='건강기능식품'?'기능성: “'+esc(p.claim)+'”':'효능·효과: '+esc(p.claim)}</div></div>
-    <div class="verdict ${V[0]}"><b>${V[1]}</b>${V[2]}<div style="font-size:12px;margin-top:6px;opacity:.85">🛡️ ${esc(summary(profile))}</div></div>
-    ${r.avoid.length?`<div class="card"><div class="rh x">🚫 피해야 하는 이유</div><div class="excl">${r.avoid.map(m=>'<div>• '+esc(m)+'</div>').join('')}</div></div>`:''}
-    ${r.caution.length?`<div class="card"><div class="rh w">⚠️ 주의</div><div class="warnbox">${r.caution.map(m=>'• '+esc(m)).join('<br>')}</div></div>`:''}
-    <p class="disc">ⓘ ${esc(r.general)} ${esc(E.DISCLAIMER)}</p>`;
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-$('#pq').oninput=e=>renderPList(e.target.value.trim()); renderPList();
 
-// ---------- 직접 물어보기 (보조) ----------
-const chatState={ messages:[] };
-function bubble(html,cls){ const d=document.createElement('div'); d.className=cls; d.innerHTML=html; $('#chat').appendChild(d); window.scrollTo(0,document.body.scrollHeight); return d; }
-bubble('궁금한 걸 편하게 물어보세요. 내 안전 정보가 반영돼요.\n(먹는 것만 다루고, 진단·처방은 하지 않아요)','msg b');
-async function csend(){
-  const t=$('#cin').value.trim(); if(!t) return; $('#cin').value=''; bubble(esc(t),'msg u'); chatState.messages.push({role:'user',content:t});
-  const r=await E.chat({ messages:chatState.messages, profile });
-  if (r.type==='answer') { const d=bubble(recCards(r),''); d.style.alignSelf='stretch'; chatState.messages.push({role:'assistant',content:r.intro}); }
-  else if (r.type==='meallog') { bubble('식단 기록은 아래 🍱 식단 탭에서 눌러서 담을 수 있어요.','msg b'); }
-  else if (r.type==='gift') { bubble('선물 추천은 홈의 🎁 건강식품 선물에서 받는 분 정보를 고르면 돼요.','msg b'); }
-  else { bubble(esc(r.text),'msg b'+(r.level==='danger'?' danger':'')); chatState.messages.push({role:'assistant',content:r.text}); }
-}
-$('#csend').onclick=csend; $('#cin').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.isComposing) csend(); });
+// ---------- PWA ----------
+let dp=null;
+window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); dp=e; $('#install').style.display='block'; });
+$('#install').onclick=async()=>{ if(!dp) return; dp.prompt(); dp=null; $('#install').style.display='none'; };
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 
-// ---------- 시작 ----------
-refreshProfileUI();
-go(profile ? (location.hash.slice(1)||'home') : 'onboard');
+if(profile) saveProfile(profile);
+go(profile?'home':'onboard');
 </script>
 </body>
 </html>
