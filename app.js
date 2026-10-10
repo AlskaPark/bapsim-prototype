@@ -519,7 +519,7 @@ function productSheet(key){ const P = PRODUCTS[key]; if (!P) return;
   $$('[data-w]', bg).forEach(c => c.onchange = () => { S.watch = S.watch || {}; if (c.checked) S.watch[c.dataset.w] = { base: +c.dataset.b, at: priceOn(c.dataset.w, +c.dataset.b, today()), day: today(), key }; else delete S.watch[c.dataset.w]; save(); buzz(); });
   notesRefresh(); }
 // ---- 전문가 연결 (건강 컨설팅, 진료 의뢰 아님 · 비의료 건강관리서비스 가이드라인) ----
-// 패턴이 반복되고, 직접 확인(며칠만 빼보기)으로도 가려지지 않았을 때만 작은 링크로.
+// 프리미엄 기능: 늘 쓸 수 있어요. 알게 된 것 맨 위 한 줄 + 각 발견 카드의 작은 링크(그 발견의 기록을 미리 골라 둠).
 // 전문가 목록: 데이터로만 늘려요(종류·사람 추가 = 항목 추가). 모두 예시.
 const EXPERT_TYPES = {
   dietitian:{ label:'영양사', lic:'영양사 면허 확인됨', scope:'먹는 쪽 조언만 해요. 진단이나 약 조언은 하지 않아요.' },
@@ -536,26 +536,48 @@ const EXPERTS = [
   { id:'e3', type:'fmd', name:'이도윤' },
 ];
 const exType = e => EXPERT_TYPES[e.type], exName = e => `${e.name.slice(1)} 전문가`, exScope = e => exType(e).doctor ? DOCTOR_SCOPE : exType(e).scope;
-const exNeeds = (x, c) => !x.inter && !x.pos && c && c.result === 'kept' && (x.src || []).filter(e => e.kind === 'memo').length >= 2;
+const exNeeds = x => !x.inter;
 function exHTML(x, c){ const ex = (S.expert || {})[x.id], who = ex && matchExpert(ex);
   if (ex) { const t = today(); if (gap(ex.sent, t) < 1) return `<div class="ex-sent"${why('보낸 뒤엔 조용히 기다려요. 알림도, 대화창도 없어요. 답은 이 카드 안에 와요.')}><i data-lucide="loader"></i>기록에 맞는 전문가를 찾고 있어요. 답은 이 카드에 와요.</div>`;
     return `<div class="ex-reply"${why('사람이 쓴 답이라 AI 표시가 없어요. 먹는 쪽 이야기만 하고, 다시 묻지 않아요.')}><div class="ex-h"><span class="ex-av"><i data-lucide="user-round"></i></span><div><b>전문가</b><small>답장 · 예시</small></div><button class="ex-cred"${why('이름·경력 없이 자격 확인 표시만. 궁금한 사람만 눌러서 자격 종류를 봐요.')}><i data-lucide="badge-check"></i>자격 확인됨<span class="ex-lic" hidden>${esc(exType(who).label)} (예시)</span></button></div>
-      <p>보내 주신 기록을 보면, 소화가 불편했던 날은 저녁에 기름진 메뉴가 있던 날이 많았지만 확인하는 동안에도 계속 드셔서 아직 가려지지 않았어요.</p><p>메뉴는 그대로 두셔도 돼요. 다음에 기름진 메뉴를 드신 날엔 먹은 시간만 함께 남겨 주시면, 양보다 시간과 겹치는지 다음 답에서 볼 수 있어요.</p>
+      ${x.id === '_all' ? '<p>보내 주신 2주 기록을 보면, 몸이 불편했다고 적은 날 앞뒤로 먹은 것이 비슷한 날이 몇 번 있었어요.</p><p>먹는 건 그대로 두셔도 돼요. 불편했던 날엔 그 전 끼니 사진을 한 장 더 남겨 주시면, 다음 답에서 더 정확히 볼 수 있어요.</p>' : `<p>보내 주신 기록을 보면, 소화가 불편했던 날은 저녁에 기름진 메뉴가 있던 날이 많았지만 확인하는 동안에도 계속 드셔서 아직 가려지지 않았어요.</p><p>메뉴는 그대로 두셔도 돼요. 다음에 기름진 메뉴를 드신 날엔 먹은 시간만 함께 남겨 주시면, 양보다 시간과 겹치는지 다음 답에서 볼 수 있어요.</p>`}
       <small class="ex-scope">${esc(SCOPE_LINE)}</small></div>`; }
-  return exNeeds(x, c) ? `<button class="ex-link" data-ex="${x.id}"${why('반복되는데 직접 해 봐도 가려지지 않을 때만 나타나는 작은 링크. 늘 떠 있는 상담 버튼은 두지 않아요. 진료 의뢰가 아니라 먹는 쪽 건강 컨설팅이에요.')}><i data-lucide="user-round"></i>전문가에게 기록 보여주기</button>` : ''; }
-function expertSheet(x){ const items = (x.src || []).slice(0, 8);
-  const bg = sheet(`<div class="s-eyebrow">건강 컨설팅 · 예시</div><h2 class="s-title">전문가에게 기록 보여주기</h2>
-    <div class="s-sec"${why('무엇이 나가는지 먼저. 이 발견에 쓰인 기록만, 하나씩 뺄 수 있어요.')}><h4>보낼 기록</h4><div class="ex-items">${items.map(e => `<label class="ex-it"><input type="checkbox" checked data-id="${e.id}">${src(e) ? `<img src="${src(e)}" alt="">` : '<span class="m"><i data-lucide="pen-line"></i></span>'}<span>${esc(e.text)}<small>${esc(dayName(e.day, today()))}</small></span></label>`).join('')}</div></div>
-    <div class="s-sec"${why('고를 목록을 보여 주지 않아요. 기록을 보고 서비스가 맞는 전문가를 연결하고, 사용자는 무엇을 보낼지만 정해요. 누가 오든 범위는 같은 한 줄이에요.')}><h4>누가 보나요</h4><p class="ex-match">기록에 맞는 전문가를 밥심이 찾아 연결해요.</p><p class="ex-ver"${why('직종을 내세우지 않고, 자격이 확인됐다는 사실만 한 줄로.')}><i data-lucide="badge-check"></i>검증된 자격을 가진 전문가예요</p>
-      <p class="ex-scope">${esc(SCOPE_LINE)}</p></div>
-    <div class="ex-price"><span>1회 9,900원</span><small>예시 가격</small></div>
-    <button class="primary" id="exgo"${why('버튼은 하나. 보내고 나면 대화창 없이 답을 기다리기만 하면 돼요.')}>기록 보내기</button>`);
-  const upd = () => { const n = $$('.ex-it input:checked', bg).length; $('#exgo', bg).disabled = !n; $('#exgo', bg).textContent = n ? `기록 ${n}개 보내기` : '보낼 기록을 골라 주세요'; };
-  $$('.ex-it input', bg).forEach(i => i.onchange = upd); upd();
-  $('#exgo', bg).onclick = () => { const ids = $$('.ex-it input:checked', bg).map(i => i.dataset.id); S.expert = S.expert || {}; S.expert[x.id] = { sent: today(), ids, who: EXPERTS[seedOf(x.id) % EXPERTS.length].id }; save(); buzz();
-    $('.sh', bg).innerHTML = `<div class="ex-done"><i data-lucide="check"></i><b>보냈어요</b><span>기록에 맞는 전문가를 찾고 있어요. 답은 '나에 대해 알게 된 것'의 이 카드에 조용히 와요. 알림은 보내지 않아요.</span><button class="primary" id="exok">확인</button></div>`; icons();
-    $('#exok', bg).onclick = () => { bg.close ? bg.close() : bg.remove(); const ov = $('#ins'); if (ov) { ov.remove(); insightsPage(); } }; };
-  notesRefresh(); }
+  if (x.id === '_all') return '';
+  return exNeeds(x, c) ? `<button class="ex-link" data-ex="${x.id}"${why('발견마다 작은 링크. 누르면 이 발견에 쓰인 기록이 미리 골라져 있어요. 진료 의뢰가 아니라 먹는 쪽 건강 컨설팅이에요.')}><i data-lucide="user-round"></i>전문가에게 기록 보여주기</button>` : ''; }
+function expertSheet(x0){
+  const list = insights().filter(exNeeds), t = today();
+  const recent = () => visible().filter(e => gap(e.day, t) <= 13).slice().reverse().slice(0, 12);
+  let sel = x0 ? x0.id : '_all', memo = '';
+  const pool = () => sel === '_all' ? recent() : ((list.find(y => y.id === sel) || x0).src || []).slice(0, 8);
+  const lab = y => y.rule && y.rule.sym ? y.rule.sym : y.what;
+  const bg = sheet(`<div id="exb"></div>`);
+  const draw = () => { const items = pool();
+    $('#exb', bg).innerHTML = `<div class="s-eyebrow">건강 컨설팅 · 프리미엄 · 예시</div><h2 class="s-title">전문가에게 기록 보여주기</h2>
+    <div class="s-sec"${why('무엇이 나가는지 먼저. 기본은 최근 2주, 발견 하나만 골라 보낼 수도 있어요. 하나씩 뺄 수 있어요.')}><h4>보낼 기록</h4>
+      <div class="ex-scopes">${[['_all','최근 2주'], ...list.map(y => [y.id, lab(y)])].map(([k, l]) => `<button class="ex-sc${sel===k?' on':''}" data-k="${k}">${esc(l)}</button>`).join('')}</div>
+      <div class="ex-items">${items.map(e => `<label class="ex-it"><input type="checkbox" checked data-id="${e.id}">${src(e) ? `<img src="${src(e)}" alt="">` : '<span class="m"><i data-lucide="pen-line"></i></span>'}<span>${esc(e.text)}<small>${esc(dayName(e.day, t))}</small></span></label>`).join('') || '<p class="ex-none">최근 2주 기록이 없어요.</p>'}</div></div>
+    <div class="s-sec"${why('적지 않아도 돼요. 질문지가 아니라 한 줄 메모 칸 하나.')}><h4>궁금한 것 한 줄 <small>안 적어도 돼요</small></h4><input id="exm" class="ex-memo" maxlength="60" placeholder="예: 저녁 먹고 더부룩한 게 신경 쓰여요" value="${esc(memo)}"></div>
+    <div class="s-sec"${why('고를 목록을 보여 주지 않아요. 기록을 보고 서비스가 맞는 전문가를 연결해요. 누가 오든 범위는 같은 한 줄이에요.')}><h4>누가 보나요</h4><p class="ex-match">기록에 맞는 전문가를 밥심이 찾아 연결해요.</p><p class="ex-ver"><i data-lucide="badge-check"></i>검증된 자격을 가진 전문가예요</p><p class="ex-scope">${esc(SCOPE_LINE)}</p></div>
+    <div class="ex-price"${why('가격은 보내기 전에 숨김없이.')}><span>${S.premium ? '프리미엄 이용 중 · 이번 달 남은 답장 2회' : '프리미엄 · 월 9,900원'}</span><small>예시 가격</small></div>
+    <button class="primary" id="exgo"></button>`; icons();
+    const upd = () => { const n = $$('.ex-it input:checked', bg).length; $('#exgo', bg).disabled = !n; $('#exgo', bg).textContent = n ? `기록 ${n}개 보내기` : '보낼 기록을 골라 주세요'; };
+    $$('.ex-it input', bg).forEach(i => i.onchange = upd); upd();
+    $('#exm', bg).oninput = ev => memo = ev.target.value;
+    $$('.ex-sc', bg).forEach(b => b.onclick = () => { sel = b.dataset.k; buzz(); draw(); });
+    $('#exgo', bg).onclick = () => { const ids = $$('.ex-it input:checked', bg).map(i => i.dataset.id); S.premium ? send(ids) : upgrade(ids); };
+    notesRefresh(); };
+  const upgrade = ids => {
+    $('#exb', bg).innerHTML = `<div class="ex-up"${why('프리미엄이 아니면 같은 시트 안에서 조용히 한 단계. 광고 문구 없이 무엇이 포함되는지만. 고른 기록은 그대로 기다려요.')}><div class="s-eyebrow">프리미엄 · 예시</div><h2 class="s-title">전문가 연결은 프리미엄이에요</h2>
+      <ul class="ex-inc"><li><i data-lucide="check"></i>한 달에 두 번, 전문가에게 기록 보여주기</li><li><i data-lucide="check"></i>답은 알게 된 것 안에 카드로 와요</li><li><i data-lucide="check"></i>언제든 해지할 수 있어요</li></ul>
+      <div class="ex-plans">${[['m','월간','9,900원 / 월'],['y','연간','99,000원 / 년']].map(([k,l,p],i) => `<label class="ex-plan"><input type="radio" name="pl" value="${k}"${i?'':' checked'}><b>${l}</b><span>${p}</span></label>`).join('')}</div>
+      <small class="demo-l">예시 가격 · 데모에선 실제로 결제되지 않아요</small>
+      <button class="primary" id="exbuy">프리미엄 시작하고 보내기</button><button class="ex-back" id="exbk">돌아가기</button></div>`; icons();
+    $('#exbuy', bg).onclick = () => { S.premium = { since: today(), plan: $('input[name=pl]:checked', bg).value }; save(); buzz(); send(ids); };
+    $('#exbk', bg).onclick = () => draw(); notesRefresh(); };
+  const send = ids => { S.expert = S.expert || {}; S.expert[sel] = { sent: today(), ids, memo, who: EXPERTS[seedOf(sel) % EXPERTS.length].id }; save(); buzz();
+    $('#exb', bg).innerHTML = `<div class="ex-done"><i data-lucide="check"></i><b>보냈어요</b><span>기록에 맞는 전문가를 찾고 있어요. 답은 '나에 대해 알게 된 것'에 조용히 와요. 알림은 보내지 않아요.</span><button class="primary" id="exok">확인</button></div>`; icons();
+    $('#exok', bg).onclick = () => { bg.close(); const ov = $('#ins'); if (ov) { ov.remove(); insightsPage(); } }; };
+  draw(); }
 function insightsPage(){
   let list = insights(); const t = today(), fo = focus();
   const ds = d => { const n = gap(d, t); if (n <= 2) return dayName(d, t); const x = new Date(d + 'T12:00:00'); return `${x.getMonth()+1}월 ${x.getDate()}일 ${WD[x.getDay()]}`; };
@@ -599,6 +621,7 @@ function insightsPage(){
   const ov = document.createElement('div'); ov.className = 'ov'; ov.id = 'ins';
   ov.innerHTML = `<div class="in-top" style="justify-content:flex-start"><button id="ib" aria-label="뒤로"><i data-lucide="chevron-left"></i></button></div><div class="su ins">
     <h2${why('\'내 몸 사용설명서\'는 진단처럼 들려서, 내 기록에서 보인 것만 담는다는 뜻으로 지었어요.')}>나에 대해 알게 된 것</h2><p class="ins-sub"${why('설명은 한 줄로. 원인을 단정하지 않는다는 건 아래 안내에 한 번만.')}>내 기록에서 겹쳐 보인 것만 적어 둬요.</p>${fo ? `<p class="focus"${why('한 번에 불편 하나만 지켜봐요. 자주, 최근에, 일상에 크게 걸리는 것을 골라요. 여러 개를 동시에 쫓으면 아무것도 가려지지 않아요.')}><i data-lucide="crosshair"></i><span>지금은 <b>${esc(fo)}</b>${/[가-힣]/.test(fo) && (fo.charCodeAt(fo.length-1)-0xAC00)%28 ? '을' : '를'} 지켜보고 있어요</span></p>` : ''}
+    <button class="ex-row" id="exrow"${why('프리미엄 기능은 늘 쓸 수 있게 알게 된 것 맨 위에 한 줄. 홈은 카메라만 두고 깨끗하게 둬요.')}><i data-lucide="user-round"></i><span>전문가에게 기록 보여주기</span><em class="pm">프리미엄</em><i data-lucide="chevron-right"></i></button>${exHTML({ id:'_all' })}
     ${body}<p class="disc">기록이 겹쳤다는 뜻일 뿐, 원인을 뜻하지 않아요.</p></div>`;
   document.body.appendChild(ov); icons();
   $$('.fd-more', ov).forEach(b => b.onclick = () => { const c = b.closest('.fd'); c.classList.toggle('open'); b.firstChild.textContent = c.classList.contains('open') ? '접기' : '기록 보기'; buzz(); notesRefresh(); });
@@ -606,6 +629,7 @@ function insightsPage(){
   $$('.ck-stop', ov).forEach(b => b.onclick = () => { delete S.checks[b.closest('.fd').dataset.id]; save(); ov.remove(); insightsPage(); });
   $$('.pr-open', ov).forEach(b => b.onclick = () => productSheet(b.dataset.p));
   $$('.ex-cred', ov).forEach(b => b.onclick = () => { const l = b.querySelector('.ex-lic'); l.hidden = !l.hidden; buzz(); });
+  $('#exrow', ov).onclick = () => expertSheet(null);
   $$('.ex-link', ov).forEach(b => b.onclick = () => expertSheet(list.find(y => y.id === b.dataset.ex)));
   $('#ib', ov).onclick = () => { ov.classList.add('out'); setTimeout(() => { ov.remove(); notesRefresh(); }, 250); };
   $('.su', ov).addEventListener('scroll', () => notesOn && notesRefresh(), { passive: true });
@@ -684,7 +708,7 @@ function demoBar(){ if (!qs.has('demo')) return; document.body.classList.add('de
   draw(); }
 
 function expertDemo(){ if (!S.sample) { loadSample(); render(); } insightsPage();
-  setTimeout(() => { const l = $('.ex-link'); if (!l) return; l.scrollIntoView({ block:'center', behavior:'smooth' }); l.classList.add('hl'); setTimeout(() => l.classList.remove('hl'), 2600); }, 450); }
+  setTimeout(() => { const l = $('#exrow'); if (!l) return; l.scrollIntoView({ block:'center', behavior:'smooth' }); l.classList.add('hl'); setTimeout(() => l.classList.remove('hl'), 2600); }, 450); }
 // ---- 시작 ----
 (async () => { await loadUrls(); render(); notesToggle(); demoBar();
   if (!S.intro) intro(false); else if (!S.setup) setup(false);
@@ -699,5 +723,5 @@ function expertDemo(){ if (!S.sample) { loadSample(); render(); } insightsPage()
     const had = !!navigator.serviceWorker.controller; let done = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => { if (had && !done) { done = true; location.reload(); } });
     navigator.serviceWorker.register('sw.js', { updateViaCache:'none' }).then(r => { r.update(); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') r.update(); }); }).catch(() => {}); } })();
-window.__bapsim = { S, render, v:'v46' };
+window.__bapsim = { S, render, v:'v47' };
 })();
