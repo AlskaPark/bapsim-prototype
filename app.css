@@ -408,3 +408,10 @@ img{image-orientation:from-image}
 .ex-cred{margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-size:11.5px;color:var(--sub)}.ex-cred svg{width:13px;height:13px}
 .ex-lic{margin-left:4px;color:var(--ink2);font-weight:600}.ex-lic[hidden]{display:none}
 .fd-cl{font-size:13px;color:var(--sub);margin:6px 0 0;line-height:1.5}.fd-cl .ref{font-size:12px}
+button.memo{font-family:inherit;cursor:pointer;border:0}
+.mv textarea{width:100%}.mv .mc{margin-top:12px}.mv .primary{margin-top:16px;width:100%}
+.toast{position:fixed;left:50%;bottom:calc(110px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:14px;padding:12px 14px 12px 18px;display:flex;gap:16px;align-items:center;font-size:14px;z-index:90;box-shadow:0 8px 24px rgba(0,0,0,.18);animation:tin .22s ease-out;white-space:nowrap}
+.toast button{color:var(--accent);font-weight:700;font-size:14px}.toast.out{opacity:0;transition:opacity .2s}
+@keyframes tin{from{opacity:0;transform:translate(-50%,8px)}}
+.demo .ej{font-size:12px;padding:4px 8px;border-radius:8px;background:rgba(255,255,255,.14);color:inherit;white-space:nowrap}
+.ex-link.hl{outline:2px solid var(--accent);outline-offset:4px;border-radius:8px;transition:outline-color .3s}

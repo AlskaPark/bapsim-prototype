@@ -147,7 +147,7 @@ function render(){
   const tl = keys.map((d, i) => { const es = (days[d] || []).slice().reverse(), ph = es.filter(e => e.kind === 'photo'), me = es.filter(e => e.kind === 'memo');
     return `<section class="day"${i===0?why('날짜별 기록. 저장됐다는 믿음과, 한 줄의 근거를 확인하는 곳이에요. 숫자나 분석은 없어요.'):''}><h3>${esc(dayName(d,t))}</h3>
       ${ph.length ? `<div class="grid">${ph.map(e => `<button class="tile${e.id===lastNew?' new':''}" data-id="${e.id}" aria-label="${esc(e.text||'사진')}"><img src="${src(e)}" alt="" loading="lazy">${e.rec==='pending'?'<span class="lb pend">확인 중</span>':(e.k||e.custom)?`<span class="lb">${esc(e.text)}</span>`:''}</button>`).join('')}</div>` : (me.length ? '' : `<div class="empty">아직 찍은 게 없어요</div>`)}
-      ${me.length ? `<div class="memos">${me.map(e => `<span class="memo"><i data-lucide="pen-line"></i>${esc(e.text)}</span>`).join('')}</div>` : ''}</section>`; }).join('');
+      ${me.length ? `<div class="memos">${me.map(e => `<button class="memo" data-mid="${e.id}"><i data-lucide="pen-line"></i>${esc(e.text)}</button>`).join('')}</div>` : ''}</section>`; }).join('');
   const ins = insights();
   const insLink = ins.length ? `<button class="ins-link" id="insl"${why('따로 탭을 만들지 않았어요. 알게 된 게 생겼을 때만 이 작은 줄이 나타나요.')}><i data-lucide="sprout"></i>나에 대해 알게 된 것<i data-lucide="chevron-right"></i></button>` : '';
   app.innerHTML = `<div class="wrap">${head}<div class="today">${top}</div>${insLink}${tl}</div>
@@ -159,6 +159,7 @@ function render(){
   icons(); lastNew = null;
   $('#gear').onclick = settings; if ($('#insl')) $('#insl').onclick = insightsPage; $('#shot').onclick = () => capture(false); $('#album').onclick = () => capture(true); $('#pen').onclick = composer;
   $$('.tile').forEach(b => b.onclick = () => photoView(b.dataset.id));
+  $$('.memo[data-mid]').forEach(b => b.onclick = () => memoView(b.dataset.mid));
   const ft = $('.tile'); if (ft) ft.setAttribute('data-why', '밥심이 사진을 스스로 알아보고, 이름표를 사진 위에 작게만 붙여요. 아무것도 뜨지 않아요. 확실하지 않으면 이름표를 붙이지 않고, 묻지도 않아요.');
   if (n) { $('#more').onclick = () => n.product ? productSheet(n.product) : detail(n); $('#nx').onclick = () => { buzz(); $('#note').classList.add('out'); setTimeout(() => { S.dismissed.push(n.id + '-' + t); save(); render(); }, 260); }; }
   notesRefresh();
@@ -221,6 +222,24 @@ function photoView(id){
   $('#pf', bg).onsubmit = ev => { ev.preventDefault(); const v = $('#pi', bg).value.trim(); if (!v) return; buzz(); setCustom(id, v); render(); setTimeout(() => bg.close(), 150); };
   $$('.tag', bg).forEach(b => b.onclick = () => { $$('.tag', bg).forEach(x => x.classList.remove('on')); b.classList.add('on'); buzz(); setLabel(id, b.dataset.k); render(); setTimeout(() => bg.close(), 200); });
   $('#del', bg).onclick = () => { S.entries = S.entries.filter(x => x.id !== id); if (e.pid) del(e.pid); save(); bg.close(); render(); };
+  notesRefresh();
+}
+function toast(msg, undo){ $$('.toast').forEach(t => t.remove()); const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = `<span>${esc(msg)}</span>${undo ? '<button>되돌리기</button>' : ''}`; document.body.appendChild(t);
+  const done = () => { t.classList.add('out'); setTimeout(() => t.remove(), 220); }; if (undo) $('button', t).onclick = () => { undo(); buzz(); done(); }; setTimeout(done, 4500); }
+function memoView(id){
+  const e = S.entries.find(x => x.id === id); if (!e) return;
+  const bg = sheet(`<div class="pv mv"><div class="meta">${esc(dayName(e.day, today()))} · 메모</div>
+    <div class="comp-free"${why('메모도 사진과 같은 시트에서 고쳐요. 칩을 누르면 그 말로 바로 바뀌고, 직접 고친 건 저장을 눌러요.')}><textarea id="mt" rows="2" maxlength="60">${esc(e.text)}</textarea></div>
+    ${memoChips()}
+    <button class="primary" id="ms" disabled>저장</button>
+    <button class="danger" id="del"${why('확인 창 대신 지운 뒤 되돌리기. 실수는 한 번 탭으로 되돌리고, 지울 때마다 묻지 않아요.')}>이 메모 지우기</button></div>`);
+  const ta = $('#mt', bg), go = $('#ms', bg);
+  const apply = text => { e.text = text; e.tags = memoTags(text); save(); buzz(); render(); };
+  ta.oninput = () => go.disabled = !ta.value.trim() || ta.value.trim() === e.text;
+  go.onclick = () => { apply(ta.value.trim()); bg.close(); };
+  $$('.mchip', bg).forEach(b => b.onclick = () => { b.classList.add('on'); apply(b.dataset.m); setTimeout(() => bg.close(), 200); });
+  $('#del', bg).onclick = () => { const i = S.entries.indexOf(e); S.entries.splice(i, 1); save(); bg.close(); render();
+    toast('메모를 지웠어요', () => { S.entries.splice(i, 0, e); save(); render(); }); };
   notesRefresh();
 }
 const MEMO_NEG = ['변비','설사','가스','소화 불편','뾰루지','두통','피곤'], MEMO_POS = ['속 편함','개운함','피부 좋음'];
@@ -658,11 +677,14 @@ function notesToggle(){ if (!qs.has('notes')) return; const t = document.createE
 
 // ---- 데모 막대 (?demo=1) ----
 function demoBar(){ if (!qs.has('demo')) return; document.body.classList.add('demo-on'); const b = document.createElement('div'); b.className = 'demo'; document.body.appendChild(b);
-  const draw = () => { b.innerHTML = `<span class="l">데모</span><button data-d="-1" aria-label="전날"><i data-lucide="chevron-left"></i></button><b>${esc(dayName(today(), dk(base)))}</b><button data-d="1" aria-label="다음 날"><i data-lucide="chevron-right"></i></button><button class="s">${S.sample ? '샘플 끄기' : '샘플'}</button>`; icons();
+  const draw = () => { b.innerHTML = `<span class="l">데모</span><button data-d="-1" aria-label="전날"><i data-lucide="chevron-left"></i></button><b>${esc(dayName(today(), dk(base)))}</b><button data-d="1" aria-label="다음 날"><i data-lucide="chevron-right"></i></button><button class="ej" id="ej">전문가 연결 보기</button><button class="s">${S.sample ? '샘플 끄기' : '샘플'}</button>`; icons();
     $$('[data-d]', b).forEach(x => x.onclick = () => { S.view = Math.max(-6, Math.min(0, S.view + +x.dataset.d)); save(); draw(); render(); });
+    $('#ej', b).onclick = () => expertDemo();
     $('.s', b).onclick = () => { S.sample ? clearSample() : loadSample(); draw(); render(); }; };
   draw(); }
 
+function expertDemo(){ if (!S.sample) { loadSample(); render(); } insightsPage();
+  setTimeout(() => { const l = $('.ex-link'); if (!l) return; l.scrollIntoView({ block:'center', behavior:'smooth' }); l.classList.add('hl'); setTimeout(() => l.classList.remove('hl'), 2600); }, 450); }
 // ---- 시작 ----
 (async () => { await loadUrls(); render(); notesToggle(); demoBar();
   if (!S.intro) intro(false); else if (!S.setup) setup(false);
@@ -671,6 +693,7 @@ function demoBar(){ if (!qs.has('demo')) return; document.body.classList.add('de
   document.addEventListener('click', ev => { const b = ev.target.closest('.sh .pr-open'); if (b) productSheet(b.dataset.p); });
   if (qs.has('insights')) insightsPage();
   if (qs.has('memo')) composer();
+  if (qs.has('expert')) expertDemo();
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {}); })();
 window.__bapsim = { S, render };
 })();
