@@ -110,8 +110,8 @@ function pick(){
   const gf = [...on(t,'grapefruit'), ...on(y,'grapefruit')];
   if (gf.length && (htn || lipid)) C.push({ id:'gf', src:gf.slice(-1), pair:`자몽주스 + ${lipid ? '고지혈증약' : '혈압약'}`,
     msg:`자몽은 일부 ${lipid ? '고지혈증약' : '혈압약'}의 효과를 세게 만들 수 있어요. 약을 드시는 동안엔 물이 가장 무난해요.`,
-    short:'자몽은 내 약 효과를 세게 할 수 있어요', title:'자몽과 내 약', why:'자몽은 장에서 약을 분해하는 효소를 막아서, 일부 약(특정 스타틴·칼슘 통로 차단제 등)이 몸에 더 많이 남게 할 수 있어요. 내 약이 해당되는지는 약 봉투나 약사에게 확인하면 정확해요.',
-    alts:[['물','다른 과일 주스도 일부 약과 겹칠 수 있어서, 대신 마실 건 물만 적어 둬요']], refs:['simva'], quote:[{ ref:'simva', t:'자몽주스: 자몽주스는 CYP3A4를 저해하는 1개 또는 그 이상의 성분을 함유하고 있어 CYP3A4에 의해 대사되는 약물의 혈장 농도를 증가시킬 수 있다. 일반적인 섭취량(1일 1컵, 250mL)의 영향은 미미하며(AUC로 평가한 혈장 HMG-CoA 환원효소 억제 작용 13% 증가), 임상적으로 유의하지 않다. 그러나 이 약과 다량(1일 1L이상)의 자몽주스를 병용할 경우, 혈장 HMG-CoA 환원효소 억제 작용을 유의하게 증가시키므로 이 약 투여시 자몽주스를 섭취하지 않도록 한다(5. 일반적 주의 참조).', s:'심바스틴정20밀리그램(심바스타틴) 상호작용 — 예시 제품' }] });
+    short:'자몽은 내 약 효과를 세게 할 수 있어요', title:'자몽과 내 약', why:'자몽은 장에서 약을 분해하는 효소를 막아서, 일부 혈압약(펠로디핀 같은 칼슘 통로 차단제)·고지혈증약(심바스타틴 등)이 몸에 더 많이 남게 할 수 있어요. 내 약이 해당되는지는 약 봉투나 약사에게 확인하면 정확해요.',
+    alts:[['물','다른 과일 주스도 일부 약과 겹칠 수 있어서, 대신 마실 건 물만 적어 둬요']], refs:[lipid?'simva':'felo'], quote:[lipid ? { ref:'simva', t:'자몽주스: 자몽주스는 CYP3A4를 저해하는 1개 또는 그 이상의 성분을 함유하고 있어 CYP3A4에 의해 대사되는 약물의 혈장 농도를 증가시킬 수 있다. 일반적인 섭취량(1일 1컵, 250mL)의 영향은 미미하며(AUC로 평가한 혈장 HMG-CoA 환원효소 억제 작용 13% 증가), 임상적으로 유의하지 않다. 그러나 이 약과 다량(1일 1L이상)의 자몽주스를 병용할 경우, 혈장 HMG-CoA 환원효소 억제 작용을 유의하게 증가시키므로 이 약 투여시 자몽주스를 섭취하지 않도록 한다(5. 일반적 주의 참조).', s:'심바스틴정20밀리그램(심바스타틴) 상호작용 — 예시 제품' } : { ref:'felo', t:'이 약과 자몽(grapefruit)주스와 함께 투여하는 경우에는 이 약과 주스의 플라보노이드 성분과의 상호작용에 의해 Cmax와 AUC가 두 배 증가했다. 따라서 이 약과 자몽 주스를 함께 복용하지 않는다.' }] });
   const iron = [...on(t,'iron')], cof = on(t,'coffee');
   if ((iron.length || hasMed(/철분/)) && cof.length && iron.length) C.push({ id:'iron', src:[...iron.slice(-1), ...cof.slice(-1)], pair:'철분제 + 커피',
     msg:'철분제 먹은 날 커피도 있었어요. 커피는 철분 흡수를 줄일 수 있다는 연구가 있어요.',
@@ -444,6 +444,7 @@ const REFS = {
   ibuprofen:{ l:'식약처 의약품안전나라 · 부루펜정200밀리그램', u:'https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=197700120' },
   ssanghwa:{ l:'식약처 의약품안전나라 · 경방쌍화탕액', u:'https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=200707044' },
   galgeun:{ l:'식약처 의약품안전나라 · 경방갈근탕액', u:'https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=200711872' },
+  felo:{ l:'식약처 의약품안전나라 · 펠론정(펠로디핀, 혈압약)', u:'https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=200402830' },
   simva:{ l:'식약처 의약품안전나라 · 심바스틴정20밀리그램', u:'https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=200500072' },
   ferrimam:{ l:'식약처 의약품안전나라 · 훼리맘큐연질캡슐', u:'https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=201110661' },
   odsiron:{ l:'NIH ODS · Iron Fact Sheet for Consumers', u:'https://ods.od.nih.gov/factsheets/Iron-Consumer/' },

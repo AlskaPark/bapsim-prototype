@@ -9,7 +9,6 @@ const TOPICS = [
     id: 'chill', label: '환절기 · 으슬으슬함',
     keywords: ['으슬','환절기','감기','오한','몸살','콧물','재채기','추워','춥','한기','코막'],
     foods: [
-      { name: '귤 · 유자차', comp: '비타민C·헤스페리딘', effect: '비타민C는 항산화 작용으로 유해산소로부터 세포를 보호하는 데 필요한 영양소로 알려져 있어요', tags: ['citrus'] },
       { name: '닭고기 수프(맑은 닭곰탕)', comp: '단백질·카르노신', effect: '닭고기 수프가 연구에서 상기도 점막 관련 염증 반응을 완화하는 작용이 보고되어, 회복기 식사로 도움이 될 수 있어요', tags: [] },
     ],
     supplements: [
@@ -26,9 +25,7 @@ const TOPICS = [
     id: 'fatigue', label: '피로 · 기운 없음',
     keywords: ['피곤','피로','기운이 없','기운 없','무기력','지쳐','지침','힘이 없','늘어','에너지','체력','나른'],
     foods: [
-      { name: '돼지고기 안심 · 현미', comp: '비타민B1(티아민)', effect: '비타민B1은 탄수화물과 에너지 대사에 필요한 영양소로 알려져 있어요', tags: [] },
       { name: '시금치 · 소고기', comp: '철분', effect: '철분은 체내 산소운반과 혈액생성에 필요한 영양소로, 부족 시 피로와 관련이 보고되어 있어요', tags: [] },
-      { name: '바나나 · 견과류', comp: '마그네슘·칼륨', effect: '마그네슘은 에너지 이용과 신경·근육 기능 유지에 필요한 영양소로 알려져 있어요', tags: ['nuts'] },
       
     ],
     supplements: [
@@ -276,7 +273,6 @@ TOPICS.push(
     foods:[
       { name:'따뜻한 두유 한 잔', comp:'콩 단백질', effect:'출출할 땐 소화 부담이 적은 따뜻한 음료가 무난해요', tags:['soy'] },
       { name:'삶은 달걀 · 방울토마토', comp:'단백질·라이코펜', effect:'적은 열량으로 포만감을 줄 수 있는 간식 조합이에요', tags:['egg'] },
-      { name:'바나나', comp:'트립토판·칼륨', effect:'트립토판은 세로토닌·멜라토닌 합성의 원료로 알려져 있어요', tags:['potassium'] },
     ],
     supplements:[], otc:[] },
 );
@@ -439,8 +435,6 @@ function answer(text, profile, memory) {
   // 식사 사진은 배경 맥락으로만: 관련 있는 질문일 때 한 줄 덧붙임
   const mt = memory.recentMealTags || [];
   const salty = mt.filter(x => x === 'salty').length, late = mt.filter(x => x === 'late').length;
-  if (topics[0] && ['digest','sleep','latesnack','lipid','glucose','fatigue'].includes(topics[0].id) && (salty >= 3 || late >= 3))
-    insights.push({ verdict:'조금 아쉬워요', text: late >= 3 ? '저장해 두신 식사 사진을 보면 요즘 저녁이 늦은 편이에요. 이것도 영향을 줄 수 있어요.' : '저장해 두신 식사 사진을 보면 요즘 짠 음식이 잦은 편이에요. 이것도 영향을 줄 수 있어요.' });
   const consultWhy = [];
   if (CONSULT_KEYS.some(k => text.includes(k))) consultWhy.push(/검진|수치|LDL|ldl/.test(text) ? '검진 수치는 전문가와 보는 게 좋아요' : /약|복용|같이 먹어도/.test(text) ? '약과 함께 먹어도 되는지 확인이 필요해요' : '오래가면 상담을 권해요');
   if (!topics.length) {
