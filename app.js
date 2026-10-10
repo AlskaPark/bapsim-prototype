@@ -10,13 +10,13 @@ const qs = new URLSearchParams(location.search);
 
 // 이름표: 사진 속에 있는 것 (모두 같은 형식, 범주 구분 없음)
 const ITEMS = {
-  coffee:{l:'커피',t:['coffee']}, beer:{l:'맥주',t:['alcohol','fizzy']}, soju:{l:'소주',t:['alcohol']}, tylenol:{l:'타이레놀',t:['apap']},
-  ssanghwa:{l:'쌍화탕',t:['licorice']}, grapefruit:{l:'자몽주스',t:['grapefruit']}, iron:{l:'철분제',t:['iron']}, energy:{l:'에너지 드링크',t:['coffee']},
+  coffee:{l:'커피',t:['coffee','caffeine']}, latte:{l:'라떼',t:['coffee','caffeine','dairy','latte']}, americano:{l:'아메리카노',t:['coffee','caffeine','americano']}, filter:{l:'필터 커피',t:['coffee','caffeine','filter']}, decaf:{l:'디카페인',t:['coffee','decaf']}, beer:{l:'맥주',t:['alcohol','fizzy']}, soju:{l:'소주',t:['alcohol']}, tylenol:{l:'타이레놀',t:['apap']},
+  ssanghwa:{l:'쌍화탕',t:['licorice']}, grapefruit:{l:'자몽주스',t:['grapefruit']}, iron:{l:'철분제',t:['iron']}, energy:{l:'에너지 드링크',t:['caffeine','fizzy','sweet']},
   banana:{l:'바나나',t:['mg']}, tofu:{l:'두부',t:['mg','soy']}, dosirak:{l:'도시락',t:[]}, onigiri:{l:'삼각김밥',t:[]}, protein:{l:'프로틴바',t:[]},
-  pizza:{l:'피자',t:['dairy','oily']}, chicken:{l:'치킨',t:['oily']}, samgyeop:{l:'삼겹살',t:['oily']}, snack:{l:'과자',t:['sweet']}, tteok:{l:'떡볶이',t:['sweet']}, ramen:{l:'라면',t:[]}, salad:{l:'샐러드',t:[]}, cola:{l:'콜라',t:['fizzy','sweet']},
+  pizza:{l:'피자',t:['dairy','oily']}, chicken:{l:'치킨',t:['oily']}, samgyeop:{l:'삼겹살',t:['oily']}, snack:{l:'과자',t:['sweet']}, tteok:{l:'떡볶이',t:['sweet','spicy']}, ramen:{l:'라면',t:['spicy','oily']}, salad:{l:'샐러드',t:['veg']}, yogurt:{l:'요거트',t:['dairy','yogurt']}, cola:{l:'콜라',t:['fizzy','sweet']},
 };
 // 모의 이미지 인식: 서버가 붙으면 실제 모델로 교체. 지금은 파일 이름 단서만 사용, 확실하지 않으면 이름표 없음 (묻지 않음)
-const REC = [[/tylenol|타이레놀|acetaminophen/i,'tylenol'],[/beer|맥주/i,'beer'],[/soju|소주/i,'soju'],[/coffee|커피|latte|americano/i,'coffee'],[/ssanghwa|쌍화/i,'ssanghwa'],[/grapefruit|자몽/i,'grapefruit'],[/iron|철분/i,'iron'],[/energy|에너지/i,'energy'],[/banana|바나나/i,'banana'],[/tofu|두부/i,'tofu'],[/dosirak|도시락|lunch/i,'dosirak'],[/onigiri|삼각김밥/i,'onigiri'],[/protein|프로틴/i,'protein'],[/pizza|피자/i,'pizza'],[/chicken|치킨/i,'chicken'],[/tteok|떡볶이/i,'tteok'],[/ramen|라면/i,'ramen'],[/salad|샐러드/i,'salad'],[/cola|콜라/i,'cola'],[/samgyeop|삼겹/i,'samgyeop'],[/snack|과자/i,'snack']];
+const REC = [[/tylenol|타이레놀|acetaminophen/i,'tylenol'],[/beer|맥주/i,'beer'],[/soju|소주/i,'soju'],[/filter|drip|드립|필터/i,'filter'],[/decaf|디카페인/i,'decaf'],[/latte|라떼/i,'latte'],[/americano|아메리카노/i,'americano'],[/coffee|커피/i,'coffee'],[/ssanghwa|쌍화/i,'ssanghwa'],[/grapefruit|자몽/i,'grapefruit'],[/iron|철분/i,'iron'],[/energy|에너지/i,'energy'],[/banana|바나나/i,'banana'],[/tofu|두부/i,'tofu'],[/dosirak|도시락|lunch/i,'dosirak'],[/onigiri|삼각김밥/i,'onigiri'],[/protein|프로틴/i,'protein'],[/pizza|피자/i,'pizza'],[/chicken|치킨/i,'chicken'],[/tteok|떡볶이/i,'tteok'],[/ramen|라면/i,'ramen'],[/salad|샐러드/i,'salad'],[/cola|콜라/i,'cola'],[/samgyeop|삼겹/i,'samgyeop'],[/snack|과자/i,'snack'],[/yogurt|요거트|요구르트/i,'yogurt']];
 const recognize = name => { const h = REC.find(([r]) => r.test(name || '')); return h ? h[1] : null; };
 const TRAY = ['coffee','beer','soju','tylenol','ssanghwa','grapefruit','iron','energy','banana'];
 const MEDS = ['혈압약','고지혈증약','타이레놀·감기약','아스피린','와파린','철분제','항생제'];
@@ -46,7 +46,7 @@ const src = e => e.pid ? (URLS[e.pid] || '') : e.k ? IMG(e.k) : '';
 async function loadUrls(){ for (const e of S.entries) if (e.pid && !URLS[e.pid]) { const b = await get(e.pid); if (b) URLS[e.pid] = URL.createObjectURL(b); } }
 async function shrink(f){ try { const bm = await createImageBitmap(f); const k = Math.min(1, 1080 / Math.max(bm.width, bm.height)); const c = document.createElement('canvas'); c.width = bm.width * k; c.height = bm.height * k; c.getContext('2d').drawImage(bm, 0, 0, c.width, c.height); return await new Promise(r => c.toBlob(r, 'image/jpeg', .85)); } catch { return f; } }
 const now = () => new Date().toTimeString().slice(0,5);
-const memoTags = text => { const c = E.classify(text), t = [...c.tags]; [[/타이레놀|아세트아미노펜|감기약/,'apap'],[/쌍화탕/,'licorice'],[/술|맥주|소주|와인|막걸리/,'alcohol'],[/커피|아메리카노|라떼/,'coffee'],[/자몽/,'grapefruit'],[/철분/,'iron'],[/두부|바나나|아몬드/,'mg'],[/우유|라떼|치즈|요거트/,'dairy'],[/두부|두유|콩/,'soy'],[/콜라|사이다|탄산/,'fizzy'],[/치킨|튀김|삼겹|기름진/,'oily'],[/케이크|초콜릿|과자|디저트|빵/,'sweet']].forEach(([r,x]) => { if (r.test(text) && !t.includes(x)) t.push(x); }); return t; };
+const memoTags = text => { const c = E.classify(text), t = [...c.tags]; [[/타이레놀|아세트아미노펜|감기약/,'apap'],[/쌍화탕/,'licorice'],[/술|맥주|소주|와인|막걸리/,'alcohol'],[/커피|아메리카노|라떼/,'coffee'],[/자몽/,'grapefruit'],[/철분/,'iron'],[/두부|바나나|아몬드/,'mg'],[/우유|라떼|치즈|요거트/,'dairy'],[/요거트|요구르트/,'yogurt'],[/두부|두유|콩/,'soy'],[/콜라|사이다|탄산/,'fizzy'],[/치킨|튀김|삼겹|기름진/,'oily'],[/케이크|초콜릿|과자|디저트|빵/,'sweet']].forEach(([r,x]) => { if (r.test(text) && !t.includes(x)) t.push(x); }); return t; };
 
 // ---- 프로필 → 엔진 ----
 const profile = () => ({ conditions: S.profile.conds, meds: [...S.profile.meds, S.profile.other].join(' ').replace('타이레놀·감기약','타이레놀 감기약'), allergies: [] });
@@ -54,20 +54,27 @@ const hasMed = re => re.test([...S.profile.meds, S.profile.other].join(' '));
 
 // ---- 샘플 일주일 ----
 const SAMPLE = { meds:['혈압약'], shortSleep:[12,6,4], log:[
-  [13,'coffee','09:00'],[13,'salad','12:40'],[12,'coffee','08:30'],[12,'energy','15:40'],[12,'n','다리에 쥐 났음'],
-  [11,'chicken','20:00'],[9,'cola','21:00'],[8,'n','아침에 배에 가스 참'],[8,'snack','16:00'],[7,'samgyeop','12:30'],[7,'n','소화가 잘 안 됨'],[6,'n','턱에 뾰루지'],[11,'soju','21:30'],[10,'n','속이 더부룩함'],[10,'coffee','10:00'],[9,'ramen','13:00'],[8,'coffee','09:10'],[7,'tofu','19:00'],
-  [6,'coffee','08:40'],[6,'dosirak','12:30'],[6,'energy','16:10'],
-  [5,'coffee','08:50'],[5,'banana','15:20'],[5,'n','다리에 쥐 났음'],
-  [4,'coffee','09:00'],[4,'onigiri','13:10'],[4,'energy','17:00'],
+  [13,'latte','09:00'],[13,'n','피곤'],[13,'n','커피 마시고 속이 불편함'],[13,'salad','12:40'],[12,'americano','08:30'],[12,'energy','15:40'],[12,'n','다리에 쥐 났음'],
+  [11,'chicken','20:00'],[9,'yogurt','08:10'],[9,'n','속 편함'],[9,'cola','21:00'],[8,'n','아침에 배에 가스 참'],[8,'snack','16:00'],[7,'samgyeop','12:30'],[7,'n','소화가 잘 안 됨'],[6,'n','턱에 뾰루지'],[11,'soju','21:30'],[10,'n','속이 더부룩함'],[10,'latte','10:00'],[10,'n','피곤'],[10,'n','커피 마시고 속이 불편함'],[9,'ramen','13:00'],[8,'americano','09:10'],[8,'n','피곤'],[11,'energy','15:00'],[7,'tofu','19:00'],
+  [6,'filter','08:40'],[6,'dosirak','12:30'],[6,'energy','16:10'],
+  [5,'yogurt','08:00'],[5,'n','속 편함'],[5,'filter','08:50'],[5,'banana','15:20'],[5,'n','다리에 쥐 났음'],
+  [4,'filter','09:00'],[4,'onigiri','13:10'],[4,'energy','17:00'],
   [3,'tylenol','09:10'],[3,'pizza','20:10'],[3,'beer','21:00'],
-  [2,'coffee','08:45'],[2,'n','속이 더부룩함'],[2,'n','아침에 배에 가스 참'],[2,'protein','15:00'],[2,'tteok','19:30'],
+  [2,'filter','08:45'],[2,'n','속이 더부룩함'],[2,'n','아침에 배에 가스 참'],[2,'protein','15:00'],[2,'tteok','19:30'],
   [1,'chicken','20:40'],[1,'n','이마에 뾰루지'],[1,'soju','22:10'],[1,'n','팀 회식'],
   [0,'coffee','08:45'],[0,'n','소화가 잘 안 됨'],[0,'n','감기 기운'],[0,'ssanghwa','13:20'] ] };
 function loadSample(){ S.entries = S.entries.filter(e => !e.sample).concat(SAMPLE.log.map(([d,k,t], i) => k === 'n'
   ? { id:'s'+i, sample:true, day: dk(add(base,-d)), kind:'memo', text:t, tags: memoTags(t) }
   : { id:'s'+i, sample:true, day: dk(add(base,-d)), kind:'photo', k, text: ITEMS[k].l, time:t, tags: ITEMS[k].t }));
-  S.profile = { meds:[...SAMPLE.meds], other:'', conds:[] }; S.sample = true; S.health = { on:true, sample:true, short: SAMPLE.shortSleep.map(d => dk(add(base,-d))) }; S.dismissed = []; S.view = 0; save(); }
-const clearSample = () => { S.entries = S.entries.filter(e => !e.sample); S.sample = false; if (S.health && S.health.sample) S.health = null; save(); };
+  S.profile = { meds:[...SAMPLE.meds], other:'', conds:[] }; S.sample = true; S.health = { on:true, sample:true, short: SAMPLE.shortSleep.map(d => dk(add(base,-d))) };
+  const D = n => dk(add(base, -n));
+  S.checks = {
+    coffee: { mode:'swap', what:'커피', variant:'필터 커피', start: D(7), sample:true, result:'yes', line:'필터 커피로 바꾼 주에는 피곤함과 속 불편이 줄었어요.', health:'잠은 평소와 비슷했어요.', guess:'카페인보다는 종이 필터에 걸러지는 커피 기름 성분이 맞지 않았을 수도 있어요. 커피는 그대로, 종류만 바꿔도 돼요.' },
+    gas: { mode:'avoid', what:'탄산', start: D(2), sample:true },
+    skin: { mode:'avoid', what:'단 것', start: D(27), sample:true, result:'same', line:'단 것을 빼봐도 비슷했어요. 단 것 때문은 아닌 것 같아요.' },
+    oily: { mode:'avoid', what:'기름진 음식', start: D(24), sample:true, result:'kept', line:'확인하는 동안에도 기름진 음식이 있었어요. 그래서 이번엔 판단하지 않을게요.' },
+  }; S.dismissed = []; S.view = 0; save(); }
+const clearSample = () => { S.entries = S.entries.filter(e => !e.sample); S.sample = false; if (S.checks) for (const k in S.checks) if (S.checks[k].sample) delete S.checks[k]; if (S.health && S.health.sample) S.health = null; save(); };
 const shortSleep = d => !!(S.health && S.health.on && (S.health.short||[]).includes(d));
 
 // ---- 한 줄 규칙: 기록 + 내 약/몸에서 연결된 것만. 하루 하나. 닫으면 그날 끝 ----
@@ -102,7 +109,7 @@ function pick(){
   if (ya.length && !alc.length) C.push({ id:'water', src:ya.slice(-1), pair:`어젯밤 ${ya.at(-1).text}`,
     msg:`어젯밤 ${ya.at(-1).text} 기록이 있어요. 오늘 오전엔 물을 평소보다 몇 잔 더 마시면 조금 편할 수 있어요.`,
     short:`어젯밤 ${ya.at(-1).text}, 오늘 오전엔 물 몇 잔 더`, health: shortSleep(t), title:'술 마신 다음 날', why:'술은 소변을 늘려 몸의 수분을 빼앗아요. 다음 날 물을 조금 더 마시면 그만큼 채우는 데 도움이 될 수 있어요.', q:'어제 술 마셨는데 숙취해소제 추천' });
-  const cramp = es.filter(e => e.kind === 'memo' && /쥐/.test(e.text) && gap(e.day, t) >= 1 && gap(e.day, t) <= 2), cw = wk('coffee'), mg = wk('mg');
+  const cramp = es.filter(e => e.kind === 'memo' && /쥐/.test(e.text) && gap(e.day, t) >= 1 && gap(e.day, t) <= 2), cw = wk('caffeine'), mg = wk('mg');
   if (cramp.length && cw.length >= 3 && mg.length) { const f = mg.at(-1).text;
     C.push({ id:'mg', src:[cramp[0], mg.at(-1), cw.at(-1)], pair:'다리에 쥐 + 커피 잦은 주',
       msg:`커피 잦은 주에 다리에 쥐가 났다고 적으셨어요. 이미 드시는 ${f}${/[가-힣]/.test(f) && (f.charCodeAt(f.length-1)-0xAC00)%28 ? '을' : '를'} 매일 하나씩 곁들이면 조금이라도 도움이 될 수 있어요.`,
@@ -183,7 +190,8 @@ function detail(n){
 function variants(v){ return `<details><summary>제품으로 고른다면</summary><div><span class="demo-l">예시 데이터 · 가상의 제품</span></div>
   <table class="cmp"><tr><th></th>${v.items.map(p => `<th>${esc(p.name)}</th>`).join('')}</tr>${v.axis.map((ax,k) => `<tr><th>${esc(ax)}</th>${v.items.map(p => `<td>${esc(p.vals[k])}</td>`).join('')}</tr>`).join('')}
   <tr><th>좋은 점</th>${v.items.map(p => `<td>${esc(p.pro||'-')}</td>`).join('')}</tr><tr><th>아쉬운 점</th>${v.items.map(p => `<td>${esc(p.con||'-')}</td>`).join('')}</tr></table>
-  ${v.items.map(p => `<div class="ver">${esc(p.name)} · ${esc(p.badge)}</div>`).join('')}</details>`; }
+  ${v.items.map(p => `<div class="ver"><i data-lucide="badge-check"></i>${esc(p.name)} · ${esc(p.badge)}</div>`).join('')}
+  ${(() => { const ok = v.items.map(p => ({ p, n: parseInt(String(p.price).replace(/[^0-9]/g, '')) || 0 })).filter(o => o.n && /인증|허가|HACCP|신고|표시/.test(o.p.badge)).sort((a,b) => a.n - b.n)[0]; return ok ? `<a class="pr-go sm" href="#" onclick="return false">확인된 곳 중 가장 싼 곳 보기 · ${esc(ok.p.name)} ${won(ok.n)}</a>` : ''; })()}</details>`; }
 
 function photoView(id){
   const e = S.entries.find(x => x.id === id); if (!e) return;
@@ -196,17 +204,22 @@ function photoView(id){
   $('#del', bg).onclick = () => { S.entries = S.entries.filter(x => x.id !== id); if (e.pid) del(e.pid); save(); bg.close(); render(); };
   notesRefresh();
 }
+const MEMO_NEG = ['변비','설사','가스','소화 불편','뾰루지','두통','피곤'], MEMO_POS = ['속 편함','개운함','피부 좋음'];
+const memoText = c => ({ '가스':'아침에 배에 가스 참', '소화 불편':'소화가 잘 안 됨' })[c] || c;
+const freqOrder = list => { const cnt = c => S.entries.filter(e => e.kind === 'memo' && e.text.includes(c.split(' ')[0])).length; return list.slice().sort((a, b) => cnt(b) - cnt(a)); };
+function saveMemo(text){ S.entries.push({ id:'m' + Date.now() + Math.random().toString(36).slice(2,4), day: today(), kind:'memo', text, tags: memoTags(text) }); save(); buzz(); }
+function memoChips(){ return `<div class="mc"${why('가장 흔한 몸 상태는 한 번 탭으로. 자주 쓰는 게 앞으로 오고, 몸무게처럼 숫자를 재는 항목은 두지 않았어요.')}>${freqOrder(MEMO_NEG).map(c => `<button class="mchip" data-m="${esc(memoText(c))}">${esc(c)}</button>`).join('')}</div>
+  <div class="mc pos"${why('좋았던 날도 같은 무게로 남겨요. 그래야 \'뭐가 나를 편하게 하는지\'도 보여요.')}>${freqOrder(MEMO_POS).map(c => `<button class="mchip pos" data-m="${esc(c)}"><i data-lucide="leaf"></i>${esc(c)}</button>`).join('')}</div>`; }
 function composer(){
-  const bg = sheet(`<div class="comp"><div class="s-eyebrow">한 줄 적기</div><h2 class="s-title">찍을 수 없는 몸 상태를 남겨 두세요</h2>
-    <textarea id="mt" rows="2" placeholder="예: 다리에 쥐 남"></textarea>
-    <div class="ex">${['감기 기운','다리에 쥐 남','속이 더부룩함','잠을 설침'].map(x => `<button>${x}</button>`).join('')}</div>
+  const bg = sheet(`<div class="comp"><h2 class="s-title" style="margin-top:8px">지금 몸 상태</h2>${memoChips()}
+    <div class="comp-free"${why('칩에 없는 건 직접. 손이 바쁠 땐 말로 남길 수 있게 음성 버튼을 두었어요(목업).')}><textarea id="mt" rows="1" placeholder="직접 적기"></textarea><button class="mic" id="mic" aria-label="말로 남기기"><i data-lucide="mic"></i></button></div>
     <button class="primary" id="ms" disabled>적어 두기</button></div>`);
-  const ta = $('#mt', bg), go = $('#ms', bg); setTimeout(() => ta.focus(), 340);
+  const ta = $('#mt', bg), go = $('#ms', bg);
   ta.oninput = () => go.disabled = !ta.value.trim();
-  $$('.ex button', bg).forEach(b => b.onclick = () => { ta.value = b.textContent; go.disabled = false; });
-  go.onclick = () => { const text = ta.value.trim(); if (!text) return; S.entries.push({ id:'m' + Date.now(), day: today(), kind:'memo', text, tags: memoTags(text) }); save(); buzz(); bg.close(); render(); };
+  $$('.mchip', bg).forEach(b => b.onclick = () => { b.classList.add('on'); saveMemo(b.dataset.m); setTimeout(() => { bg.close(); render(); }, 220); });
+  $('#mic', bg).onclick = () => { const m = $('#mic', bg); m.classList.add('rec'); ta.placeholder = '듣고 있어요…'; setTimeout(() => { m.classList.remove('rec'); ta.placeholder = '직접 적기'; ta.value = '점심 먹고 속이 더부룩함'; go.disabled = false; }, 1600); };
+  go.onclick = () => { const text = ta.value.trim(); if (!text) return; saveMemo(text); bg.close(); render(); };
 }
-
 function settings(){
   const p = S.profile, sum = [...p.meds, p.other, ...p.conds.map(c => (CONDS.find(x => x[0]===c)||[])[1])].filter(Boolean).join(', ') || '비어 있어요';
   const bg = sheet(`<h2 class="s-title" style="margin-top:8px">설정</h2>
@@ -283,11 +296,14 @@ function setup(edit){
 const AREAS = { gut:['배·소화','soup'], skin:['피부','sparkles'], energy:['잠·기운','moon'], body:['몸','footprints'], med:['약','pill'] };
 // 규칙: 사용자가 직접 적은 메모가 두 번 이상, 매번 같은 무리의 기록과 겹칠 때만
 const RULES = [
-  { id:'gas', area:'gut', re:/가스/, g:[['dairy','유제품'],['soy','콩'],['fizzy','탄산']], from:1, to:1, t:n => `아침에 배에 가스가 찼던 날은 매번 전날 ${n}이 있었어요.` },
-  { id:'oily', area:'gut', re:/소화가/, g:[['oily','기름진 음식']], from:0, to:1, t:n => `소화가 잘 안 됐던 날은 매번 그 전에 ${n}이 있었어요.` },
-  { id:'bloat', area:'gut', re:/더부룩|체했/, g:[['alcohol','술']], from:1, to:1, t:n => `속이 더부룩했던 날은 매번 전날 밤에 ${n}이 있었어요.` },
-  { id:'skin', area:'skin', re:/뾰루지|여드름|트러블/, g:[['sweet','단 것'],['dairy','유제품'],['alcohol','술']], from:1, to:3, t:n => `뾰루지가 났던 며칠 전엔 매번 ${n}이 있었어요.` },
-  { id:'cramp', area:'body', re:/쥐/, g:[['coffee','커피']], from:0, to:3, need:2, t:() => '다리에 쥐가 났던 때는 매번 커피가 잦던 며칠 뒤였어요.' },
+  { id:'gas', kind:'trig', sym:'아침 가스', area:'gut', re:/가스/, g:[['dairy','유제품'],['soy','콩'],['fizzy','탄산']], from:1, to:1, t:n => `아침에 배에 가스가 찼던 날은 매번 전날 ${n}이 있었어요.` },
+  { id:'oily', kind:'trig', sym:'소화 불편', area:'gut', re:/소화가/, g:[['oily','기름진 음식']], from:0, to:1, t:n => `소화가 잘 안 됐던 날은 매번 그 전에 ${n}이 있었어요.` },
+  { id:'bloat', kind:'trig', sym:'더부룩함', area:'gut', re:/더부룩|체했/, g:[['alcohol','술']], from:1, to:1, t:n => `속이 더부룩했던 날은 매번 전날 밤에 ${n}이 있었어요.` },
+  { id:'skin', kind:'trig', sym:'뾰루지', area:'skin', re:/뾰루지|여드름|트러블/, g:[['sweet','단 것'],['dairy','유제품'],['alcohol','술']], from:1, to:3, t:n => `뾰루지가 났던 며칠 전엔 매번 ${n}이 있었어요.` },
+  { id:'cramp', kind:'trig', sym:'다리에 쥐', area:'body', re:/쥐/, g:[['caffeine','커피']], from:0, to:3, need:2, t:() => '다리에 쥐가 났던 때는 매번 커피가 잦던 며칠 뒤였어요.' },
+  { id:'calm', kind:'help', sym:'속 편한 날', pos:true, area:'gut', re:/속 편/, g:[['yogurt','요거트']], from:0, to:0, t:n => `속 편했던 날은 매번 아침에 ${n}가 있었어요.` },
+  { id:'fresh', kind:'help', sym:'개운한 날', pos:true, area:'energy', re:/개운/, g:[['veg','채소']], from:0, to:1, t:n => `개운했던 날은 매번 그 전에 ${n}가 있었어요.` },
+  { id:'skinok', kind:'help', sym:'피부 좋은 날', pos:true, area:'skin', re:/피부 좋/, g:[['soy','콩'],['veg','채소']], from:0, to:2, t:n => `피부가 좋았던 날은 매번 며칠 전에 ${n}이 있었어요.` },
 ];
 function insights(){
   const es = visible(), t = today(), out = [];
@@ -296,10 +312,26 @@ function insights(){
     const ms = es.filter(e => e.kind === 'memo' && r.re.test(e.text)); if (ms.length < 2) continue;
     const hit = r.g.filter(([tag]) => ms.every(m => near(m.day, tag, r.from, r.to).length >= (r.need || 1))); if (!hit.length) continue;
     const ev = ms.flatMap(m => { const x = hit.flatMap(([tag]) => near(m.day, tag, r.from, r.to)); return [m, x.sort((a,b) => a.day < b.day ? 1 : -1)[0]]; }).filter(Boolean);
-    out.push({ id:r.id, area:r.area, text:r.t(hit.map(h => h[1]).join('이나 ')), src:ev, latest: ms.map(m => m.day).sort().at(-1) });
+    out.push({ id:r.id, area:r.area, kind:r.kind, pos:r.pos, rule:r, tags:hit.map(h => h[0]), what:hit.map(h => h[1]).join('·'), text:r.t(hit.map(h => h[1]).join('이나 ')), src:ev, latest: ms.map(m => m.day).sort().at(-1) });
   }
-  if (S.health && S.health.on) { const sd = (S.health.short||[]).filter(d => d <= t), hit = sd.filter(d => near(d, 'coffee', 0, 0).length >= 2);
-    if (hit.length >= 2) out.push({ id:'sleep', area:'energy', health:true, text:'잠이 짧았던 다음 날엔 커피가 늘었어요.', src: hit.flatMap(d => near(d,'coffee',0,0).slice(-1).map(e => ({ ...e, sleep:true }))), latest: hit.sort().at(-1) }); }
+  { const isSym = e => e.kind === 'memo' && /피곤|속이 불편|소화 불편/.test(e.text);
+    const tired = es.filter(e => e.kind === 'memo' && /피곤/.test(e.text)), gutc = es.filter(e => e.kind === 'memo' && /속이 불편|소화 불편/.test(e.text));
+    const onCof = m => es.filter(e => (e.tags||[]).includes('coffee') && e.day === m.day);
+    if (tired.length >= 2 && tired.every(m => onCof(m).length)) { const both = gutc.length >= 2 && gutc.every(m => onCof(m).length);
+      const symDays = [...new Set([...tired, ...(both ? gutc : [])].map(m => m.day))];
+      const ev = [...tired, ...(both ? gutc : [])].flatMap(m => [m, onCof(m)[0]]);
+      // 자연스러운 대비가 쌓일 때만 한 단계씩 좁혀 감
+      const steps = [];
+      if (S.health && S.health.on) { const sh = symDays.filter(shortSleep); steps.push(sh.length ? { k:'sleep', t:'잠이 짧았던 날이기도 했어요. 잠과 겹쳤는지는 아직 몰라요.', open:true } : { k:'sleep', t:'그날들 잠은 평소와 비슷했어요.', src:'건강 데이터' }); }
+      const cafOnly = [...new Set(es.filter(e => (e.tags||[]).includes('caffeine') && !(e.tags||[]).includes('coffee')).map(e => e.day))].filter(d => !es.some(e => e.day === d && (e.tags||[]).includes('coffee')) && !es.some(e => e.day === d && isSym(e)));
+      if (cafOnly.length) steps.push({ k:'caf', t:'커피 없이 카페인만 있던 날(에너지 드링크)엔 피곤·속 불편 기록이 없었어요.' });
+      const types = [...new Set(symDays.flatMap(d => es.filter(e => e.day === d && (e.tags||[]).includes('coffee')).map(e => e.text)))];
+      const c = (S.checks||{}).coffee;
+      out.push({ id:'coffee', area:'energy', kind:'swap', what:'커피', tags:['coffee'], focusSym:['피곤','속 불편'], rule:{ re:/피곤|속이 불편|소화 불편/, sym:'피곤함' }, types,
+        text: both ? '피곤하고 속이 불편했던 날은 매번 커피가 있던 날이었어요.' : '피곤했던 날은 매번 커피가 있던 날이었어요.',
+        steps, ambiguous: !c, src: ev, latest: symDays.sort().at(-1) }); } }
+  if (S.health && S.health.on) { const sd = (S.health.short||[]).filter(d => d <= t), hit = sd.filter(d => near(d, 'caffeine', 0, 0).length >= 2);
+    if (hit.length >= 2) out.push({ id:'sleep', area:'energy', health:true, hl:'이런 날이기도 했어요. 원인으로 보지는 않아요.', text:'잠이 짧았던 다음 날엔 커피가 늘었어요.', src: hit.flatMap(d => near(d,'caffeine',0,0).slice(-1).map(e => ({ ...e, sleep:true }))), latest: hit.sort().at(-1) }); }
   const days = [...new Set(es.map(e => e.day))];
   const ap = days.filter(d => es.some(e => e.day === d && (e.tags||[]).includes('apap')) && es.some(e => e.day === d && (e.tags||[]).includes('alcohol')));
   if (ap.length) out.push({ id:'apap', area:'med', inter:true, text:'타이레놀 먹은 날 술이 겹친 적이 있었어요. 감기약 먹는 날엔 밥심이 계속 챙길게요.', src: ap.flatMap(d => es.filter(e => e.day === d && ((e.tags||[]).includes('apap') || (e.tags||[]).includes('alcohol')))), latest: ap.sort().at(-1) });
@@ -307,30 +339,93 @@ function insights(){
   if (htn && lic.length) out.push({ id:'lic', area:'med', inter:true, text:'혈압약을 드시는 중에 쌍화탕 기록이 있었어요. 감초 없는 생강차·대추차가 그 자리를 대신할 수 있어요.', src: lic, latest: lic.map(e => e.day).sort().at(-1) });
   return out;
 }
+// 지금 지켜보는 불편 하나: 빈도 + 최근성 + 영향(일상에 주는 무게)
+const DISCOMFORT = [['피곤',/피곤/,3],['속 불편',/속이 불편|소화/,3],['가스',/가스/,2],['더부룩함',/더부룩/,2],['두통',/두통/,3],['변비',/변비/,2],['설사',/설사/,3],['뾰루지',/뾰루지/,1],['다리에 쥐',/쥐/,2]];
+function focus(){ const t = today(), ms = visible().filter(e => e.kind === 'memo');
+  const sc = DISCOMFORT.map(([n, re, w]) => { const m = ms.filter(e => re.test(e.text) && gap(e.day, t) <= 14); if (!m.length) return null;
+    const rec = Math.min(...m.map(e => gap(e.day, t))); return { n, score: m.length * w + Math.max(0, 7 - rec) * .5 }; }).filter(Boolean).sort((a, b) => b.score - a.score);
+  return sc[0] ? sc[0].n : null; }
+const josaO = w => { const c = w.charCodeAt(w.length - 1) - 0xAC00; return w + (c >= 0 && c % 28 ? '을' : '를'); };
+const josaI = w => { const c = w.charCodeAt(w.length - 1) - 0xAC00; return w + (c >= 0 && c % 28 ? '이' : '가'); };
+function checkState(x){
+  const c = (S.checks || {})[x.id]; if (!c) return null; const t = today(), end = dk(add(new Date(c.start + 'T12:00:00'), 7));
+  if (c.result) return c;
+  if (t < end) return { ...c, prog: Math.max(0, gap(c.start, t)) };
+  const es = S.entries.filter(e => e.day >= c.start && e.day < end), sym = es.filter(e => e.kind === 'memo' && x.rule && x.rule.re.test(e.text));
+  const has = e => (x.tags || []).some(tg => (e.tags||[]).includes(tg));
+  const short = S.health && S.health.on ? (S.health.short||[]).filter(d => d >= c.start && d < end) : [];
+  const hl = !S.health || !S.health.on ? '' : short.some(d => sym.some(m => m.day === d)) ? '이런 날이기도 했어요: 잠이 짧았던 날.' : '잠은 평소와 비슷했어요.';
+  const keep = c.variant === '디카페인' ? 'decaf' : 'filter'; let r;
+  if (c.mode === 'more') { const ate = es.filter(has); r = ate.length < 3 ? { result:'kept', line:`확인하는 동안 ${josaI(c.what)} 많지 않았어요. 그래서 이번엔 판단하지 않을게요.` } : sym.length ? { result:'yes', line:`${josaO(c.what)} 더 먹은 주에도 ${josaI(x.rule.sym)} 이어졌어요.` } : { result:'same', line:'더 먹어봐도 비슷했어요.' }; }
+  else { const ate = es.filter(e => has(e) && !(c.mode === 'swap' && (e.tags||[]).includes(keep)));
+    r = ate.length ? { result:'kept', line:`확인하는 동안에도 ${josaI(c.mode === 'swap' ? '다른 커피' : c.what)} 있었어요. 그래서 이번엔 판단하지 않을게요.` }
+      : !sym.length ? { result:'yes', line: c.mode === 'swap' ? `${c.variant}로 바꾼 주에는 ${josaI(x.rule.sym)} 없었어요.` : `${josaO(c.what)} 뺀 일주일 동안은 ${josaI(x.rule.sym)} 없었어요.` }
+      : { result:'same', line: c.mode === 'swap' ? `${c.variant}로 바꿔봐도 비슷했어요. 커피 종류 때문은 아닌 것 같아요.` : `${c.what} 빼봐도 비슷했어요. ${c.what} 때문은 아닌 것 같아요.` }; }
+  Object.assign(c, r, { health: hl }); save(); return c;
+}
+function startCheck(x, mode, variant){ S.checks = S.checks || {}; S.checks[x.id] = { mode, what: x.what, variant, start: today() }; save(); buzz(); }
+// 제품 보기 (예시 데이터): 같은 종류 2~3개, 판매처별 최저가, 정품·인증 확인, 가장 싼 확인된 판매처 링크 하나
+const PRODUCTS = { '필터 커피': { title:'드립백 · 필터 커피', why:'종이 필터로 걸러 커피 기름 성분이 적게 들어가는 방식이에요.', items:[
+  { name:'A사 드립백 (10개입)', unit:'개당', sellers:[['A사 공식 스토어',8900,true,'공식 판매처'],['B마켓',8400,true,'정품 인증 판매자'],['C몰',7600,false,'판매자 정보 확인 안 됨']] },
+  { name:'B사 드립백 (12개입)', unit:'개당', sellers:[['B사 공식 스토어',10800,true,'공식 판매처'],['B마켓',9900,true,'정품 인증 판매자']] },
+  { name:'C사 종이 필터 + 원두 (200g)', unit:'세트', sellers:[['C사 공식 스토어',15000,true,'공식 판매처'],['D몰',13900,true,'정품 인증 판매자']] } ] } };
+const won = n => n.toLocaleString('ko-KR') + '원';
+function productSheet(key){ const P = PRODUCTS[key]; if (!P) return;
+  const rows = P.items.map(it => { const v = it.sellers.filter(x => x[2]).sort((a,b) => a[1] - b[1]); const best = v[0]; const cnt = parseInt((it.name.match(/(\d+)개입/)||[])[1] || 0);
+    return { it, best, per: cnt ? Math.round(best[1] / cnt) : null }; });
+  const cheapest = rows.slice().sort((a, b) => (a.per || a.best[1]) - (b.per || b.best[1]))[0];
+  const bg = sheet(`<div class="s-eyebrow">제품으로 고른다면 · 예시 데이터</div><h2 class="s-title">${esc(P.title)}</h2><p class="pr-why">${esc(P.why)} 꼭 사지 않아도 돼요.</p>
+    ${rows.map(r => `<div class="pr"${r === rows[0] ? why('비슷한 제품 2~3개만, 판매처마다 확인된 곳 중 가장 싼 값으로. 가격은 쇼핑 정보라 숫자를 보여 주는 유일한 예외예요.') : ''}><div class="pr-h"><b>${esc(r.it.name)}</b>${r.per ? `<span>${esc(r.it.unit)} ${won(r.per)}</span>` : ''}</div>
+      ${r.it.sellers.map(x => `<div class="pr-s${x[2] ? '' : ' no'}"><span>${esc(x[0])}</span><span class="pr-v"${x === r.it.sellers[0] && r === rows[0] ? why('정품·공식 판매처인지가 가격보다 먼저. 확인 안 된 곳은 더 싸도 흐리게 두고 링크를 주지 않아요.') : ''}><i data-lucide="${x[2] ? 'badge-check' : 'circle-help'}"></i>${esc(x[3])}</span><em>${won(x[1])}</em></div>`).join('')}</div>`).join('')}
+    <a class="pr-go" href="#" onclick="return false"${why('링크는 하나만, 확인된 판매처 중 가장 싼 곳으로. 특가 배너나 구매 유도 문구는 두지 않아요.')}>확인된 판매처 중 가장 싼 곳 보기<small>${esc(cheapest.it.name)} · ${esc(cheapest.best[0])} ${won(cheapest.best[1])}</small></a>
+    <p class="disc">예시 데이터예요. 실제 제품·가격이 아니고, 이 앱은 판매 수수료를 받지 않는다는 가정이에요.</p>`);
+  notesRefresh(); }
 function insightsPage(){
-  const list = insights(), t = today();
+  let list = insights(); const t = today(), fo = focus();
   const ds = d => { const n = gap(d, t); if (n <= 2) return dayName(d, t); const x = new Date(d + 'T12:00:00'); return `${x.getMonth()+1}월 ${x.getDate()}일 ${WD[x.getDay()]}`; };
   const stack = a => { const ph = a.filter(e => src(e)).slice(0, 4); return `<span class="stk">${ph.map(e => `<img src="${src(e)}" alt="">`).join('')}${a.some(e => !src(e)) ? '<span class="m"><i data-lucide="pen-line"></i></span>' : ''}</span>`; };
   const tline = a => { const by = {}; a.forEach(e => (by[e.day] = by[e.day] || []).push(e)); return `<ol class="tln">${Object.keys(by).sort().map(d => `<li><span class="d">${esc(ds(d))}</span><span class="r">${by[d].map(e => `<span class="ti">${src(e) ? `<img src="${src(e)}" alt="">` : '<i data-lucide="pen-line"></i>'}${esc(e.text)}${e.sleep ? '<em>잠이 짧았던 날</em>' : ''}</span>`).join('')}</span></li>`).join('')}</ol>`; };
-  const card = (x, hero) => `<article class="fd${x.inter ? ' inter' : ''}${hero ? ' hero' : ''}" data-id="${x.id}">
+  const act = x => { if (x.inter || x.id === 'sleep') return '';
+    if (x.kind === 'swap' && !x.ambiguous) return '';
+    const btn = (m, v, label, ic) => `<button class="ck-go" data-m="${m}" data-v="${v||''}"><i data-lucide="${ic}"></i>${label}</button>`;
+    return `<div class="ck-acts"${why('음식이 정말 상관있는지 직접 가려 보는 방법. 질문이 아니라 원할 때 누르는 버튼이고, 알림 없이 조용히 지켜봐요. 커피처럼 끊기 어려운 건 끊지 않고 종류만 바꿔 봐요.')}>${x.kind === 'swap' ? btn('swap','필터 커피','필터 커피로만 며칠','coffee') + btn('swap','디카페인','디카페인으로 며칠','coffee') : x.kind === 'help' ? btn('more','','며칠 더 먹어보기','plus') : btn('avoid','','며칠만 빼보기','minus')}</div>`; };
+  const ckHTML = (x, c) => {
+    if (c.prog !== undefined) { const lbl = c.mode === 'swap' ? `${c.variant}로만 마셔 보는 중` : c.mode === 'more' ? `${josaO(c.what)} 더 먹어 보는 중` : `${josaO(c.what)} 빼 보는 중`;
+      return `<div class="ck-prog"${why('진행 중이라는 건 점으로만. 날짜를 세라고 하지 않고, 알림도 보내지 않아요. 언제든 그만둘 수 있어요.')}><span class="ck-l">${esc(lbl)}</span><span class="ck-dots">${Array.from({length:7}, (_, i) => `<i class="${i < c.prog ? 'on' : ''}"></i>`).join('')}</span><button class="ck-stop">그만두기</button><small>일주일 동안 조용히 지켜볼게요</small></div>`; }
+    if (c.result === 'yes') return `<div class="ck-res yes"${why('직접 해 본 결과는 그대로 한 줄로. 그래도 \'~수도 있어요\'처럼 단정하지 않아요.')}><span class="ck-b"><i data-lucide="check-circle-2"></i>직접 확인했어요</span><p>${esc(c.line)}</p>${c.health ? `<small><i data-lucide="heart-pulse"></i>${esc(c.health)}</small>` : ''}${c.guess ? `<p class="ck-guess">${esc(c.guess)}</p>` : ''}${c.variant && PRODUCTS[c.variant] ? `<button class="pr-open" data-p="${esc(c.variant)}">${esc(c.variant)} 제품 보기<i data-lucide="chevron-right"></i></button>` : ''}</div>`;
+    if (c.result === 'kept') return `<div class="ck-res kept"${why('확인하는 동안 계속 먹었다면 결론을 내리지 않고 그대로 말해요. 탓하지 않아요.')}><p>${esc(c.line)}</p></div>${act(x)}`;
+    return ''; };
+  const stepsHTML = x => !x.steps || !x.steps.length ? '' : `<ol class="nar"${why('한 번에 결론 내지 않고, 대비되는 날이 쌓일 때마다 한 줄씩 좁혀 가요(잠 → 카페인 → 커피 종류). 그래도 애매할 때만 종류 바꾸기를 제안해요.')}>${x.steps.map(st => `<li class="${st.open ? 'open' : ''}">${esc(st.t)}${st.src ? `<em><i data-lucide="heart-pulse"></i>${esc(st.src)}</em>` : ''}</li>`).join('')}${x.ambiguous && x.kind === 'swap' ? `<li class="open">${x.types && x.types.length ? esc(x.types.join('·')) + ' 중 어느 쪽인지는 아직 애매해요.' : '어떤 커피인지는 아직 애매해요.'}</li>` : ''}</ol>`;
+  const card = (x, hero) => { const c = checkState(x);
+    return `<article class="fd${x.inter ? ' inter' : ''}${x.pos ? ' pos' : ''}${hero ? ' hero' : ''}" data-id="${x.id}">
       ${hero ? `<div class="fd-new"${why('가장 최근에 알게 된 것 하나만 위로. 새로 생겼다는 건 작은 점으로만 알려요.')}><i></i>새로 알게 된 것</div>` : ''}
       ${x.inter ? `<div class="fd-tag"${why('밥심이 실제로 챙겼던 약 조합. 같은 카드 형식이지만 옅은 바탕으로 조용히 구분해요.')}><i data-lucide="shield-check"></i>챙겼던 조합</div>` : ''}
+      ${x.pos ? `<div class="fd-tag pos"${why('좋았던 날의 겹침도 같은 규칙으로 모아요. 잎 하나로만 구분해요.')}><i data-lucide="leaf"></i>좋았던 날</div>` : ''}
       <p class="fd-t">${esc(x.text)}</p>
-      <div class="fd-f"${hero ? why('근거는 겹친 사진 몇 장으로만 보여 주고, 날짜별 기록은 원할 때만 펼쳐요. 숫자로 몇 번인지 세지 않아요.') : ''}>${stack(x.src)}<button class="fd-more">기록 보기<i data-lucide="chevron-down"></i></button>${x.health ? '<span class="fd-h"><i data-lucide="heart-pulse"></i>건강 데이터</span>' : ''}</div>
-      <div class="fd-ev">${tline(x.src)}</div></article>`;
+      ${x.hl ? `<p class="fd-hl"${why('건강 데이터는 원인으로 쓰지 않고, \'이런 날이기도 했어요\'처럼 곁들여 적기만 해요.')}><i data-lucide="heart-pulse"></i>${esc(x.hl)}</p>` : ''}
+      ${stepsHTML(x)}
+      ${c ? ckHTML(x, c) : act(x)}
+      <div class="fd-f"${hero ? why('근거는 겹친 사진 몇 장으로만 보여 주고, 날짜별 기록은 원할 때만 펼쳐요. 숫자로 몇 번인지 세지 않아요.') : ''}>${stack(x.src)}<button class="fd-more">기록 보기<i data-lucide="chevron-down"></i></button></div>
+      <div class="fd-ev">${tline(x.src)}</div></article>`; };
   let body = '';
   if (list.length) {
-    const hero = list.slice().sort((a,b) => (a.latest < b.latest ? 1 : a.latest > b.latest ? -1 : (a.inter ? 1 : 0) - (b.inter ? 1 : 0)))[0];
+    list.forEach(x => { const c = checkState(x); if (c && c.result === 'yes') x.latest = dk(add(new Date(c.start + 'T12:00:00'), 7)); });
+    const gone = list.filter(x => { const c = checkState(x); return c && c.result === 'same'; }); list = list.filter(x => !gone.includes(x));
+    const hero = list.find(x => fo && (x.focusSym||[]).includes(fo)) || list.slice().sort((a,b) => (a.latest < b.latest ? 1 : a.latest > b.latest ? -1 : (a.inter ? 1 : 0) - (b.inter ? 1 : 0)))[0];
     body += card(hero, true);
     for (const [k, [name, ic]] of Object.entries(AREAS)) { const g = list.filter(x => x.area === k && x !== hero); if (!g.length) continue;
       body += `<section class="ar"><h3${k==='gut'?why('몸의 부위별로 묶어서, 비슷한 카드가 끝없이 이어지는 기록처럼 보이지 않게 했어요.'):''}><i data-lucide="${ic}"></i>${name}</h3>${g.map(x => card(x)).join('')}</section>`; }
+    if (gone.length) body += `<details class="gone"${why('빼봐도 비슷했던 건 지우지 않고 흐리게 접어 둬요. 틀렸다고 판정하지 않고, 지나간 것으로.')}><summary><i data-lucide="archive"></i>비슷했던 것</summary>${gone.map(x => `<div class="gone-it"><p>${esc(x.text)}</p><small>${esc(checkState(x).line)}</small></div>`).join('')}</details>`;
   } else body = `<div class="ins-empty"${why('빈 화면이 고장처럼 보이지 않게, 저절로 채워진다는 걸 알려요. 할 일을 주지 않아요.')}><i data-lucide="sprout"></i><b>아직 알게 된 게 없어요</b><span>기록이 쌓여 겹치는 게 보이면 여기에 조용히 적혀요.</span></div>`;
   const ov = document.createElement('div'); ov.className = 'ov'; ov.id = 'ins';
   ov.innerHTML = `<div class="in-top" style="justify-content:flex-start"><button id="ib" aria-label="뒤로"><i data-lucide="chevron-left"></i></button></div><div class="su ins">
-    <h2${why('\'내 몸 사용설명서\'는 진단처럼 들려서, 내 기록에서 보인 것만 담는다는 뜻으로 지었어요.')}>나에 대해 알게 된 것</h2><p class="ins-sub"${why('설명은 한 줄로. 원인을 단정하지 않는다는 건 아래 안내에 한 번만.')}>내 기록에서 겹쳐 보인 것만 적어 둬요.</p>
+    <h2${why('\'내 몸 사용설명서\'는 진단처럼 들려서, 내 기록에서 보인 것만 담는다는 뜻으로 지었어요.')}>나에 대해 알게 된 것</h2><p class="ins-sub"${why('설명은 한 줄로. 원인을 단정하지 않는다는 건 아래 안내에 한 번만.')}>내 기록에서 겹쳐 보인 것만 적어 둬요.</p>${fo ? `<p class="focus"${why('한 번에 불편 하나만 지켜봐요. 자주, 최근에, 일상에 크게 걸리는 것을 골라요. 여러 개를 동시에 쫓으면 아무것도 가려지지 않아요.')}><i data-lucide="crosshair"></i><span>지금은 <b>${esc(fo)}</b>${/[가-힣]/.test(fo) && (fo.charCodeAt(fo.length-1)-0xAC00)%28 ? '을' : '를'} 지켜보고 있어요</span></p>` : ''}
     ${body}<p class="disc">기록이 겹쳤다는 뜻일 뿐, 원인을 뜻하지 않아요.</p></div>`;
   document.body.appendChild(ov); icons();
   $$('.fd-more', ov).forEach(b => b.onclick = () => { const c = b.closest('.fd'); c.classList.toggle('open'); b.firstChild.textContent = c.classList.contains('open') ? '접기' : '기록 보기'; buzz(); notesRefresh(); });
+  $$('.ck-go', ov).forEach(b => b.onclick = () => { const id = b.closest('.fd').dataset.id, x = list.find(y => y.id === id); startCheck(x, b.dataset.m, b.dataset.v || undefined); ov.remove(); insightsPage(); });
+  $$('.ck-stop', ov).forEach(b => b.onclick = () => { delete S.checks[b.closest('.fd').dataset.id]; save(); ov.remove(); insightsPage(); });
+  $$('.pr-open', ov).forEach(b => b.onclick = () => productSheet(b.dataset.p));
   $('#ib', ov).onclick = () => { ov.classList.add('out'); setTimeout(() => { ov.remove(); notesRefresh(); }, 250); };
   $('.su', ov).addEventListener('scroll', () => notesOn && notesRefresh(), { passive: true });
   notesRefresh();
@@ -364,13 +459,22 @@ function widget(){
     <div class="ow ${n ? 'has' : ''}" id="ow"${why('늘 떠 있는 진행 중 알림 위젯. 앱을 열지 않고 알림창을 내린 김에 바로 찍게 해요. 찍는 습관이 끊기지 않게 하는 입구예요.')}>
       <span class="ow-ic"${why('어떤 앱인지 한눈에. 로고 하나면 충분해서 앱 이름 줄은 따로 두지 않았어요.')}><i></i></span>
       <button class="ow-line" id="owl"${why(n ? '한 줄 카드와 같은 내용을 더 짧게. 누르면 앱에서 이유와 대안이 열려요. 다음 날이면 스스로 기본 문구로 돌아가요.' : '기본 상태는 할 일 하나만: 찍어 두기. 정보가 없을 땐 아무 정보도 보여 주지 않아요.')}>${n ? `<small>${esc(n.pair)}</small>${esc(n.short)}` : '찍어 두기만 하세요'}</button>
-      <button class="ow-shot" id="ows" aria-label="찍어 두기"${why('유일한 동작. 셔터 모양이라 설명이 필요 없어요. 누르면 앱 안에서 바로 카메라가 열려요.')}><i data-lucide="camera"></i></button>
+      <button class="ow-shot" id="ows" aria-label="찍어 두기 (길게 누르면 몸 상태 적기)"${why('유일한 동작. 셔터 모양이라 설명이 필요 없어요. 누르면 카메라, 길게 누르면 몸 상태 칩이 나와요.')}><i data-lucide="camera"></i></button>
     </div>
     <div class="sh-n"><span class="ic"><i data-lucide="message-circle"></i></span><div><b>메시지</b><span>오늘 저녁 7시 괜찮아?</span></div><em>방금</em></div>
     <div class="sh-foot"><button id="owx">닫기</button></div>`;
   document.body.appendChild(ov); icons();
   const close = () => { ov.classList.add('out'); setTimeout(() => ov.remove(), 260); };
-  $('#ows', ov).onclick = () => { buzz(); close(); capture(false); };
+  let lp = null, lpFired = false; const ows = $('#ows', ov);
+  ows.addEventListener('pointerdown', () => { lpFired = false; lp = setTimeout(() => { lpFired = true; buzz(); owChips(); }, 480); });
+  ['pointerup','pointerleave','pointercancel'].forEach(ev => ows.addEventListener(ev, () => clearTimeout(lp)));
+  ows.onclick = () => { if (lpFired) return; buzz(); close(); capture(false); };
+  function owChips(){ $$('.ow-pop', ov).forEach(x => x.remove()); const pop = document.createElement('div'); pop.className = 'ow-pop';
+    pop.setAttribute('data-why', '셔터를 길게 누르면 몸 상태를 한 번 탭으로. 앱을 열지 않아도 되고, 질문은 없어요.');
+    pop.innerHTML = [...freqOrder(MEMO_NEG), ...freqOrder(MEMO_POS)].map(c => `<button data-m="${esc(memoText(c))}">${esc(c)}</button>`).join('');
+    $('#ow', ov).after(pop);
+    $$('button', pop).forEach(b => b.onclick = () => { saveMemo(b.dataset.m); pop.innerHTML = '<span class="ok">적어 뒀어요</span>'; setTimeout(() => { pop.remove(); render(); }, 900); });
+    notesRefresh(); }
   $('#owl', ov).onclick = () => { close(); if (n) setTimeout(() => detail(n), 280); };
   $('#owx', ov).onclick = close;
   notesRefresh();
@@ -402,6 +506,7 @@ function demoBar(){ if (!qs.has('demo')) return; document.body.classList.add('de
   if (!S.intro) intro(false); else if (!S.setup) setup(false);
   if (qs.has('widget')) widget();
   if (qs.has('insights')) insightsPage();
+  if (qs.has('memo')) composer();
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {}); })();
 window.__bapsim = { S, render };
 })();
