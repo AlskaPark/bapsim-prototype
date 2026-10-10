@@ -102,11 +102,11 @@ function pick(){
     msg: isN ? `${pk.at(-1).text} 먹은 날 술이 있었어요. 같이 먹으면 위출혈이 생길 수 있다고 안내돼 있어요.` : `${pk.at(-1).text} 먹은 날 술이 있었어요. 같이 먹으면 간에 부담이 될 수 있다고 안내돼 있어요.`,
     short:`${pk.at(-1).text} 먹은 날이에요. 술과는 같이 안 먹는 게 좋아요`, title:'진통제 먹은 날의 술',
     why:'타이레놀 같은 아세트아미노펜은 간에, 이부프로펜 같은 소염진통제는 위에 부담이 될 수 있어서, 술을 자주 마신다면 먹기 전에 약사와 상의하라고 안내돼 있어요.',
-    srcs:'출처: 식약처 의약품 허가사항', quote:[{ t:'매일 세잔 이상 정기적으로 술을 마시는 사람이 이 약이나 다른 해열 진통제를 복용해야 할 경우 반드시 의사 또는 약사와 상의해야 한다. 이러한 사람이 이 약을 복용하면 간손상이 유발될 수 있다.', s:'타이레놀정500밀리그람(아세트아미노펜) 사용상의 주의사항' }, { t:'매일 세잔 이상 정기적으로 술을 마시는 사람이 이 약이나 다른 해열진통제를 복용해야 할 경우 반드시 의사 또는 약사와 상의해야 한다. 이러한 사람이 이 약을 복용하면 위장출혈이 유발될 수 있다.', s:'이부프로펜 제제 사용상의 주의사항' }] }); }
+    refs:['tylenol','ibuprofen'], quote:[{ ref:'tylenol', t:'매일 세잔 이상 정기적으로 술을 마시는 사람이 이 약이나 다른 해열 진통제를 복용해야 할 경우 반드시 의사 또는 약사와 상의해야 한다. 이러한 사람이 이 약을 복용하면 간손상이 유발될 수 있다.', s:'타이레놀정500밀리그람(아세트아미노펜) 사용상의 주의사항' }, { ref:'ibuprofen', t:'매일 세잔 이상 정기적으로 술을 마시는 사람이 이 약이나 다른 해열진통제를 복용해야 할 경우 반드시 의사 또는 약사와 상의해야 한다. 이러한 사람이 이 약을 복용하면 위장출혈이 유발될 수 있다.', s:'부루펜정200밀리그램(이부프로펜) 사용상의 주의사항' }] }); }
   const lic = [...on(t,'licorice'), ...on(y,'licorice')];
   if (lic.length && htn) C.push({ id:'lic', src:lic.slice(-1), pair:`${lic.at(-1).text} + 혈압약`,
     msg:'쌍화탕엔 감초가 들어 있어요. 혈압약을 드시는 동안은 맞지 않을 수 있어요. 오늘은 따뜻한 물이면 충분해요.',
-    short:'쌍화탕 감초는 혈압약과 안 맞을 수 있어요', title:'쌍화탕과 혈압약', why:'감초 성분(글리시리진)은 몸에 나트륨과 물을 붙잡아 두는 쪽으로 작용할 수 있어요. 그래서 혈압약을 먹는 동안에는 감초가 든 차·탕을 피하라고 안내하는 경우가 많아요.', q:'감기 기운 있어요', srcs:'감초 성분과 혈압: 식약처 의약품 허가사항(감초 함유 제제 사용상 주의), 글리시리진 섭취와 혈압 체계적 문헌고찰(Penninkilampi 등, 2017)' });
+    short:'쌍화탕 감초는 혈압약과 안 맞을 수 있어요', title:'쌍화탕과 혈압약', why:'감초 성분(글리시리진)은 몸에 나트륨과 물을 붙잡아 두는 쪽으로 작용할 수 있어요. 그래서 혈압약을 먹는 동안에는 감초가 든 차·탕을 피하라고 안내하는 경우가 많아요.', q:'감기 기운 있어요', refs:['ssanghwa','licorice'], quote:[{ ref:'ssanghwa', t:'다음과 같은 사람은 이 약을 복용하기 전에 의사, 한의사, 치과의사, 약사, 한약사와 상의할 것. 1) 고혈압 환자', s:'경방쌍화탕액 사용상의 주의사항' }] });
   const gf = [...on(t,'grapefruit'), ...on(y,'grapefruit')];
   if (gf.length && (htn || lipid)) C.push({ id:'gf', src:gf.slice(-1), pair:`자몽주스 + ${lipid ? '고지혈증약' : '혈압약'}`,
     msg:`자몽은 일부 ${lipid ? '고지혈증약' : '혈압약'}의 효과를 세게 만들 수 있어요. 약을 드시는 동안엔 다른 과일 주스가 나아요.`,
@@ -192,16 +192,16 @@ function detail(n){
   let items = (n.alts || []).map(([a,b]) => ({ name:a, text:b }));
   let cmp = '';
   if (n.q) { const r = E.answer(n.q, profile(), { recentEntries: [] });
-    for (const g of r.groups || []) for (const i of g.items) { if (i.note) continue; items.push({ name:i.name, text: g.kind === 'food' ? i.effect : i.claim + (/허가사항/.test(i.claim||'') ? ' · 출처: 식약처 의약품 허가사항' : ''), v: i.variants }); }
+    for (const g of r.groups || []) for (const i of g.items) { if (i.note) continue; items.push({ name:i.name, text: g.kind === 'food' ? i.effect : i.claim, ref: i.ref || (/허가사항/.test(i.claim||'') ? '_mfds' : ''), v: i.variants }); }
     items = items.slice(0, 4); }
-  const body = items.map(i => `<div class="it"><b>${esc(i.name)}</b><span>${esc(i.text)}</span>${i.v ? variants(i.v) : ''}</div>`).join('');
+  const body = items.map(i => `<div class="it"><b>${esc(i.name)}</b><span>${esc(i.text)}</span>${i.ref === '_mfds' ? '<small class="ref-t">출처: 식약처 의약품 허가사항 (대표 품목)</small>' : i.ref ? `<small class="ref-t">출처: ${refA(i.ref)}</small>` : ''}${i.v ? variants(i.v) : ''}</div>`).join('');
   sheet(`<div class="s-eyebrow">${esc(n.pair)}</div><h2 class="s-title">${esc(n.title)}</h2>
     <div class="s-sec"${why('근거 없는 경고는 믿지 않아요. 왜 그런지 한 단락으로만.')}><h4>이유</h4><p>${esc(n.why)}</p></div>
     ${body ? `<div class="s-sec"${why('경고로 끝내지 않고, 지금 할 수 있는 작은 대안. 음식·차·제품 모두 같은 형식이고 범주 표시가 없어요.')}><h4>대신 이렇게</h4>${body}</div>` : ''}
     ${(() => { const cs = CURATE.filter(c => c.on === n.id); return cs.length ? `<div class="cur">${cs.map(c => `<p>${esc(c.food)}</p><button class="pr-open" data-p="${esc(c.key)}">${esc(PRODUCTS[c.key].title.split(' · ')[0])} 제품 보기<i data-lucide="chevron-right"></i></button>`).join('')}</div>` : ''; })()}
-    ${n.quote ? `<div class="s-sec"${why('허가사항 원문은 AI 문장과 섞지 않고 인용으로 따로. 무엇이 AI 문장이고 무엇이 공식 문구인지 바로 구분돼요.')}><h4>허가사항 원문</h4>${n.quote.map(q => `<blockquote class="qt"><p>“${esc(q.t)}”</p><cite>${esc(q.s)}</cite></blockquote>`).join('')}</div>` : ''}
+    ${n.quote ? `<div class="s-sec"${why('허가사항 원문은 AI 문장과 섞지 않고 인용으로 따로. 무엇이 AI 문장이고 무엇이 공식 문구인지 바로 구분돼요.')}><h4>허가사항 원문</h4>${n.quote.map(q => `<blockquote class="qt"><p>“${esc(q.t)}”</p><cite>${q.ref && REFS[q.ref] ? `<a class="ref" href="${REFS[q.ref].u}" target="_blank" rel="noopener noreferrer">${esc(q.s)}<span aria-hidden="true">↗</span></a>` : esc(q.s)}</cite></blockquote>`).join('')}</div>` : ''}
     <p class="ai-f"${why('출처 줄 바로 옆에 한 줄. 원문 인용을 뺀 문장은 AI가 썼다는 걸 알려요.')}><span class="ai">AI</span>AI가 내 기록을 보고 쓴 문장이에요${n.quote ? '. 따옴표 안은 허가사항 원문이에요' : ''}.</p>
-    ${n.srcs ? `<p class="src"${why('생약·한약 관련 내용은 현대 근거(허가사항·임상·체계적 문헌고찰)가 있을 때만 쓰고, 출처를 한 줄로 남겨요. 고전 문헌이나 \'전통적으로\'는 근거로 쓰지 않아요.')}>${/^출처/.test(n.srcs) ? '' : '근거: '}${esc(n.srcs)}</p>` : ''}
+    ${n.refs ? `<p class="src"${why('출처는 눌러서 원문을 바로 열 수 있게. 직접 열어 확인한 링크만 걸고, 확인 못 한 출처는 글자로만 남겨요. 작게, 밑줄과 ↗로만.')}>출처: 식약처 의약품 허가사항${n.refs.filter(k => /nedrug/.test(REFS[k].u)).length ? '' : ''}<span class="refs">${n.refs.map(refA).join('')}</span></p>` : ''}
     <p class="disc">진단이나 처방이 아닌 일반 정보예요. 문구는 예시이며 약사 검수 전이에요. 약에 대해서는 약사·의사의 안내를 따라 주세요.</p>`);
   notesRefresh();
 }
@@ -446,6 +446,17 @@ function productsIndex(){ const ov = document.createElement('div'); ov.className
   document.body.appendChild(ov); icons();
   $$('.pi', ov).forEach(b => b.onclick = () => productSheet(b.dataset.p)); $('#pib', ov).onclick = () => ov.remove(); }
 
+// 출처 링크: 직접 열어 확인한 것만. 확인 못 한 출처는 링크 없이 글자로만.
+const REFS = {
+  tylenol:{ l:'식약처 의약품안전나라 · 타이레놀정500밀리그람', u:'https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=202106092' },
+  ibuprofen:{ l:'식약처 의약품안전나라 · 부루펜정200밀리그램', u:'https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=197700120' },
+  ssanghwa:{ l:'식약처 의약품안전나라 · 경방쌍화탕액', u:'https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=200707044' },
+  galgeun:{ l:'식약처 의약품안전나라 · 경방갈근탕액', u:'https://nedrug.mfds.go.kr/pbp/CCBBB01/getItemDetail?itemSeq=200711872' },
+  licorice:{ l:'Penninkilampi 등, J Hum Hypertens 2017 (체계적 문헌고찰)', u:'https://pubmed.ncbi.nlm.nih.gov/28660884/' },
+  honey:{ l:'Oduwole 등, Cochrane 2018 (어린이 기침과 꿀)', u:'https://doi.org/10.1002/14651858.CD007094.pub5' },
+  chamomile:{ l:'Hieu 등, Phytother Res 2019 (체계적 문헌고찰)', u:'https://pubmed.ncbi.nlm.nih.gov/31006899/' },
+};
+const refA = k => { const r = REFS[k]; return r ? `<a class="ref" href="${r.u}" target="_blank" rel="noopener noreferrer">${esc(r.l)}<span aria-hidden="true">↗</span></a>` : ''; };
 const won = n => n.toLocaleString('ko-KR') + '원';
 // 가격 변동 (예시 데이터): 날짜로 정해지는 가상의 값
 const seedOf = str => [...str].reduce((a, c) => a + c.charCodeAt(0), 0);

@@ -9,7 +9,7 @@ const TOPICS = [
     id: 'chill', label: '환절기 · 으슬으슬함',
     keywords: ['으슬','환절기','감기','오한','몸살','콧물','재채기','추워','춥','한기','코막'],
     foods: [
-      { name:'꿀 탄 따뜻한 물', comp:'꿀', effect:'꿀이 기침 증상 완화에 조금 도움이 될 수 있다는 체계적 문헌고찰이 있어요 (Cochrane 2018, 1세 미만 제외)', tags:['warm'] },
+      { name:'꿀 탄 따뜻한 물', comp:'꿀', effect:'꿀이 어린이 기침 증상 완화에 조금 도움이 될 수 있다는 체계적 문헌고찰이 있어요 (1세 미만은 먹이면 안 돼요)', ref:'honey', tags:['warm'] },
       { name: '귤 · 유자차', comp: '비타민C·헤스페리딘', effect: '비타민C는 항산화 작용으로 유해산소로부터 세포를 보호하는 데 필요한 영양소로 알려져 있어요', tags: ['citrus'] },
       { name: '닭고기 수프(맑은 닭곰탕)', comp: '단백질·카르노신', effect: '닭고기 수프가 연구에서 상기도 점막 관련 염증 반응을 완화하는 작용이 보고되어, 회복기 식사로 도움이 될 수 있어요', tags: [] },
     ],
@@ -19,8 +19,8 @@ const TOPICS = [
       { name: '홍삼', claim: '면역력 증진·피로개선에 도움을 줄 수 있음', tags: ['ginseng'] },
     ],
     otc: [
-      { name: '쌍화탕', claim: '피로회복, 허약체질, 병후의 체력저하 (대표 품목 허가사항 요약)', tags: ['licorice'], ingredients: '작약·숙지황·황기·당귀·천궁·계피·감초·생강·대추' },
-      { name: '갈근탕', claim: '감기, 코감기, 두통, 어깨결림, 근육통 (대표 품목 허가사항 요약)', tags: ['licorice','ephedra'], ingredients: '갈근·마황·계지·작약·감초·생강·대추' },
+      { name: '쌍화탕', claim: '허약체질, 피로회복, 과로, 자한, 병중병후 (대표 품목 허가사항)', ref:'ssanghwa', tags: ['licorice'], ingredients: '작약·숙지황·황기·당귀·천궁·계피·감초·생강·대추' },
+      { name: '갈근탕', claim: '감기, 코감기, 두통, 어깨결림, 근육통 (대표 품목 허가사항 요약)', ref:'galgeun', tags: ['licorice','ephedra'], ingredients: '갈근·마황·계지·작약·감초·생강·대추' },
     ],
   },
   {
@@ -38,7 +38,7 @@ const TOPICS = [
       { name: '마그네슘', claim: '에너지 이용에 필요, 신경과 근육 기능 유지에 필요', tags: ['magnesium'] },
     ],
     otc: [
-      { name: '쌍화탕', claim: '피로회복, 허약체질, 병후의 체력저하 (대표 품목 허가사항 요약)', tags: ['licorice'], ingredients: '작약·숙지황·황기·당귀·천궁·계피·감초·생강·대추' },
+      { name: '쌍화탕', claim: '허약체질, 피로회복, 과로, 자한, 병중병후 (대표 품목 허가사항)', ref:'ssanghwa', tags: ['licorice'], ingredients: '작약·숙지황·황기·당귀·천궁·계피·감초·생강·대추' },
     ],
   },
   {
@@ -65,7 +65,7 @@ const TOPICS = [
     foods: [
       { name: '따뜻한 우유', comp: '트립토판', effect: '트립토판은 세로토닌·멜라토닌 합성의 원료로, 연구에서 수면 관련 작용이 보고되어 있어요', tags: ['dairy'] },
       { name: '체리(타트체리)', comp: '멜라토닌', effect: '타트체리의 멜라토닌 성분이 연구에서 수면 시간·질 관련 개선 작용이 보고되어, 숙면에 도움이 될 수 있어요', tags: [] },
-      { name: '캐모마일차', comp: '아피제닌', effect: '캐모마일이 수면의 질에 조금 도움이 될 수 있다는 체계적 문헌고찰이 있어요 (Hieu 등, 2019)', tags: ['ragweed'] },
+      { name: '캐모마일차', comp: '아피제닌', effect: '캐모마일이 수면의 질에 조금 도움이 될 수 있다는 체계적 문헌고찰이 있어요', ref:'chamomile', tags: ['ragweed'] },
       { name: '녹차(저카페인/디카페인) ', comp: 'L-테아닌', effect: 'L-테아닌 성분이 연구에서 긴장 완화 작용이 보고되어 있어요 (일반 녹차는 카페인이 있어 저녁엔 주의)', tags: [] },
     ],
     supplements: [
@@ -228,7 +228,7 @@ const CHECKUPS = [['bp','혈압 높음'],['glucose','혈당 높음'],['lipid','�
 // ---------- 추가 주제 ----------
 TOPICS.push(
   { id: 'coldfeet', label: '손발 참', keywords: ['발이 차','손발','손이 차','수족냉'],
-    foods: [ { name:'따뜻한 물·꿀물', comp:'꿀', effect:'꿀이 기침 증상 완화에 조금 도움이 될 수 있다는 체계적 문헌고찰이 있어요 (Cochrane 2018)', tags:['warm'] },
+    foods: [ { name:'따뜻한 물·꿀물', comp:'꿀', effect:'꿀이 어린이 기침 증상 완화에 조금 도움이 될 수 있다는 체계적 문헌고찰이 있어요 (1세 미만은 먹이면 안 돼요)', ref:'honey', tags:['warm'] },
              { name: '계피차', comp: '신남알데히드', effect: '계피 성분이 혈류 관련 작용이 보고되어 있어요', tags: ['warm'] } ],
     supplements: [], otc: [] },
   { id: 'cramp', label: '다리 쥐', keywords: ['쥐가','쥐 나','종아리','다리 경련'],
@@ -245,7 +245,7 @@ TOPICS.push(
     supplements: [ { name: '비타민B2(리보플라빈)', claim: '피부와 점막을 유지하는 데 필요', tags: [] } ], otc: [] },
   { id:'throat', label:'목 칼칼함', keywords:['목','칼칼','인후','따끔','목이','기침','가래','건조'],
     foods:[
-      { name:'꿀 탄 따뜻한 물', comp:'꿀', effect:'꿀이 기침 증상 완화에 조금 도움이 될 수 있다는 체계적 문헌고찰이 있어요 (Cochrane 2018, 1세 미만 제외)', tags:['warm'] },
+      { name:'꿀 탄 따뜻한 물', comp:'꿀', effect:'꿀이 어린이 기침 증상 완화에 조금 도움이 될 수 있다는 체계적 문헌고찰이 있어요 (1세 미만은 먹이면 안 돼요)', ref:'honey', tags:['warm'] },
       
       { name:'꿀물(따뜻하게)', comp:'과당·폴리페놀', effect:'꿀이 연구에서 기침 관련 증상 완화 작용이 보고되어 있어요 (돌 전 아기에게는 금지)', tags:['sugar'] },
     ],
