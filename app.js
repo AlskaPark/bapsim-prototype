@@ -115,17 +115,16 @@ function pick(){
   const iron = [...on(t,'iron')], cof = on(t,'coffee');
   if ((iron.length || hasMed(/철분/)) && cof.length && iron.length) C.push({ id:'iron', src:[...iron.slice(-1), ...cof.slice(-1)], pair:'철분제 + 커피',
     msg:'철분제 먹은 날 커피도 있었어요. 둘 사이에 시간 차를 두면 철분이 조금 더 잘 흡수될 수 있어요.',
-    short:'철분제와 커피는 시간 차를 두면 좋아요', title:'철분제와 커피', why:'커피·녹차의 탄닌 성분은 철분과 붙어서 흡수를 줄일 수 있어요. 커피는 그대로 드시고, 시간만 떨어뜨려도 충분해요.',
-    alts:[['오렌지 같은 과일과 함께','비타민 C가 철분 흡수에 조금이라도 도움이 될 수 있어요']] });
+    short:'철분제와 커피는 시간 차를 두면 좋아요', title:'철분제와 커피', why:'커피·녹차의 탄닌 성분은 철분과 붙어서 흡수를 줄일 수 있어요. 커피는 그대로 드시고, 시간만 떨어뜨려도 충분해요.' });
   const ya = on(y,'alcohol');
   if (ya.length && !alc.length) C.push({ id:'water', src:ya.slice(-1), pair:`어젯밤 ${ya.at(-1).text}`,
-    msg:`어젯밤 ${ya.at(-1).text} 기록이 있어요. 오늘 오전엔 물을 평소보다 몇 잔 더 마시면 조금 편할 수 있어요.`,
-    short:`어젯밤 ${ya.at(-1).text}, 오늘 오전엔 물 몇 잔 더`, health: shortSleep(t), title:'술 마신 다음 날', why:'술은 소변을 늘려 몸의 수분을 빼앗아요. 다음 날 물을 조금 더 마시면 그만큼 채우는 데 도움이 될 수 있어요.', q:'어제 술 마셨는데 숙취해소제 추천' });
+    msg:`어젯밤 ${ya.at(-1).text} 기록이 있어요.`,
+    short:`어젯밤 ${ya.at(-1).text} 기록이 있어요`, health: shortSleep(t), title:'술 마신 다음 날' });
   const cramp = es.filter(e => e.kind === 'memo' && /쥐/.test(e.text) && gap(e.day, t) >= 1 && gap(e.day, t) <= 2), cw = wk('caffeine'), mg = wk('mg');
   if (cramp.length && cw.length >= 3 && mg.length) { const f = mg.at(-1).text;
     C.push({ id:'mg', src:[cramp[0], mg.at(-1), cw.at(-1)], pair:'다리에 쥐 + 커피 잦은 주',
-      msg:`커피 잦은 주에 다리에 쥐가 났다고 적으셨어요. 이미 드시는 ${f}${/[가-힣]/.test(f) && (f.charCodeAt(f.length-1)-0xAC00)%28 ? '을' : '를'} 매일 하나씩 곁들이면 조금이라도 도움이 될 수 있어요.`,
-      short:`이미 드시는 ${f}, 매일 하나씩 곁들여 보세요`, title:'다리에 쥐가 난 주', why:'카페인은 마그네슘·칼륨이 소변으로 빠지는 걸 조금 늘릴 수 있어요. 커피는 그대로 두고, 이미 드시는 것 중 마그네슘·칼륨이 든 걸 조금 더하는 정도면 충분해요.', q:'다리에 쥐가 자주 나요' }); }
+      msg:'커피 잦은 주에 다리에 쥐가 났다고 적으셨어요.',
+      short:'커피 잦은 주에 다리에 쥐가 났어요', title:'다리에 쥐가 난 주' }); }
   if (!C.length && S.watch) for (const [name, w] of Object.entries(S.watch)) { const now = priceOn(name, w.base, t); if (now < w.at && t > w.day) { C.push({ id:'price', src:[], product: w.key, pair:'지켜보던 가격', msg:`지켜보던 ${name} 가격이 내려갔어요. 확인된 판매처 기준이에요.`, short:`지켜보던 ${name} 가격이 내려갔어요` }); break; } }
   const kind = d => d.slice(0, d.indexOf('-')), dday = d => d.slice(d.indexOf('-') + 1);
   return C.find(c => !S.dismissed.some(d => kind(d) === c.id && gap(dday(d), t) >= 0 && gap(dday(d), t) <= 3)) || null;
@@ -141,7 +140,7 @@ function render(){
   const top = n ? `<article class="note" id="note"${why('하루에 최대 하나. 기록과 내 약에서 연결된 것만. 질문이 아니라서 답할 필요가 없어요.')}>
       <div class="n-src"${why('왜 지금 이 말을 하는지 근거가 바로 보여야 무작위 건강 상식처럼 느껴지지 않아요.')}>${thumbs(n.src)}<span class="n-pair">${esc(dayName(t,t))} · ${esc(n.pair)}</span><span class="ai" aria-label="AI가 쓴 문장"${why('AI 기본법에 따라 생성형 AI가 쓴 문장임을 알려요. 크게 드러내지 않고 근거 줄 끝에 작은 글자 두 개로만, 어디서나 같은 자리에.')}>AI</span>${n.health?`<i data-lucide="heart-pulse" class="n-h"${why('수면 같은 건강 데이터는 숫자로 보여 주지 않고, 근거 줄의 작은 표시로만 드러나요.')}></i>`:''}</div>
       <p class="n-msg">${esc(n.msg)}</p>
-      <div class="n-foot"><button class="n-more" id="more"${why('자세한 이유와 대안은 원할 때만. 카드가 길어지지 않게 탭 뒤로 숨겼어요.')}>${n.product ? '가격 보기' : '이유와 대안 보기'}<i data-lucide="chevron-right"></i></button><span class="n-exp"${why('스스로 사라진다는 걸 알려서, 쌓일까 봐 부담 갖지 않게 해요.')}>오늘까지</span></div>
+      <div class="n-foot"><button class="n-more" id="more"${n.why || n.q || n.product ? '' : ' hidden'}${why('자세한 이유와 대안은 원할 때만. 카드가 길어지지 않게 탭 뒤로 숨겼어요.')}>${n.product ? '가격 보기' : '이유와 대안 보기'}<i data-lucide="chevron-right"></i></button><span class="n-exp"${why('스스로 사라진다는 걸 알려서, 쌓일까 봐 부담 갖지 않게 해요.')}>오늘까지</span></div>
       <button class="x" id="nx" aria-label="닫기"${why('무시할 권리. 닫으면 그날은 더 이상 아무것도 뜨지 않고, 같은 종류는 3일 동안 조용해요.')}><i data-lucide="x"></i></button></article>`
     : `<div class="quiet"${why('조용한 날에도 앱이 고장 난 게 아니라 일부러 조용하다는 걸 알려 줘요.')}><span class="q-ic"><i data-lucide="moon"></i></span><div><b>오늘은 챙길 게 없어요</b><span>계속 찍어 두세요. 필요할 때만 알려 드릴게요.</span></div></div>`;
   const days = {}; visible().forEach(e => (days[e.day] = days[e.day] || []).push(e));
@@ -192,13 +191,13 @@ function detail(n){
   let items = (n.alts || []).map(([a,b]) => ({ name:a, text:b }));
   let cmp = '';
   if (n.q) { const r = E.answer(n.q, profile(), { recentEntries: [] });
-    for (const g of r.groups || []) for (const i of g.items) { if (i.note) continue; items.push({ name:i.name, text: g.kind === 'food' ? i.effect : i.claim, ref: i.ref || (/허가사항/.test(i.claim||'') ? '_mfds' : ''), v: i.variants }); }
+    for (const g of r.groups || []) for (const i of g.items) { if (i.note) continue; if (g.kind === 'food' && !i.ref) continue; /* 출처 없으면 제안도 없음 */ items.push({ name:i.name, text: g.kind === 'food' ? i.effect : i.claim, ref: i.ref || (/허가사항/.test(i.claim||'') ? '_mfds' : ''), v: i.variants }); }
     items = items.slice(0, 4); }
   const body = items.map(i => `<div class="it"><b>${esc(i.name)}</b><span>${esc(i.text)}</span>${i.ref === '_mfds' ? '<small class="ref-t">출처: 식약처 의약품 허가사항 (대표 품목)</small>' : i.ref ? `<small class="ref-t">출처: ${refA(i.ref)}</small>` : ''}${i.v ? variants(i.v) : ''}</div>`).join('');
   sheet(`<div class="s-eyebrow">${esc(n.pair)}</div><h2 class="s-title">${esc(n.title)}</h2>
-    <div class="s-sec"${why('근거 없는 경고는 믿지 않아요. 왜 그런지 한 단락으로만.')}><h4>이유</h4><p>${esc(n.why)}</p></div>
+    ${n.why ? `<div class="s-sec"${why('근거 없는 경고는 믿지 않아요. 왜 그런지 한 단락으로만.')}><h4>이유</h4><p>${esc(n.why)}</p></div>` : ''}
     ${body ? `<div class="s-sec"${why('경고로 끝내지 않고, 지금 할 수 있는 작은 대안. 음식·차·제품 모두 같은 형식이고 범주 표시가 없어요.')}><h4>대신 이렇게</h4>${body}</div>` : ''}
-    ${(() => { const cs = CURATE.filter(c => c.on === n.id); return cs.length ? `<div class="cur">${cs.map(c => `<p>${esc(c.food)}</p><button class="pr-open" data-p="${esc(c.key)}">${esc(PRODUCTS[c.key].title.split(' · ')[0])} 제품 보기<i data-lucide="chevron-right"></i></button>`).join('')}</div>` : ''; })()}
+    ${(() => { const cs = CURATE.filter(c => c.on === n.id); return cs.length ? `<div class="cur">${cs.map(c => `${c.food ? `<p>${esc(c.food)}</p>` : ''}<button class="pr-open" data-p="${esc(c.key)}">${esc(PRODUCTS[c.key].title.split(' · ')[0])} 제품 보기<i data-lucide="chevron-right"></i></button>`).join('')}</div>` : ''; })()}
     ${n.quote ? `<div class="s-sec"${why('허가사항 원문은 AI 문장과 섞지 않고 인용으로 따로. 무엇이 AI 문장이고 무엇이 공식 문구인지 바로 구분돼요.')}><h4>허가사항 원문</h4>${n.quote.map(q => `<blockquote class="qt"><p>“${esc(q.t)}”</p><cite>${q.ref && REFS[q.ref] ? `<a class="ref" href="${REFS[q.ref].u}" target="_blank" rel="noopener noreferrer">${esc(q.s)}<span aria-hidden="true">↗</span></a>` : esc(q.s)}</cite></blockquote>`).join('')}</div>` : ''}
     <p class="ai-f"${why('출처 줄 바로 옆에 한 줄. 원문 인용을 뺀 문장은 AI가 썼다는 걸 알려요.')}><span class="ai">AI</span>AI가 내 기록을 보고 쓴 문장이에요${n.quote ? '. 따옴표 안은 허가사항 원문이에요' : ''}.</p>
     ${n.refs ? `<p class="src"${why('출처는 눌러서 원문을 바로 열 수 있게. 직접 열어 확인한 링크만 걸고, 확인 못 한 출처는 글자로만 남겨요. 작게, 밑줄과 ↗로만.')}>${n.refs.every(k => /nedrug/.test(REFS[k].u)) ? '출처: 식약처 의약품 허가사항' : '출처'}<span class="refs">${n.refs.map(refA).join('')}</span></p>` : ''}
@@ -360,7 +359,7 @@ function insights(){
   const ir = days.filter(d => es.some(e => e.day === d && (e.tags||[]).includes('iron')) && es.some(e => e.day === d && (e.tags||[]).includes('coffee')));
   if (ir.length) out.push({ id:'iron', area:'med', inter:true, text:'철분제 먹은 날 커피도 가까운 시간에 있었어요. 둘 사이를 조금 떼면 철분이 조금 더 잘 흡수될 수 있어요.', src: ir.flatMap(d => es.filter(e => e.day === d && ((e.tags||[]).includes('iron') || (e.tags||[]).includes('coffee')))), latest: ir.sort().at(-1) });
   const htn = S.profile.conds.includes('hypertension') || hasMed(/혈압/), lic = es.filter(e => (e.tags||[]).includes('licorice'));
-  if (htn && lic.length) out.push({ id:'lic', area:'med', inter:true, text:'혈압약을 드시는 중에 쌍화탕 기록이 있었어요. 감기 기운엔 따뜻한 물·꿀물로도 충분할 수 있어요.', src: lic, latest: lic.map(e => e.day).sort().at(-1) });
+  if (htn && lic.length) out.push({ id:'lic', area:'med', inter:true, text:'혈압약을 드시는 중에 쌍화탕 기록이 있었어요.', src: lic, latest: lic.map(e => e.day).sort().at(-1) });
   return out;
 }
 // 지금 지켜보는 불편 하나: 빈도 + 최근성 + 영향(일상에 주는 무게)
@@ -401,13 +400,13 @@ Object.assign(PRODUCTS, {
     { name:'A사 디카페인 드립백 (10개입)', unit:'개당', sellers:[['A사 공식 스토어',9900,true,'공식 판매처'],OK('B마켓',9300),NO('C몰',8200)] },
     { name:'B사 디카페인 캡슐 (10개입)', unit:'개당', sellers:[['B사 공식 스토어',7900,true,'공식 판매처'],OK('D몰',7400)] },
     { name:'C사 디카페인 원두 (200g)', unit:'봉', sellers:[['C사 공식 스토어',16000,true,'공식 판매처'],OK('B마켓',14500)] } ] },
-  '숙취해소 음료': { title:'숙취해소 음료', why:'물과 꿀물로도 충분한 날이 많아요. 고른다면 성분이 비슷한 것끼리 값만 비교해요.', items:[
+  '숙취해소 음료': { title:'숙취해소 음료', why:'고른다면 성분이 비슷한 것끼리 값만 비교해요.', items:[
     { name:'A사 숙취 음료 (100ml × 10병)', unit:'병당', sellers:[['A사 공식 스토어',25000,true,'공식 판매처'],OK('B마켓',22800),NO('C몰',19900)] },
     { name:'B사 숙취 젤리 스틱 (10개입)', unit:'개당', sellers:[['B사 공식 스토어',21000,true,'공식 판매처'],OK('D몰',19500)] } ] },
-  '마그네슘': { title:'마그네슘', why:'바나나·견과류·두부처럼 이미 드시는 음식에도 들어 있어요. 제품은 굳이 아니어도 돼요.', items:[
+  '마그네슘': { title:'마그네슘', why:'고른다면 비슷한 것끼리 값만 비교해요.', items:[
     { name:'A사 마그네슘 (60정)', unit:'정당', sellers:[['A사 공식 스토어',14900,true,'공식 판매처 · 건강기능식품 신고 확인'],OK('B마켓',12900),NO('C몰',9900)] },
     { name:'B사 마그네슘 + 비타민B6 (90정)', unit:'정당', sellers:[['B사 공식 스토어',21000,true,'공식 판매처 · 건강기능식품 신고 확인'],OK('D몰',18900)] } ] },
-  '유산균': { title:'유산균 · 균주와 기능 기준', why:'요거트를 이미 드시니 그걸로도 충분할 수 있어요. 고른다면 이름 말고 균주와 인정받은 기능이 같은 것끼리 비교해요.', items:[
+  '유산균': { title:'유산균 · 균주와 기능 기준', why:'고른다면 이름 말고 균주와 인정받은 기능이 같은 것끼리 비교해요.', items:[
     { name:'A사 유산균 (30포) · 배변 활동 기능성', unit:'포당', sellers:[['A사 공식 스토어',29000,true,'공식 판매처 · 건강기능식품 신고 확인'],OK('B마켓',25900),NO('C몰',19900)] },
     { name:'B사 유산균 (30캡슐) · 같은 기능성, 균주 다름', unit:'캡슐당', sellers:[['B사 공식 스토어',32000,true,'공식 판매처 · 건강기능식품 신고 확인'],OK('D몰',28500)] },
     { name:'C사 유산균 (60캡슐) · 같은 기능성', unit:'캡슐당', sellers:[['C사 공식 스토어',45000,true,'공식 판매처 · 건강기능식품 신고 확인'],OK('B마켓',41000)] } ] },
@@ -418,7 +417,7 @@ Object.assign(PRODUCTS, {
     { name:'A사 락토프리 우유 (930ml)', unit:'팩', sellers:[['A사 공식 스토어',3500,true,'공식 판매처'],OK('B마켓',3200),NO('C몰',2700)] },
     { name:'B사 락토프리 우유 (190ml × 24팩)', unit:'팩당', sellers:[['B사 공식 스토어',23900,true,'공식 판매처'],OK('D몰',21500)] },
     { name:'C사 오트 음료 (1L)', unit:'팩', sellers:[['C사 공식 스토어',4200,true,'공식 판매처'],OK('B마켓',3800)] } ] },
-  '저당 간식': { title:'단 게 당길 때 · 저당 간식', why:'단 걸 끊으라는 게 아니에요. 같은 자리에 둘 수 있는 것끼리만 모았어요. 과일이나 견과류로도 충분해요.', items:[
+  '저당 간식': { title:'단 게 당길 때 · 저당 간식', why:'단 걸 끊으라는 게 아니에요. 같은 자리에 둘 수 있는 것끼리만 모았어요.', items:[
     { name:'A사 저당 초콜릿 (12개입)', unit:'개당', sellers:[['A사 공식 스토어',11900,true,'공식 판매처'],OK('B마켓',10500),NO('C몰',8800)] },
     { name:'B사 무가당 그릭요거트 (4개입)', unit:'개당', sellers:[['B사 공식 스토어',7900,true,'공식 판매처'],OK('D몰',7200)] },
     { name:'C사 구운 견과 (20봉)', unit:'봉당', sellers:[['C사 공식 스토어',19900,true,'공식 판매처'],OK('B마켓',17900)] } ] },
@@ -427,16 +426,16 @@ Object.assign(PRODUCTS, {
 const CURATE = [
   { key:'필터 커피', on:'coffee', food:'커피를 끊지 않고 내리는 방식만 바꿔 볼 수 있어요.', trig:'피곤·속 불편 메모 + 그날의 커피 사진 → 커피 종류 확인' },
   { key:'디카페인', on:'coffee', food:'카페인 때문인지 가려 보려면 몇 잔만 디카페인으로 바꿔도 돼요.', trig:'피곤 메모 + 커피 사진, 잠은 평소와 비슷' },
-  { key:'숙취해소 음료', on:'bloat', food:'다음 날 아침엔 물과 꿀물이면 충분한 날이 많아요.', trig:'더부룩 메모 + 전날 밤 맥주·소주 사진' },
-  { key:'마그네슘', on:'cramp', food:'바나나·두부처럼 이미 드시는 음식으로도 조금 도움이 될 수 있어요.', trig:'다리에 쥐 메모 + 커피 잦던 며칠' },
+  { key:'숙취해소 음료', on:'bloat', food:'', trig:'더부룩 메모 + 전날 밤 맥주·소주 사진' },
+  { key:'마그네슘', on:'cramp', food:'', trig:'다리에 쥐 메모 + 커피 잦던 며칠' },
   { key:'락토프리 우유', on:'gas', when:x => /유제품/.test(x.what), food:'라떼는 그대로, 우유만 바꿔 볼 수 있어요.', trig:'아침 가스 메모 + 전날 라떼·우유 사진' },
-  { key:'유산균', on:'calm', food:'지금처럼 요거트면 충분해요. 제품은 굳이 아니어도 돼요.', trig:'속 편한 날 메모 + 그날 아침 요거트 사진' },
-  { key:'저당 간식', on:'skin', when:x => /단 것/.test(x.what), food:'단 게 당길 땐 과일이나 견과류를 같은 자리에 둘 수 있어요.', trig:'뾰루지 메모 + 며칠 전 단 것 사진' },
+  { key:'유산균', on:'calm', food:'', trig:'속 편한 날 메모 + 그날 아침 요거트 사진' },
+  { key:'저당 간식', on:'skin', when:x => /단 것/.test(x.what), food:'', trig:'뾰루지 메모 + 며칠 전 단 것 사진' },
   { key:'철분제', on:'iron', food:'철분제와 커피 사이를 한두 시간만 떼면 돼요.', trig:'철분제 사진 + 같은 시간대 커피 사진' },
 ];
 const curFor = x => CURATE.filter(c => c.on === x.id && (!c.when || c.when(x)) && !(x.id === 'coffee' && c.key === '필터 커피' && checkState(x) && checkState(x).result === 'yes'));
 const curHTML = (x, first) => { const cs = curFor(x); if (!cs.length) return '';
-  return `<div class="cur"${first ? why('발견 하나마다 음식으로 충분한 방법을 먼저 한 줄로. 제품은 그 아래 작게, 누른 사람에게만. 사라는 말은 하지 않아요.') : ''}>${cs.map(c => `<p>${esc(c.food)}</p><button class="pr-open" data-p="${esc(c.key)}">${esc(PRODUCTS[c.key].title.split(' · ')[0])} 제품 보기<i data-lucide="chevron-right"></i></button>`).join('')}</div>`; };
+  return `<div class="cur"${first ? why('발견 하나마다 음식으로 충분한 방법을 먼저 한 줄로. 제품은 그 아래 작게, 누른 사람에게만. 사라는 말은 하지 않아요.') : ''}>${cs.map(c => `${c.food ? `<p>${esc(c.food)}</p>` : ''}<button class="pr-open" data-p="${esc(c.key)}">${esc(PRODUCTS[c.key].title.split(' · ')[0])} 제품 보기<i data-lucide="chevron-right"></i></button>`).join('')}</div>`; };
 // 데모 전용 목록 (?products=1)
 function productsIndex(){ const ov = document.createElement('div'); ov.className = 'ov'; ov.id = 'pidx';
   const ins = insights(), n0 = pick(); const isLive = c => ins.some(x => x.id === c.on && (!c.when || c.when(x)) && !(checkState(x) && checkState(x).result === 'same')) || (n0 && n0.id === c.on);
@@ -593,7 +592,7 @@ function widget(){
     $('#ow', ov).after(pop);
     $$('button', pop).forEach(b => b.onclick = () => { saveMemo(b.dataset.m); pop.innerHTML = '<span class="ok">적어 뒀어요</span>'; setTimeout(() => { pop.remove(); render(); }, 900); });
     notesRefresh(); }
-  $('#owl', ov).onclick = () => { close(); if (n) setTimeout(() => n.product ? productSheet(n.product) : detail(n), 280); };
+  $('#owl', ov).onclick = () => { close(); if (n && (n.why || n.q || n.product)) setTimeout(() => n.product ? productSheet(n.product) : detail(n), 280); };
   $('#owx', ov).onclick = close;
   notesRefresh();
 }

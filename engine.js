@@ -9,7 +9,6 @@ const TOPICS = [
     id: 'chill', label: '환절기 · 으슬으슬함',
     keywords: ['으슬','환절기','감기','오한','몸살','콧물','재채기','추워','춥','한기','코막'],
     foods: [
-      { name:'꿀 탄 따뜻한 물', comp:'꿀', effect:'꿀이 어린이 기침 증상 완화에 조금 도움이 될 수 있다는 체계적 문헌고찰이 있어요 (1세 미만은 먹이면 안 돼요)', ref:'honey', tags:['warm'] },
       { name: '귤 · 유자차', comp: '비타민C·헤스페리딘', effect: '비타민C는 항산화 작용으로 유해산소로부터 세포를 보호하는 데 필요한 영양소로 알려져 있어요', tags: ['citrus'] },
       { name: '닭고기 수프(맑은 닭곰탕)', comp: '단백질·카르노신', effect: '닭고기 수프가 연구에서 상기도 점막 관련 염증 반응을 완화하는 작용이 보고되어, 회복기 식사로 도움이 될 수 있어요', tags: [] },
     ],
@@ -228,8 +227,7 @@ const CHECKUPS = [['bp','혈압 높음'],['glucose','혈당 높음'],['lipid','�
 // ---------- 추가 주제 ----------
 TOPICS.push(
   { id: 'coldfeet', label: '손발 참', keywords: ['발이 차','손발','손이 차','수족냉'],
-    foods: [ { name:'따뜻한 물·꿀물', comp:'꿀', effect:'꿀이 어린이 기침 증상 완화에 조금 도움이 될 수 있다는 체계적 문헌고찰이 있어요 (1세 미만은 먹이면 안 돼요)', ref:'honey', tags:['warm'] },
-             { name: '계피차', comp: '신남알데히드', effect: '계피 성분이 혈류 관련 작용이 보고되어 있어요', tags: ['warm'] } ],
+    foods: [ { name: '계피차', comp: '신남알데히드', effect: '계피 성분이 혈류 관련 작용이 보고되어 있어요', tags: ['warm'] } ],
     supplements: [], otc: [] },
   { id: 'cramp', label: '다리 쥐', keywords: ['쥐가','쥐 나','종아리','다리 경련'],
     foods: [ { name: '바나나', comp: '칼륨·마그네슘', effect: '칼륨·마그네슘이 근육 수축·이완에 관여해요', tags: ['potassium'] },
@@ -245,8 +243,6 @@ TOPICS.push(
     supplements: [ { name: '비타민B2(리보플라빈)', claim: '피부와 점막을 유지하는 데 필요', tags: [] } ], otc: [] },
   { id:'throat', label:'목 칼칼함', keywords:['목','칼칼','인후','따끔','목이','기침','가래','건조'],
     foods:[
-      { name:'꿀 탄 따뜻한 물', comp:'꿀', effect:'꿀이 어린이 기침 증상 완화에 조금 도움이 될 수 있다는 체계적 문헌고찰이 있어요 (1세 미만은 먹이면 안 돼요)', ref:'honey', tags:['warm'] },
-      
       { name:'꿀물(따뜻하게)', comp:'과당·폴리페놀', effect:'꿀이 연구에서 기침 관련 증상 완화 작용이 보고되어 있어요 (돌 전 아기에게는 금지)', tags:['sugar'] },
     ],
     supplements:[ { name:'아연', claim:'정상적인 면역기능에 필요', tags:['zinc'] }, { name:'비타민C', claim:'항산화 작용을 하여 유해산소로부터 세포를 보호하는데 필요', tags:['vitc'] } ],
