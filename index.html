@@ -61,7 +61,15 @@ input[type=text]{width:100%;padding:12px 14px;border:1px solid #dcd7cc;border-ra
 .inbox{background:#fff;border-radius:22px;border:1px solid var(--line);box-shadow:0 8px 28px rgba(31,42,36,.07);padding:8px 8px 8px 16px;display:flex;align-items:center;gap:6px;margin-top:8px}
 .inbox input{flex:1;border:0;outline:none;font-size:16px;padding:10px 0;min-width:0;background:transparent}
 .inbox button{border:0;border-radius:14px;cursor:pointer;font-size:15px;height:42px;min-width:42px}
-.cam{background:#f2f0ea}.go{background:var(--g);color:#fff;font-weight:700;padding:0 14px}
+.cam{background:#f2f0ea}
+.bigcam{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;padding:26px 12px;border:0;border-radius:22px;background:var(--g);color:#fff;font-size:34px;cursor:pointer;box-shadow:0 6px 18px rgba(46,139,87,.25)}
+.bigcam b{font-size:17px}.bigcam small{font-size:12.5px;opacity:.85}
+.inbox.sec{margin-top:12px;transform:scale(.97);opacity:.9}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.grid button{display:flex;flex-direction:column;align-items:center;padding:8px 2px;font-size:22px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.grid button span{font-size:11px;color:var(--mut);margin-top:2px}
+.ph{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:#f2f0ea;font-size:16px}
+.fu .tr{font-size:11.5px;color:var(--mut);margin-top:4px}.go{background:var(--g);color:#fff;font-weight:700;padding:0 14px}
 .hints{display:flex;flex-wrap:wrap;gap:6px;margin:10px 4px 0}
 .hints span{font-size:12px;color:#8a938d;border:1px dashed #d6d2c6;border-radius:99px;padding:5px 10px;cursor:pointer}
 .sheet{background:#fff;border:1px solid var(--line);border-radius:16px;padding:8px;margin-top:8px}
@@ -120,9 +128,11 @@ table.cmp th{color:var(--mut);font-weight:600;width:24%}
   </section>
 
   <section class="screen" id="s-home">
-    <div class="inbox"><input id="q" placeholder="오늘 있었던 일·몸 상태를 편하게 적어 두세요" autocomplete="off"><button class="cam" id="cam" aria-label="사진">📷</button><button class="go" id="go">확인</button></div>
-    <div class="sheet" id="sheet" style="display:none"><small>사진 인식은 데모예요. 샘플을 불러와요.</small>
-      <button data-sample="checkup">📋 건강검진 결과지 (샘플)</button><button data-sample="meds">💊 약 봉투 (샘플)</button><button data-meal="1" style="font-size:12.5px;color:var(--mut)">🍽️ 식사 사진 남기기 (샘플 · 조용히 저장만)</button></div>
+    <button class="bigcam" id="cam">📷<b>먹고 마신 것 찍기</b><small>밥·간식·커피·술·약 뭐든요. 찍어 두기만 하세요.</small></button>
+    <div class="sheet" id="sheet" style="display:none"><small>데모: 샘플 사진을 골라요 (분석 없이 저장만)</small>
+      <div class="grid" id="grid"></div>
+      <div style="margin-top:8px"><button data-sample="checkup">📋 검진 결과지 (샘플)</button><button data-sample="meds">💊 약 봉투 (샘플)</button></div></div>
+    <div class="inbox sec"><input id="q" placeholder="한 줄 메모나 궁금한 것 (선택)" autocomplete="off"><button class="go" id="go">확인</button></div>
     <div class="hints" id="hints"></div>
     <div id="fus"></div>
     <div id="ans"></div>
@@ -150,12 +160,13 @@ const CONDS=[['pregnant','임신·수유 중'],['hypertension','고혈압'],['di
 const ALLERGIES=['유제품','견과류','생선','대두','계란','국화과','감귤류'];
 const PERSONAS=[
   { id:'none', e:'🙂', name:'특이사항 없음', desc:'지병·약·알레르기 없음', p:{} },
-  { id:'htn', e:'🩺', name:'고혈압 · 혈압약', desc:'감초·마황 함유 한방제제 제외 · 최근 회식 기록 있음', p:{ conditions:['hypertension'], meds:'혈압약' }, notes:[[6,'팀 회식, 소주 꽤 마심'],[5,'점심 김치찌개'],[4,'거래처 회식 2차까지'],[3,'잠 못 잤음'],[2,'오늘은 일찍 퇴근'],[1,'점심 사진']] },
-  { id:'preg', e:'🤰', name:'임신 중 · 유제품 알레르기', desc:'한방제제·홍삼·유제품 제외', p:{ conditions:['pregnant'], allergies:['유제품'] }, notes:[[3,'밤에 잠을 설쳤음'],[1,'잠 못 잤음']] },
+  { id:'htn', e:'🩺', name:'고혈압 · 혈압약', desc:'쌍화탕 사진 · 회식 기록', p:{ conditions:['hypertension'], meds:'혈압약' }, notes:[[6,'팀 회식, 소주 꽤 마심'],[4,'거래처 회식 2차까지'],[3,'잠 못 잤음']], snaps:[[6,'soju'],[5,'jjigae'],[4,'jjamppong'],[3,'ramen'],[2,'ssanghwa'],[1,'jjigae']] },
+  { id:'preg', e:'🤰', name:'임신 중 · 철분제', desc:'철분제와 커피가 같은 날', p:{ conditions:['pregnant'], allergies:['유제품'], meds:'철분제' }, snaps:[[4,'iron'],[4,'coffee'],[2,'iron'],[2,'coffee'],[1,'bibim']], notes:[[3,'밤에 잠을 설쳤음'],[1,'잠 못 잤음']] },
+  { id:'cold', e:'🤧', name:'감기약 복용 중 · 회식 많음', desc:'타이레놀 + 음주 → 간 부담 알림', p:{ meds:'타이레놀' }, notes:[[1,'목이 계속 칼칼']], snaps:[[3,'tylenol'],[2,'tylenol'],[2,'beer'],[1,'soju']] },
   { id:'asp', e:'💊', name:'아스피린 복용', desc:'홍삼 제외 · 이번 주 야근 기록', p:{ meds:'아스피린' }, notes:[[5,'마감이라 야근'],[4,'야근 또, 저녁은 컵라면'],[3,'잠 못 잤음'],[2,'점심 거름'],[1,'야근하고 늦게 잠']] },
-  { id:'fish', e:'🐟', name:'생선 알레르기 · 검진 LDL 높음', desc:'생선·오메가3 제외 · 식사 사진 몇 장 저장됨', p:{ allergies:['생선'], checkups:['lipid'] }, notes:[[6,'삼겹살 회식'],[4,'퇴근하고 치킨 시켜 먹음'],[2,'점심 샐러드']], meals:[['late','salty'],['late','salty'],['salty'],['late','salty'],['late']] },
+  { id:'fish', e:'🐟', name:'생선 알레르기 · 검진 LDL 높음', desc:'스타틴 복용 · 자몽주스 사진 있음', p:{ allergies:['생선'], checkups:['lipid'], meds:'스타틴' }, notes:[[6,'삼겹살 회식'],[4,'퇴근하고 치킨 시켜 먹음']], snaps:[[6,'samgyeop'],[5,'grapefruit'],[4,'chicken'],[3,'salad'],[2,'grapefruit'],[1,'samgyeop']] },
 ];
-const HINTS=['오늘 회식','잠 못 잤음','목 칼칼해요','검진에서 LDL 높게 나옴','요즘 변비 심해요'];
+const HINTS=['잠 못 잤음','목 칼칼해요','검진에서 LDL 높게 나옴'];
 const NM=Object.fromEntries([...CONDS, ...E.CHECKUPS.map(([v,l])=>['chk:'+v,'검진 '+l])]);
 const norm=p=>({ conditions:[], allergies:[], meds:'', checkups:[], demo:null, ...p });
 let profile=(()=>{ try{ const p=JSON.parse(localStorage.getItem(PKEY)); return p?norm(p):null; }catch{ return null; } })();
@@ -169,7 +180,7 @@ function saveProfile(p){ profile=norm(p); localStorage.setItem(PKEY, JSON.string
 function summary(){ const p=profile; const a=[...p.conditions.map(c=>NM[c]), p.meds&&('약: '+p.meds), ...p.allergies.map(x=>x+' 알레르기'), ...p.checkups.map(c=>NM['chk:'+c])].filter(Boolean); return a.length?a.join(' · '):'특이사항 없음'; }
 function recentMeals(m){ const today=dayKey(todayD()); return (m.meals||[]).filter(x=>{ const d=daysBetween(x.day,today); return d>=0&&d<=7; }); }
 function recentEntries(m){ const today=dayKey(todayD()); return (m.entries||[]).filter(x=>{ const d=daysBetween(x.day,today); return d>=0&&d<=7; }); }
-function memFor(m){ return { ...m, lastTops:(m.shown||[]).slice(-3).reverse(), seen:(m.shown||[]).reduce((o,n)=>(o[n]=(o[n]||0)+1,o),{}), lastTips:(m.tips||[]).slice(-3).reverse(), recentEntries: recentEntries(m).map(e=>({ ...e })), recentMealTags: recentMeals(m).flatMap(x=>x.tags), recentNoteTags: recentEntries(m).flatMap(x=>x.tags||[]) }; }
+function memFor(m){ return { ...m, lastTops:(m.shown||[]).slice(-3).reverse(), seen:(m.shown||[]).reduce((o,n)=>(o[n]=(o[n]||0)+1,o),{}), lastTips:(m.tips||[]).slice(-3).reverse(), recentEntries: recentEntries(m).map(e=>({ ...e, dayDiff: daysBetween(e.day, dayKey(todayD())) })), lastCatches:(m.catches||[]).slice(-5), recentMealTags: recentMeals(m).flatMap(x=>x.tags), recentNoteTags: recentEntries(m).flatMap(x=>x.tags||[]) }; }
 function mem(){ try{ return { events:[], picks:[], dismissed:[], ...(JSON.parse(localStorage.getItem(MKEY))||{}) }; }catch{ return { events:[], picks:[], dismissed:[] }; } }
 function setMem(m){ localStorage.setItem(MKEY, JSON.stringify(m)); }
 
@@ -186,7 +197,7 @@ $('#save1').onclick=()=>{ saveProfile(readPF('a')); go('home'); };
 $('#save2').onclick=()=>{ saveProfile(readPF('b')); go('home'); };
 $('#reset').onclick=()=>{ localStorage.clear(); profile=null; $('#ans').innerHTML=''; go('onboard'); };
 function renderPersonas(){ $('#personas').innerHTML=PERSONAS.map(x=>`<div class="persona ${profile&&profile.demo===x.id?'on':''}" data-id="${x.id}"><div class="e">${x.e}</div><div><b>${x.name}</b><div>${x.desc}</div></div></div>`).join('');
-  $$('.persona').forEach(el=>el.onclick=()=>{ const x=PERSONAS.find(p=>p.id===el.dataset.id); saveProfile({ ...JSON.parse(JSON.stringify(x.p)), demo:x.id }); $('#ans').innerHTML=''; { const m=mem(); const t=todayD(); m.meals=(x.meals||[]).map((tags,i)=>({ day:dayKey(new Date(t-(i+1)*864e5)), tags })); m.entries=(m.entries||[]).filter(e=>!e.seed).concat((x.notes||[]).map(([d,text])=>({ day:dayKey(new Date(t-d*864e5)), text, kind:'note', tags:E.classify(text).tags, seed:true }))).sort((a,b)=>a.day<b.day?-1:1); setMem(m); } go('home'); }); }
+  $$('.persona').forEach(el=>el.onclick=()=>{ const x=PERSONAS.find(p=>p.id===el.dataset.id); saveProfile({ ...JSON.parse(JSON.stringify(x.p)), demo:x.id }); $('#ans').innerHTML=''; { const m=mem(); const t=todayD(); m.meals=[]; m.catches=[]; m.shown=[]; m.tips=[]; m.dismissed=[]; m.entries=[].concat((x.snaps||[]).map(([d,k])=>({ day:dayKey(new Date(t-d*864e5)), text:SNAPS[k].l, snap:k, time:snapTime(k), kind:'photo', tags:SNAPS[k].tags, seed:true }))); m.entries=m.entries.concat((x.notes||[]).map(([d,text])=>({ day:dayKey(new Date(t-d*864e5)), text, kind:'note', tags:E.classify(text).tags, seed:true }))).sort((a,b)=>a.day<b.day?-1:1); setMem(m); } go('home'); }); }
 
 // ---------- 라우팅 ----------
 function go(n){
@@ -203,8 +214,16 @@ $('#back').onclick=()=>go('home'); $('#gear').onclick=()=>go('settings');
 $('#hints').innerHTML=HINTS.map(h=>`<span>${h}</span>`).join('');
 $$('#hints span').forEach(s=>s.onclick=()=>{ $('#q').value=s.textContent; $('#q').focus(); });
 $('#cam').onclick=()=>{ const s=$('#sheet'); s.style.display=s.style.display==='none'?'block':'none'; };
-const MEAL_TAGS=[['late','salty'],['salty'],['late'],[]];
-$$('[data-meal]').forEach(b=>b.onclick=()=>{ $('#sheet').style.display='none'; const m=mem(); m.meals=(m.meals||[]).concat([{ day:dayKey(todayD()), tags:MEAL_TAGS[Math.floor(Math.random()*MEAL_TAGS.length)] }]).slice(-40); m.entries=(m.entries||[]).concat([{ day:dayKey(todayD()), text:'식사 사진', kind:'photo', tags:[] }]).slice(-80); setMem(m); toast('기록했어요'); renderLog(); });
+const SNAPS={
+  ramen:{e:'🍜',l:'라면',tags:['salty']}, jjigae:{e:'🍲',l:'김치찌개',tags:['salty']}, jjamppong:{e:'🍜',l:'짬뽕',tags:['salty']},
+  chicken:{e:'🍗',l:'치킨',tags:['fried']}, samgyeop:{e:'🥓',l:'삼겹살',tags:['fried']}, salad:{e:'🥗',l:'샐러드',tags:[]}, bibim:{e:'🍚',l:'비빔밥',tags:[]},
+  coffee:{e:'☕',l:'오후 커피',tags:['coffee_pm']}, beer:{e:'🍺',l:'맥주',tags:['alcohol']}, soju:{e:'🍶',l:'소주',tags:['alcohol']},
+  grapefruit:{e:'🧃',l:'자몽주스',tags:['grapefruit']}, spinach:{e:'🥬',l:'시금치나물',tags:['vitk']}, snack:{e:'🍪',l:'과자',tags:['sugar']},
+  ssanghwa:{e:'🫙',l:'쌍화탕',tags:['licorice']}, tylenol:{e:'💊',l:'타이레놀',tags:['apap']}, iron:{e:'💊',l:'철분제',tags:['iron']},
+};
+$('#grid').innerHTML=Object.entries(SNAPS).map(([k,s])=>`<button data-snap="${k}">${s.e}<span>${s.l}</span></button>`).join('');
+function snapTime(k){ return ({coffee:'15:00',ramen:'22:40',chicken:'23:10',snack:'23:30',beer:'21:00',soju:'21:30'})[k]||'12:30'; }
+$$('[data-snap]').forEach(b=>b.onclick=()=>{ $('#sheet').style.display='none'; const k=b.dataset.snap, s=SNAPS[k], m=mem(); m.entries=(m.entries||[]).concat([{ day:dayKey(todayD()), text:s.l, snap:k, time:snapTime(k), kind:'photo', tags:s.tags }]).slice(-120); setMem(m); toast('저장했어요'); renderLog(); renderFollowups(); });
 function toast(t){ const d=document.createElement('div'); d.textContent=t; d.style.cssText='position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:#1f2a24;color:#fff;padding:8px 14px;border-radius:99px;font-size:13px;opacity:.9;z-index:20'; document.body.appendChild(d); setTimeout(()=>d.remove(),1400); }
 $$('[data-sample]').forEach(b=>b.onclick=()=>{ $('#sheet').style.display='none'; $('#q').value=E.SAMPLES[b.dataset.sample].text; submit(); });
 $('#go').onclick=()=>submit(); $('#q').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.isComposing) submit(); });
@@ -213,12 +232,13 @@ function submit(text){
   const q=(text ?? $('#q').value).trim(); if(!q) return;
   $('#hints').style.display='none';
   const m=mem(); const c=E.classify(q);
-  if(!c.need){ const tip=E.noteTip(c.tags, memFor(m)); if(tip) m.tips=(m.tips||[]).concat([tip]).slice(-10); m.entries=(m.entries||[]).concat([{ day:dayKey(todayD()), text:q, kind:'note', tags:c.tags }]).slice(-80); setMem(m); $('#q').value=''; $('#ans').innerHTML=`<div class="ans"><div class="ins">📝 기록했어요${tip?' · '+esc(tip):''}</div></div>`; renderLog(); renderFollowups(); return; }
+  if(!c.need){ const cc=E.crossCatch(q, profile, memFor(m)); if(cc) m.catches=(m.catches||[]).concat([cc.id]); const tip=cc?('⚠️ '+cc.line):E.noteTip(c.tags, memFor(m)); if(tip) m.tips=(m.tips||[]).concat([tip]).slice(-10); m.entries=(m.entries||[]).concat([{ day:dayKey(todayD()), text:q, kind:'note', tags:c.tags }]).slice(-80); setMem(m); $('#q').value=''; $('#ans').innerHTML=`<div class="ans"><div class="ins">📝 기록했어요${tip?' · '+esc(tip):''}</div></div>`; renderLog(); renderFollowups(); return; }
   $('#q').value=q;
   const r=E.answer(q, profile, memFor(m));
   m.entries=(m.entries||[]).concat([{ day:dayKey(todayD()), text:q, kind:'need', tags:c.tags }]).slice(-80);
   lastQ=q; lastR=r;
   if(r.type==='answer' && r.topic){ m.events.push({ day:dayKey(todayD()), topic:r.topic, text:q }); m.events=m.events.slice(-30); setMem(m); }
+  const cc=E.crossCatch(q, profile, memFor(m)); if(cc){ m.catches=(m.catches||[]).concat([cc.id]); r.catchLine=cc.line; }
   if(r.top){ m.shown=(m.shown||[]).concat([r.top.name]).slice(-20); }
   setMem(m); renderAnswer(r); renderLog();
 }
@@ -233,11 +253,12 @@ function renderAnswer(r){
   const a=$('#ans');
   if(r.type==='stop'){ a.innerHTML=`<div class="stop">🚑 <b>${esc(r.title)}</b> ${esc(r.text)}</div>`; return; }
   let h=`<div class="ans"><div class="pick">`;
+  if(r.catchLine) h+=`<div class="nt" style="margin-bottom:8px">⚠️ ${esc(r.catchLine)}</div>`;
   if(r.top){ h+=`<p class="say">${(r.lines||[]).map(esc).join(' ')}</p>`; }
   else h+=`<p class="say">${esc(r.scope||r.hint||'')}</p>`;
   if(r.top){ const extra=r.consult?.emphasize?' · 약사 상담 권해요':''; h+=`<button class="more" id="more">왜 그런지 · 더 보기${extra} ▾</button>`; }
   h+=`</div>`;
-  if(r.top) h+=`<div class="det" id="det" style="display:none">${detailHTML(r)}${consultBtn(r)}<div id="cbox"></div><p class="disc">ⓘ ${esc(r.disclaimer)}</p></div>`;
+  if(r.top) h+=`<div class="det" id="det" style="display:none">${detailHTML(r)}${consultBtn(r)}<div id="cbox"></div><p class="disc">ⓘ ${esc(r.disclaimer)} 상호작용 문구는 예시이며 약사 검수 전이에요.</p></div>`;
   h+=`</div>`;
   a.innerHTML=h;
   if($('#more')) $('#more').onclick=()=>{ const d=$('#det'); d.style.display=d.style.display==='none'?'block':'none'; };
@@ -290,14 +311,32 @@ function followups(){
   if(s){ const d=daysBetween(s.day,today); if(d>=3&&d<=7) out.push({ id:'con-'+s.day, text:'화장실은 좀 편해졌어요?', acts:[['편해졌어요','dismiss'],['아직이에요','ask:아직 변비가 계속돼요']] }); }
   for(const p of m.picks){ const d=daysBetween(p.day,today); if(d>=p.days-5) out.push({ id:'stock-'+p.name+p.day, text:`${p.name}, 곧 떨어질 때예요.`, acts:[['다시 비교하기','ask:'+({'프로바이오틱스':'요즘 변비 심해요'}[p.item]||p.item)],['괜찮아요','dismiss']] }); }
   const re=recentEntries(m), alc=re.filter(x=>(x.tags||[]).includes('alcohol')).length;
-  if(alc>=3) out.push({ id:'alc-'+today.slice(0,7)+'-'+Math.floor(+today.slice(8)/7), text:'요즘 술자리가 잦네요. 내일 아침은 맑은 국 어때요?', acts:[['알겠어요','dismiss']] });
-  const rm=recentMeals(m), late=rm.filter(x=>x.tags.includes('late')).length, salty=rm.filter(x=>x.tags.includes('salty')).length;
-  if(rm.length>=5 && late>=3 && salty>=3) out.push({ id:'meal-'+today.slice(0,7)+'-'+Math.floor(+today.slice(8)/7), text:'요즘 저녁이 늦고 짠 편이에요. 국물은 조금 남겨 볼까요?', acts:[['알겠어요','dismiss']] });
+  out.push(...snapNudges(m, today));
   return out.filter(f=>!m.dismissed.includes(f.id));
+}
+function snapNudges(m, today){
+  const wk=today.slice(0,7)+'-'+Math.floor(+today.slice(8)/7), P=profile||{}, meds=(P.meds||'')+' '+(m.entries||[]).filter(e=>e.kind!=='photo').map(e=>e.text).join(' ');
+  const sn=recentEntries(m).filter(e=>e.kind==='photo'), has=t=>sn.filter(e=>(e.tags||[]).includes(t));
+  const tr=a=>a.map(e=>`${dayLabel(e.day)} ${SNAPS[e.snap]?.e||''}${e.text}`).join(' · ');
+  const conds=P.conditions||[], htn=conds.includes('hypertension')||/혈압약/.test(meds), bpRisk=htn||conds.includes('kidney')||(P.checkups||[]).includes('bp'), out=[];
+  const apap=has('apap'), alc=has('alcohol');
+  if(apap.length && alc.length) out.push({ id:'n-apap-'+wk, text:'타이레놀 드신 주에 술도 있었어요. 같은 날 겹치면 간에 부담이 될 수 있어요. 약 먹는 날은 술을 쉬어 주세요.', trace:tr([...apap,...alc].slice(0,4)) });
+  const gf=has('grapefruit');
+  if(gf.length && /스타틴|암로디핀|고지혈증약/.test(meds)) out.push({ id:'n-gf-'+wk, text:'자몽주스가 두 번 있었어요. 드시는 스타틴은 자몽과 같이 먹으면 약이 세게 들 수 있어요. 오렌지주스로 바꿔 보세요.'.replace('두 번', gf.length>1?'몇 번':'한 번'), trace:tr(gf) });
+  const lic=has('licorice');
+  if(lic.length && htn) out.push({ id:'n-lic-'+wk, text:'쌍화탕엔 감초가 들어 있어요. 혈압약 드시는 동안은 생강차·대추차가 나아요.', trace:tr(lic) });
+  const iron=has('iron'), cof=has('coffee_pm');
+  if(iron.length && iron.some(i=>cof.some(c=>c.day===i.day))) out.push({ id:'n-iron-'+wk, text:'철분제 드신 날 커피도 같이 있었어요. 커피는 철분제와 1~2시간 떨어뜨려 드세요.', trace:tr([...iron,...cof].slice(0,4)) });
+  // 고치라고 하지 않고, 이미 드시는 것에 하나 곁들이기 (프로필 확인)
+  const salty=has('salty'), kOK=!conds.includes('kidney') && !/칼륨|스피로노락톤|ACE|사르탄|혈압약|이뇨제/.test(meds) && !htn;
+  if(salty.length>=4 && kOK) out.push({ id:'n-k-'+wk, text:`${salty.slice(-1)[0].text} 드신 날, 후식으로 바나나나 참외 하나 곁들이면 칼륨이 나트륨 배출에 조금이라도 도움이 될 수 있어요.`, trace:tr(salty.slice(-4)) });
+  const fr=has('fried');
+  if(fr.length>=3 && (P.checkups||[]).includes('lipid')) out.push({ id:'n-fr-'+wk, text:'삼겹살 드실 때 쌈채소와 마늘·양파를 같이 구워 곁들이면 좋아요. 식이섬유가 조금이라도 도움이 될 수 있어요.', trace:tr(fr) });
+  return out.filter(f=>!(m.dismissed||[]).includes(f.id)).slice(0,2).map(x=>({ ...x, acts:[['알겠어요','dismiss']] }));
 }
 function renderFollowups(){
   const f=followups();
-  $('#fus').innerHTML=f.map(x=>`<div class="fu" data-id="${esc(x.id)}"><button class="x" aria-label="닫기">✕</button>${esc(x.text)}<div class="acts">${x.acts.map(([l,a])=>`<button data-a="${esc(a)}">${l}</button>`).join('')}</div></div>`).join('');
+  $('#fus').innerHTML=f.map(x=>`<div class="fu" data-id="${esc(x.id)}"><button class="x" aria-label="닫기">✕</button>${esc(x.text)}${x.trace?`<div class="tr">📷 ${esc(x.trace)}</div>`:''}<div class="acts">${x.acts.map(([l,a])=>`<button data-a="${esc(a)}">${l}</button>`).join('')}</div></div>`).join('');
   $$('.fu').forEach(el=>{ const dismiss=()=>{ const m=mem(); m.dismissed.push(el.dataset.id); setMem(m); renderFollowups(); };
     el.querySelector('.x').onclick=dismiss;
     el.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{ const a=b.dataset.a; dismiss(); if(a.startsWith('ask:')) submit(a.slice(4)); }); });
@@ -309,7 +348,7 @@ function renderLog(){
   const es=[...(mem().entries||[])].reverse().slice(0,30);
   if(!es.length){ $('#log').innerHTML=''; return; }
   const ic={ note:'📝', need:'💬', photo:'🍽️' };
-  $('#log').innerHTML=`<div class="log"><div class="h">내 기록</div>${es.map((e,i)=>`<div class="le ${e.kind==='need'?'need':''}" data-i="${i}"><span class="d">${dayLabel(e.day)}</span><span class="i">${ic[e.kind]||'📝'}</span><span class="t">${esc(e.text)}</span></div>`).join('')}</div>`;
+  $('#log').innerHTML=`<div class="log"><div class="h">내 기록</div>${es.map((e,i)=>`<div class="le ${e.kind==='need'?'need':''}" data-i="${i}"><span class="d">${dayLabel(e.day)}</span><span class="i">${e.snap?`<span class="ph">${SNAPS[e.snap].e}</span>`:(ic[e.kind]||'📝')}</span><span class="t">${esc(e.text)}</span></div>`).join('')}</div>`;
   $$('.le.need').forEach(el=>el.onclick=()=>{ const e=es[+el.dataset.i]; $('#q').value=e.text; const r=E.answer(e.text, profile, memFor(mem())); lastQ=e.text; lastR=r; renderAnswer(r); window.scrollTo({top:0,behavior:'smooth'}); });
 }
 

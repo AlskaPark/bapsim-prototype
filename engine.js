@@ -273,7 +273,7 @@ TOPICS.push(
 // 식습관 인사이트 (입력에서 패턴 감지)
 const HABITS = [
   { id:'latenight', verdict:'조금 아쉬워요', keys:['야식','밤에 먹','늦게 먹','자기 전에','새벽'], text:'늦은 시간 식사가 잦으면 연구에서 수면의 질·소화 부담과의 연관이 보고되어 있어요. 저녁을 조금 넉넉히, 야식은 따뜻한 음료나 가벼운 단백질로 바꿔 보세요.' },
-  { id:'sodium', verdict:'조금 아쉬워요', keys:['라면','국물','짜게','짠','찌개','배달'], text:'국물·라면·배달음식이 잦으면 나트륨 섭취가 많아지기 쉬워요. 국물은 남기고 채소·과일(칼륨)을 곁들여 보세요.' },
+  { id:'sodium', verdict:'조금 아쉬워요', keys:['라면','국물','짜게','짠','찌개','배달'], text:'국물은 건더기 위주로 드시면 충분해요.' },
   { id:'sugar', verdict:'조금 아쉬워요', keys:['단거','단 거','디저트','음료','탄산','과자','빵','믹스커피'], text:'단 음료·간식이 잦으면 첨가당 섭취가 늘기 쉬워요. 단 음료를 무가당 차·탄산수로 바꾸는 것부터 시작해 보세요.' },
   { id:'alcohol', verdict:'조금 아쉬워요', keys:['술','음주','회식','소주','맥주'], text:'음주 다음 날은 수분과 전해질이 부족해지기 쉬워요. 물과 국물 있는 담백한 식사로 시작해 보세요.' },
   { id:'fiber', verdict:'조금 아쉬워요', keys:['변비','배변'], text:'변비가 잦다면 식이섬유와 수분 섭취가 부족하지 않은지 먼저 살펴보세요. 식이섬유를 늘릴 땐 물도 함께 늘려야 해요.' },
@@ -352,7 +352,7 @@ const NOTE_TAGS = [
 function noteTags(text){ return NOTE_TAGS.filter(([,ks]) => ks.some(k => text.includes(k))).map(([t]) => t); }
 function classify(text){
   text = (text || '').trim();
-  const need = RED_FLAGS.some(k => text.includes(k)) || NEED_WORDS.some(k => text.includes(k));
+  const need = RED_FLAGS.some(k => text.includes(k)) || NEED_WORDS.some(k => text.includes(k)) || /못 자요|기운 있|기운이|더부룩|해요\?|\?$/.test(text);
   return { need, tags: noteTags(text) };
 }
 
@@ -397,7 +397,7 @@ function answer(text, profile, memory) {
   if (textMeds.length) p.meds = [p.meds, ...textMeds].filter(Boolean).join(', ');
   const conds = profileConds(p);
   ((p && p.checkups) || []).forEach(c => conds.push('chk:' + c));
-  const insights = HABITS.filter(h => h.keys.some(k => text.includes(k))).map(h => ({ verdict:h.verdict, text:h.text }));
+  const insights = [];
   // 맥락이 생긴 경우에만: 이전에 LDL 등 검진 이야기를 했고, 지금 관련 있는 걸 기록할 때
   const hadLipid = (memory.events || []).some(e => e.topic === 'lipid');
   if (hadLipid && !/LDL|ldl|콜레스테롤|중성지방/.test(text) && /야식|치킨|튀김|삼겹|고기|라면|술|회식|버터|빵/.test(text))
@@ -443,8 +443,9 @@ function answer(text, profile, memory) {
   const titles = { hangover:'술 마신 다음 날', chill:'으슬으슬 감기 기운', throat:'목이 칼칼할 때', digest:'속이 더부룩할 때', fatigue:'피곤하고 기운 없을 때', sleep:'잠·긴장', eye:'눈 피로', constipation:'변비가 있을 때', lipid:'LDL·콜레스테롤 관리', glucose:'혈당 관리', latesnack:'야식이 잦을 때' };
   const top = groups[0] ? { ...groups[0].items[0], kind: groups[0].kind, why: shortWhy(groups[0].items[0], groups[0].kind) } : null;
   const enough = top && top.kind === 'food' && !['lipid','glucose'].includes(t.id);
-  const lines = [connectLine(t.id, recent), top ? (top.kind === 'food' ? `${top.name}${enough ? (/차$|즙$|국$/.test(top.name) ? ' 한 잔이면 충분해요.'.replace('국 한 잔','국 한 그릇') : ' 정도면 충분해요.') : '부터 바꿔 보세요.'}` : `${top.name}을 고려해 볼 만해요.`) : null, safetyLine(excluded, conds, p.meds)].filter(Boolean);
-  const trace = recent.filter(e => (e.tags||[]).some(x => ['alcohol','sleepless','overwork','fried'].includes(x))).map(e => ({ day:e.day, text:e.text }));
+  const fl = null; // 습관 교정 문구 없음
+  const lines = fl ? [fl.line, safetyLine(excluded, conds, p.meds)].filter(Boolean) : [connectLine(t.id, recent), top ? (top.kind === 'food' ? `${top.name}${enough ? (/차$|즙$|국$/.test(top.name) ? ' 한 잔이 조금이라도 도움이 될 수 있어요.'.replace('국 한 잔','국 한 그릇') : ' 정도가 조금이라도 도움이 될 수 있어요.') : '부터 바꿔 보세요.'}` : `${top.name}을 고려해 볼 만해요.`) : null, safetyLine(excluded, conds, p.meds)].filter(Boolean);
+  const trace = fl ? fl.trace.map(e => ({ day:e.day, text:e.text })) : recent.filter(e => (e.tags||[]).some(x => ['alcohol','sleepless','overwork','fried'].includes(x))).map(e => ({ day:e.day, text:e.text }));
   return { type:'answer', topic:t.id, top, lines, enough, trace, title: titles[t.id] || t.label, insights, scope, groups, excluded, warnings:[...new Set(warnings)], textMeds,
     consult:{ emphasize: consultWhy.length > 0, why: consultWhy[0] || '' }, disclaimer:DISCLAIMER };
 }
@@ -454,17 +455,49 @@ const SAMPLES = {
   meds: { label:'약 봉투 (샘플)', text:'아스피린 복용 중인데 같이 먹어도 되는 영양제? 요즘 피곤해요' },
 };
 
+
+// 잘 알려진 상호작용만 (문구는 예시, 약사 검수 전)
+const CATCHES = [
+  { id:'alc-apap', med:/아세트아미노펜|타이레놀|종합감기약|감기약/, ctx:/술|회식|음주|소주|맥주|와인|마셔|마심|마신/, line:m=>`술 드신 날엔 ${m}의 아세트아미노펜이 간에 부담이 될 수 있어요. 술과 같은 날은 피하세요.` },
+  { id:'alc-asp', med:/아스피린/, ctx:/술|회식|음주|소주|맥주|와인|마셔|마심|마신/, line:()=>'아스피린 드시는데 술이 겹치면 위 출혈 위험이 커질 수 있어요.' },
+  { id:'grapefruit', med:/스타틴|아토르바|심바스타|암로디핀|칼슘채널|고지혈증약/, ctx:/자몽/, line:()=>'드시는 약은 자몽·자몽주스와 같이 먹으면 약 효과가 세질 수 있어요.' },
+  { id:'iron-coffee', med:/철분/, ctx:/커피|녹차|홍차/, line:()=>'철분제는 커피·녹차와 1~2시간 간격을 두세요. 흡수를 방해해요.' },
+  { id:'abx-milk', med:/항생제|테트라사이클린|퀴놀론|시프로/, ctx:/우유|요구르트|치즈|칼슘/, line:()=>'일부 항생제는 우유·칼슘과 같이 먹으면 흡수가 줄어요. 2시간쯤 간격을 두세요.' },
+  { id:'warfarin-k', med:/와파린/, ctx:/시금치|케일|브로콜리|청국장|녹즙|나물/, line:()=>'와파린 드시면 시금치·케일 같은 녹색 채소는 갑자기 늘리지 말고 늘 비슷한 양으로 드세요.' },
+];
+function crossCatch(text, profile, memory) {
+  const meds = [profile.meds || '', ...(memory.recentEntries || []).map(e => e.text), text].join(' ');
+  const ctx = [text, ...(memory.recentEntries || []).filter(e => e.dayDiff == null || e.dayDiff <= 2).map(e => e.text)].join(' ');
+  const done = memory.lastCatches || [];
+  for (const c of CATCHES) {
+    const mm = meds.match(c.med); if (!mm || !c.ctx.test(ctx) || done.includes(c.id)) continue;
+    return { id: c.id, line: c.line(mm[0]) };
+  }
+  return null;
+}
+
+// 기록을 엮은 구체적 음식 제안 (일상 톤)
+const FOOD_LINKS = [
+  { topic:/digest/, rec:/야식|늦게 (저녁|먹)|밤에 (먹|라면)|10시|11시|치킨/, min:2, line:n=>`이번 주 늦은 저녁이 ${n}번 있었죠. 오늘 저녁은 8시 전에 두부된장국에 밥 반 공기 정도로 가볍게 드셔 보세요.` },
+  { topic:/sleep/, rec:/커피|아메리카노|라떼|카페/, min:2, line:n=>`오후 커피 기록이 ${n}번 있었죠. 커피는 점심 직후까지만 드시고, 오후엔 보리차나 루이보스로 바꿔 보세요.` },
+  { topic:/fatigue/, rec:/점심 거름|아침 거름|굶|컵라면/, min:2, line:n=>`끼니를 건너뛰거나 대충 때운 날이 ${n}번 있었죠. 내일 아침은 삶은 달걀 두 개와 바나나면 충분해요.` },
+  { topic:/constipation/, rec:/물 안|커피|빵|라면|배달/, min:2, line:n=>`빵·면 위주 끼니가 ${n}번 있었죠. 한 끼만 잡곡밥과 나물로 바꾸고 물을 자주 드셔 보세요.` },
+];
+function foodLink(topicId, recent) {
+  for (const f of FOOD_LINKS) {
+    if (!f.topic.test(topicId)) continue;
+    const hits = recent.filter(e => f.rec.test(e.text));
+    if (hits.length >= f.min) return { line: f.line(KN[hits.length] || hits.length), trace: hits };
+  }
+  return null;
+}
 const NOTE_TIPS = {
   alcohol: ['자기 전 물 한 잔, 내일 아침은 콩나물국이나 북엇국이 편해요.', '안주는 튀김보다 두부·생선구이 쪽이 속이 편해요.', '다음 날 아침은 기름진 해장보다 맑은 국물이 좋아요.'],
   sleepless: ['오늘 저녁 커피는 쉬고, 따뜻한 우유나 두유 한 잔 어때요.', '늦은 밤 간식은 바나나 정도로 가볍게요.'],
   overwork: ['야근 땐 컵라면보다 김밥·두유처럼 덜 짠 쪽이 나아요.', '늦은 저녁은 양을 줄이고 따뜻한 국 위주로요.'],
   fried: ['다음 끼니엔 나물이나 쌈채소를 곁들여 보세요.'],
 };
-function noteTip(tags, memory) {
-  const t = (tags || []).find(x => NOTE_TIPS[x]); if (!t) return null;
-  const used = (memory && memory.lastTips) || [];
-  const tip = NOTE_TIPS[t].find(x => !used.includes(x)) || NOTE_TIPS[t][0];
-  return used[0] === tip ? null : tip;
+function noteTip() { return null;
 }
-window.BapsimEngine = { CHECKUPS, answer, classify, noteTip, SAMPLES, DISCLAIMER };
+window.BapsimEngine = { CHECKUPS, answer, classify, noteTip, crossCatch, SAMPLES, DISCLAIMER };
 })();
