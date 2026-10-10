@@ -2,340 +2,338 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>밥심 · 푸드 베이스드 헬스케어</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#2f8f5b" />
+<title>밥심 · 먹는 것으로 챙기는 내 컨디션</title>
 <style>
-  :root { --g:#2f8f5b; --g2:#e8f5ee; --bg:#f6f4ef; --ink:#1f2a24; --mut:#6b766f; --warn:#b4610e; --wbg:#fff4e5; --red:#c0392b; }
-  * { box-sizing: border-box; }
-  body { margin:0; font-family: 'Pretendard','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif; background:#dfe7e1; color:var(--ink); }
-  .app { max-width: 460px; height: 100vh; margin: 0 auto; background: var(--bg); display:flex; flex-direction:column; box-shadow: 0 0 30px rgba(0,0,0,.08); }
-  header { padding: 14px 18px; background: #fff; border-bottom: 1px solid #ebe7de; display:flex; align-items:center; gap:10px; }
-  header .logo { width:36px; height:36px; border-radius:12px; background:var(--g); color:#fff; display:grid; place-items:center; font-size:20px; }
-  header h1 { font-size:16px; margin:0; } header p { margin:0; font-size:12px; color:var(--mut); }
-  header .badge { margin-left:auto; font-size:11px; padding:4px 8px; border-radius:99px; background:var(--g2); color:var(--g); white-space:nowrap; }
-  #chat { flex:1; overflow-y:auto; padding: 16px 14px 8px; display:flex; flex-direction:column; gap:10px; }
-  .msg { max-width: 88%; padding: 10px 13px; border-radius: 16px; font-size: 14px; line-height: 1.55; white-space: pre-wrap; }
-  .user { align-self:flex-end; background: var(--g); color:#fff; border-bottom-right-radius:4px; }
-  .bot { align-self:flex-start; background:#fff; border-bottom-left-radius:4px; border:1px solid #ece8df; }
-  .bot.danger { background:#fdecea; border-color:#f5c6c0; color:#7a1f15; }
-  .card { align-self:stretch; background:#fff; border:1px solid #ece8df; border-radius:16px; padding:14px; font-size:13.5px; line-height:1.55; }
-  .card h3 { font-size:13px; margin:12px 0 6px; display:flex; align-items:center; gap:6px; color:var(--g); }
-  .card h3:first-child { margin-top:0; }
-  .item { padding:8px 10px; border-radius:10px; background:#faf9f6; margin-bottom:6px; }
-  .item b { font-size:14px; } .item .comp { font-size:11px; color:var(--g); background:var(--g2); padding:1px 6px; border-radius:6px; margin-left:4px; }
-  .item .claim { color:#3b4740; } .item .note { margin-top:4px; font-size:12px; color:var(--warn); }
-  .tag-mfds { font-size:10px; color:#fff; background:#3567b5; padding:1px 5px; border-radius:5px; margin-left:4px; }
-  .tag-otc { font-size:10px; color:#fff; background:#8a5a2b; padding:1px 5px; border-radius:5px; margin-left:4px; }
-  .warnbox { background:var(--wbg); border-radius:10px; padding:8px 10px; color:#6d3b05; font-size:12.5px; }
-  .excl { font-size:12.5px; color:var(--mut); } .excl s { color:#999; }
-  .disc { font-size:11px; color:var(--mut); margin-top:10px; border-top:1px dashed #e2ddd2; padding-top:8px; }
-  .follow { margin-top:8px; font-size:13px; }
-  .safety label { display:inline-flex; align-items:center; gap:4px; margin:3px 6px 3px 0; padding:6px 10px; border:1px solid #dcd7cc; border-radius:99px; font-size:12.5px; cursor:pointer; background:#fff; }
-  .safety label:has(input:checked) { background:var(--g2); border-color:var(--g); color:var(--g); }
-  .safety input[type=checkbox], .safety input[type=radio] { display:none; }
-  .safety label:has(input[type=radio]:checked) { background:var(--g2); border-color:var(--g); color:var(--g); }
-  .bar { height:8px; border-radius:6px; background:#eee; overflow:hidden; margin:3px 0 8px; } .bar > i { display:block; height:100%; background:var(--g); }
-  .stack { display:flex; height:14px; border-radius:7px; overflow:hidden; margin:4px 0 4px; font-size:10px; color:#fff; } .stack > i { display:grid; place-items:center; font-style:normal; }
-  .kv { display:flex; justify-content:space-between; font-size:12.5px; } .big { font-size:22px; font-weight:700; color:var(--g); }
-  .sel { font-size:12.5px; color:var(--ink); background:#faf9f6; border-radius:10px; padding:6px 10px; min-height:30px; margin:6px 0; }
-  .addchip { display:inline-block; margin:3px 4px 3px 0; padding:6px 10px; border:1px solid #dcd7cc; border-radius:99px; font-size:12.5px; cursor:pointer; background:#fff; }
-  .addchip:active { background:var(--g2); }
-  .approx { font-size:10.5px; color:#fff; background:#9a8f7a; padding:1px 6px; border-radius:5px; margin-left:4px; }
-  .safety .grp { margin:8px 0; } .safety .grp > div:first-child { font-size:12px; color:var(--mut); margin-bottom:4px; }
-  .safety input[type=text] { width:100%; padding:8px 10px; border:1px solid #dcd7cc; border-radius:10px; font-size:13px; }
-  .btn { background:var(--g); color:#fff; border:0; border-radius:12px; padding:10px 14px; font-size:14px; cursor:pointer; width:100%; margin-top:8px; }
-  .chips { display:flex; gap:6px; flex-wrap:wrap; padding: 0 14px 8px; }
-  .chip { font-size:12.5px; padding:6px 11px; border-radius:99px; border:1px solid #cfe3d7; background:#fff; color:var(--g); cursor:pointer; }
-  footer { padding: 10px 12px 14px; background:#fff; border-top:1px solid #ebe7de; display:flex; gap:8px; }
-  footer input { flex:1; padding:12px 14px; border-radius:14px; border:1px solid #dcd7cc; font-size:14px; outline:none; }
-  footer button { background:var(--g); color:#fff; border:0; border-radius:14px; padding:0 16px; font-size:14px; cursor:pointer; }
-  .scen { background:#fff; border-bottom:1px solid #ebe7de; padding:8px 12px 10px; }
-  .scen .t { font-size:11.5px; color:var(--mut); margin-bottom:6px; display:flex; justify-content:space-between; }
-  .scen .row { display:flex; gap:6px; overflow-x:auto; padding-bottom:2px; }
-  .scen button { flex:none; font-size:12.5px; padding:7px 11px; border-radius:12px; border:1px solid #e1dccf; background:#faf9f6; cursor:pointer; color:var(--ink); }
-  .scen button.on { background:var(--g); color:#fff; border-color:var(--g); }
-  .scen button:disabled { opacity:.5; cursor:default; }
-  .scen .desc { font-size:11.5px; color:var(--g); margin-top:6px; min-height:16px; }
-  .typing { color:var(--mut); font-size:13px; }
-  .profile-bar { font-size:11.5px; color:var(--mut); padding:0 16px 6px; display:none; }
-  .profile-bar a { color:var(--g); cursor:pointer; text-decoration:underline; }
+:root{--g:#2f8f5b;--g2:#e8f5ee;--bg:#f6f4ef;--ink:#1f2a24;--mut:#6b766f;--warn:#b4610e;--wbg:#fff4e5;--red:#c0392b;--rbg:#fdecea;--line:#ebe7de}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:'Pretendard','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif;background:#dfe7e1;color:var(--ink)}
+.app{max-width:480px;min-height:100vh;margin:0 auto;background:var(--bg);position:relative;padding-bottom:76px}
+.top{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line);padding:12px 16px;display:flex;align-items:center;gap:10px}
+.top .back{border:0;background:none;font-size:20px;cursor:pointer;padding:0 4px;color:var(--ink)}
+.top h1{font-size:17px;margin:0;flex:1}
+.top .demo{font-size:11px;padding:4px 8px;border-radius:99px;background:#fff3d6;color:#8a5a00;display:none}
+.screen{display:none;padding:16px}
+.screen.on{display:block}
+h2{font-size:20px;margin:4px 0 6px} .sub{color:var(--mut);font-size:13.5px;margin:0 0 14px;line-height:1.5}
+.sec{font-size:12.5px;color:var(--mut);margin:16px 0 8px;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:9px 13px;border:1px solid #dcd7cc;border-radius:99px;font-size:13.5px;background:#fff;cursor:pointer;user-select:none}
+.chip input{display:none}
+.chip:has(input:checked),.chip.on{background:var(--g2);border-color:var(--g);color:var(--g);font-weight:600}
+input[type=text],input[type=search]{width:100%;padding:12px 14px;border:1px solid #dcd7cc;border-radius:12px;font-size:14.5px;background:#fff;outline:none}
+.btn{display:block;width:100%;background:var(--g);color:#fff;border:0;border-radius:14px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;margin-top:16px}
+.btn.ghost{background:#fff;color:var(--g);border:1px solid #cfe3d7}
+.btn:disabled{opacity:.45}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.hello{background:linear-gradient(135deg,#2f8f5b,#4aa874);color:#fff;border:0}
+.hello .p{font-size:12.5px;opacity:.95;margin-top:8px;line-height:1.5}
+.hello a{color:#fff;text-decoration:underline;cursor:pointer}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.entry{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px 14px;cursor:pointer;min-height:120px;display:flex;flex-direction:column;gap:6px}
+.entry .ic{font-size:28px} .entry b{font-size:15px} .entry span{font-size:12px;color:var(--mut);line-height:1.4}
+.entry:active{transform:scale(.98)}
+.ask{display:flex;align-items:center;gap:8px;margin-top:14px;padding:12px 14px;border-radius:14px;border:1px dashed #cfd8d2;color:var(--mut);font-size:13px;cursor:pointer;background:transparent}
+.cond{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cond .chip{justify-content:center;padding:14px 8px;border-radius:14px;font-size:14px}
+.rh{font-size:14px;font-weight:700;color:var(--g);margin:2px 0 8px;display:flex;align-items:center;gap:6px}
+.rh.w{color:var(--warn)} .rh.x{color:var(--red)}
+.item{padding:10px 12px;border-radius:12px;background:#faf9f6;margin-bottom:8px;font-size:13.5px;line-height:1.55}
+.item b{font-size:14.5px}
+.tag{font-size:10.5px;padding:2px 6px;border-radius:6px;margin-left:5px;vertical-align:1px}
+.t-comp{background:var(--g2);color:var(--g)} .t-mfds{background:#3567b5;color:#fff} .t-otc{background:#8a5a2b;color:#fff} .t-food{background:#eee;color:#555} .t-ap{background:#9a8f7a;color:#fff}
+.note{margin-top:4px;font-size:12.5px;color:var(--warn)}
+.excl div{font-size:13px;margin-bottom:6px;line-height:1.5} .excl s{color:#999}
+.warnbox{background:var(--wbg);border-radius:12px;padding:10px 12px;color:#6d3b05;font-size:13px;line-height:1.55}
+.disc{font-size:11.5px;color:var(--mut);line-height:1.5;padding:4px 2px 10px}
+.bar{height:8px;border-radius:6px;background:#eee;overflow:hidden;margin:4px 0 10px}.bar>i{display:block;height:100%;background:var(--g)}
+.stack{display:flex;height:16px;border-radius:8px;overflow:hidden;margin:6px 0;font-size:10.5px;color:#fff}.stack>i{display:grid;place-items:center;font-style:normal}
+.kv{display:flex;justify-content:space-between;font-size:13px}.big{font-size:24px;font-weight:800;color:var(--g)}
+.addgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.add{padding:11px 10px;border:1px solid #dcd7cc;border-radius:12px;background:#fff;font-size:13px;cursor:pointer;text-align:left;position:relative}
+.add .n{position:absolute;right:8px;top:8px;background:var(--g);color:#fff;border-radius:99px;font-size:11px;min-width:18px;height:18px;display:none;place-items:center;padding:0 5px}
+.add.has{border-color:var(--g);background:var(--g2)} .add.has .n{display:grid}
+.add small{display:block;color:var(--mut);font-size:11px;margin-top:2px}
+.sticky{position:sticky;bottom:76px;background:var(--bg);padding:8px 0 4px}
+.plist .row{display:flex;align-items:center;justify-content:space-between;padding:13px 4px;border-bottom:1px solid var(--line);cursor:pointer;font-size:14.5px}
+.plist .row span{font-size:11.5px;color:var(--mut)}
+.verdict{border-radius:14px;padding:14px;font-size:14px;line-height:1.55;margin-bottom:12px}
+.v-ok{background:var(--g2);color:#1f5a3b}.v-caution{background:var(--wbg);color:#6d3b05}.v-avoid{background:var(--rbg);color:#7a1f15}
+.verdict b{font-size:16px;display:block;margin-bottom:4px}
+.persona{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#fff;margin-bottom:8px;cursor:pointer}
+.persona .e{font-size:24px} .persona b{font-size:14px} .persona div div{font-size:12px;color:var(--mut)}
+.persona.on{border-color:var(--g);background:var(--g2)}
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#fff;border-top:1px solid var(--line);display:flex;padding:6px 0 calc(8px + env(safe-area-inset-bottom));z-index:10}
+nav button{flex:1;border:0;background:none;font-size:11px;color:#8a938d;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px 0}
+nav button i{font-style:normal;font-size:20px}
+nav button.on{color:var(--g);font-weight:700}
+.chat{display:flex;flex-direction:column;gap:10px;min-height:50vh}
+.msg{max-width:88%;padding:10px 13px;border-radius:16px;font-size:14px;line-height:1.55;white-space:pre-wrap}
+.msg.u{align-self:flex-end;background:var(--g);color:#fff;border-bottom-right-radius:4px}
+.msg.b{align-self:flex-start;background:#fff;border:1px solid var(--line);border-bottom-left-radius:4px}
+.msg.b.danger{background:var(--rbg);color:#7a1f15}
+.chatin{position:sticky;bottom:76px;display:flex;gap:8px;padding:10px 0;background:var(--bg)}
+.chatin button{background:var(--g);color:#fff;border:0;border-radius:12px;padding:0 16px;font-size:14px}
+.pill{display:inline-block;font-size:12px;padding:4px 9px;border-radius:99px;background:#fff;border:1px solid var(--line);margin:3px 4px 0 0}
+.onb nav{display:none}
 </style>
 </head>
 <body>
-<div class="app">
-  <header>
-    <div class="logo">🍚</div>
-    <div><h1>밥심</h1><p>먹는 것으로 챙기는 내 컨디션</p></div>
-    <span class="badge" id="mode">…</span>
-  </header>
-  <div class="scen">
-    <div class="t"><span>▶ 시나리오를 눌러 대화 흐름을 재생해 보세요</span><a id="reset" style="color:#2f8f5b;cursor:pointer">처음으로</a></div>
-    <div class="row" id="scenRow"></div>
-    <div class="desc" id="scenDesc"></div>
-  </div>
-  <div id="chat"></div>
-  <div class="profile-bar" id="pbar"></div>
-  <div class="chips" id="chips"></div>
-  <footer>
-    <input id="inp" placeholder="요즘 컨디션을 편하게 말해 주세요" autocomplete="off" />
-    <button id="send">보내기</button>
-  </footer>
+<div class="app" id="app">
+  <div class="top"><button class="back" id="back" style="display:none">‹</button><h1 id="ttl">밥심</h1><span class="demo" id="demoBadge">데모</span></div>
+
+  <!-- 온보딩 -->
+  <section class="screen" id="s-onboard">
+    <h2>안전하게 고르기 위해<br>딱 한 번만 알려주세요</h2>
+    <p class="sub">밥심은 음식·건강기능식품·한방 일반의약품처럼 <b>먹는 것</b>만 추천해요. 아래 정보로 맞지 않는 성분을 걸러드려요. 정보는 이 기기에만 저장돼요.</p>
+    <div id="profileForm"></div>
+    <button class="btn" id="saveProfile">저장하고 시작하기</button>
+    <button class="btn ghost" id="toDemo">데모 페르소나로 둘러보기</button>
+  </section>
+
+  <!-- 홈 -->
+  <section class="screen" id="s-home">
+    <div class="card hello"><div style="font-size:18px;font-weight:700">오늘은 뭘 먹으면 좋을까요? 🍚</div><div class="p" id="homeProfile"></div></div>
+    <div class="grid">
+      <div class="entry" data-go="condition"><div class="ic">🌡️</div><b>오늘 컨디션 체크</b><span>컨디션을 누르면 먹거리를 골라드려요</span></div>
+      <div class="entry" data-go="meal"><div class="ic">🍱</div><b>식단 기록·칼로리</b><span>먹은 걸 담고 영양 균형 확인</span></div>
+      <div class="entry" data-go="gift"><div class="ic">🎁</div><b>건강식품 선물</b><span>받는 분에게 맞는 선물 찾기</span></div>
+      <div class="entry" data-go="product"><div class="ic">🔍</div><b>제품 확인</b><span>쌍화탕·홍삼, 나에게 괜찮을까?</span></div>
+    </div>
+    <button class="ask" data-go="chat">💬 직접 물어보기 <span style="margin-left:auto">›</span></button>
+    <p class="disc" style="margin-top:14px">ⓘ 밥심은 진단·처방을 하지 않으며 운동·생활습관은 다루지 않아요.</p>
+  </section>
+
+  <!-- 컨디션 -->
+  <section class="screen" id="s-condition">
+    <h2>지금 어떤 컨디션인가요?</h2><p class="sub">하나를 누르면 내 안전 정보에 맞춘 먹거리를 보여드려요.</p>
+    <div class="cond" id="condChips"></div>
+    <div id="condResult" style="margin-top:16px"></div>
+  </section>
+
+  <!-- 식단 -->
+  <section class="screen" id="s-meal">
+    <h2>오늘 뭐 드셨어요?</h2><p class="sub">눌러서 담아 주세요. 여러 번 누르면 추가돼요. 수치는 1인분 기준 <b>대략적인 예시값</b>이에요.</p>
+    <div class="addgrid" id="mealGrid"></div>
+    <div class="sticky"><div class="card" style="margin:8px 0 0;padding:10px 14px"><div class="kv"><span>대략 합계 <span class="tag t-ap">예시값</span></span><span class="big" id="mealKcal" style="font-size:20px">0 kcal</span></div></div>
+      <div style="display:flex;gap:8px"><button class="btn ghost" id="mealReset" style="flex:1">비우기</button><button class="btn" id="mealGo" style="flex:2" disabled>영양 균형 보기</button></div></div>
+    <div id="mealResult" style="margin-top:12px"></div>
+  </section>
+
+  <!-- 선물 -->
+  <section class="screen" id="s-gift">
+    <h2>누구에게 선물하세요?</h2><p class="sub">받는 분의 건강 정보에 맞지 않는 성분은 걸러서 추천해요. (내 프로필과는 별개)</p>
+    <div id="giftForm"></div>
+    <button class="btn" id="giftGo">선물 추천 받기</button>
+    <div id="giftResult" style="margin-top:16px"></div>
+  </section>
+
+  <!-- 제품 확인 -->
+  <section class="screen" id="s-product">
+    <h2>이 제품, 나에게 괜찮을까?</h2><p class="sub">한방 일반의약품·건강기능식품을 고르면 내 안전 정보 기준 주의사항을 알려드려요.</p>
+    <input type="search" id="pq" placeholder="예: 쌍화탕, 홍삼, 오메가3" />
+    <div id="pdetail" style="margin-top:14px"></div>
+    <div class="plist" id="plist"></div>
+  </section>
+
+  <!-- 내 정보 -->
+  <section class="screen" id="s-profile">
+    <h2>내 안전 정보</h2><p class="sub">모든 추천에 반영돼요. 이 기기(localStorage)에만 저장돼요.</p>
+    <div id="profileForm2"></div>
+    <button class="btn" id="saveProfile2">저장</button>
+    <div class="sec">🎭 데모 모드 — 예시 페르소나 불러오기</div>
+    <div id="personas"></div>
+    <button class="btn ghost" id="resetAll">모든 정보 지우고 처음부터</button>
+  </section>
+
+  <!-- 직접 물어보기 -->
+  <section class="screen" id="s-chat">
+    <div class="chat" id="chat"></div>
+    <div class="chatin"><input type="text" id="cin" placeholder="예: 요즘 너무 피곤해요" /><button id="csend">보내기</button></div>
+  </section>
+
+  <nav id="nav">
+    <button data-tab="home"><i>🏠</i>홈</button>
+    <button data-tab="condition"><i>🌡️</i>컨디션</button>
+    <button data-tab="meal"><i>🍱</i>식단</button>
+    <button data-tab="product"><i>🔍</i>제품</button>
+    <button data-tab="profile"><i>👤</i>내 정보</button>
+  </nav>
 </div>
+
 <script src="engine.js"></script>
 <script>
-const chat = document.getElementById('chat'), inp = document.getElementById('inp'), chipsEl = document.getElementById('chips');
-const state = { messages: [], profile: null };
+const E = window.BapsimEngine;
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-
-document.getElementById('mode').textContent = '시나리오 데모';
-
-function add(html, cls) { const d = document.createElement('div'); d.className = cls; d.innerHTML = html; chat.appendChild(d); chat.scrollTop = chat.scrollHeight; return d; }
-function setChips(list) { chipsEl.innerHTML = ''; (list || []).forEach(t => { const b = document.createElement('button'); b.className = 'chip'; b.textContent = t; b.onclick = () => send(t); chipsEl.appendChild(b); }); }
-
-function greet() {
-add('안녕하세요! 🌱 밥심이에요.\n요즘 몸 상태나 챙기고 싶은 것을 평소 말투로 알려주세요. 음식, 건강기능식품, 한방 일반의약품처럼 <b>먹는 것</b>으로만 골라드려요.', 'msg bot');
-setChips(['환절기라 으슬으슬해요', '요즘 너무 피곤해요', '🍱 오늘 식단 기록할래요', '🎁 건강식품 선물 추천해줘']);
-}
-greet();
-
-async function send(text) {
-  text = (text ?? inp.value).trim(); if (!text) return;
-  inp.value = ''; setChips([]);
-  add(esc(text), 'msg user');
-  state.messages.push({ role: 'user', content: text });
-  await ask();
-}
-
-async function ask() {
-  const t = add('입력 중…', 'msg bot typing');
-  await new Promise(r => setTimeout(r, 450)); // 응답 대기 연출
-  const r = await window.BapsimEngine.chat(JSON.parse(JSON.stringify(state))).catch(e => ({ type: 'notice', text: '오류: ' + e.message }));
-  t.remove();
-  render(r);
-}
-
-function render(r) {
-  if (r.type === 'notice') {
-    add(esc(r.text), 'msg bot' + (r.level === 'danger' ? ' danger' : ''));
-    state.messages.push({ role: 'assistant', content: r.text });
-    setChips(r.chips);
-  } else if (r.type === 'safety') {
-    add(esc(r.text), 'msg bot');
-    renderSafety();
-  } else if (r.type === 'answer') {
-    renderAnswer(r);
-  } else if (r.type === 'meallog') {
-    add(esc(r.text), 'msg bot'); state.messages.push({ role:'assistant', content:r.text }); renderMealLog();
-  } else if (r.type === 'gift') {
-    add(esc(r.text), 'msg bot'); state.messages.push({ role:'assistant', content:r.text }); renderGiftForm();
-  } else add('알 수 없는 응답', 'msg bot');
-}
-
-let lastSafetyCard = null;
-function renderSafety() {
-  const conds = [['pregnant','임신·수유 중'],['hypertension','고혈압'],['diabetes','당뇨'],['heart','심장질환'],['kidney','신장질환'],['thyroid','갑상선기능항진증']];
-  const alls = ['유제품','견과류','생선','국화과','감귤류'];
-  const card = add(`<div class="safety">
-    <div class="grp"><div>🤰 임신·지병</div>${conds.map(([v,l]) => `<label><input type="checkbox" name="c" value="${v}">${l}</label>`).join('')}</div>
-    <div class="grp"><div>💊 지금 복용 중인 약 (없으면 비워두세요)</div><input type="text" id="meds" placeholder="예: 아스피린, 혈압약, 와파린"></div>
-    <div class="grp"><div>⚠️ 알레르기</div>${alls.map(a => `<label><input type="checkbox" name="a" value="${a}">${a}</label>`).join('')}<input type="text" id="allo" placeholder="기타 알레르기 (선택)" style="margin-top:6px"></div>
-    <button class="btn" id="psave">확인하고 추천 받기</button>
-    <div style="font-size:11px;color:#8a938d;margin-top:6px;text-align:center">해당 사항이 없으면 그냥 눌러주세요</div>
-  </div>`, 'card');
-  lastSafetyCard = card;
-  card.querySelector('#psave').onclick = () => {
-    state.profile = {
-      conditions: [...card.querySelectorAll('input[name=c]:checked')].map(i => i.value),
-      allergies: [...card.querySelectorAll('input[name=a]:checked')].map(i => i.value),
-      meds: card.querySelector('#meds').value.trim(),
-      allergyOther: card.querySelector('#allo').value.trim(),
-    };
-    card.querySelectorAll('input,button').forEach(e => e.disabled = true);
-    card.querySelector('#psave').textContent = '✓ 안전 정보 반영됨';
-    showProfile();
-    if (state.pendingMeal) { const ids = state.pendingMeal; state.pendingMeal = null; return showMealResult(ids); }
-    return ask();
-  };
-}
-
-function showProfile() {
-  const p = state.profile, names = { pregnant:'임신·수유', hypertension:'고혈압', diabetes:'당뇨', heart:'심장질환', kidney:'신장질환', thyroid:'갑상선' };
-  const parts = [...p.conditions.map(c => names[c]), p.meds && ('약: ' + p.meds), ...p.allergies.map(a => a + ' 알레르기'), p.allergyOther].filter(Boolean);
-  const bar = document.getElementById('pbar');
-  bar.style.display = 'block';
-  bar.innerHTML = '🛡️ 안전 정보: ' + esc(parts.join(' · ') || '해당 없음') + ' · <a id="pedit">수정</a>';
-  document.getElementById('pedit').onclick = () => { add('안전 정보를 다시 확인할게요.', 'msg bot'); renderSafety(); };
-}
-
-function renderAnswer(r) {
-  let h = `<div style="margin-bottom:8px">${esc(r.intro)}</div>`;
-  if (r.foods?.length) h += `<h3>🥣 일상 음식</h3>` + r.foods.map(f => `<div class="item"><b>${esc(f.name)}</b>${f.comp ? `<span class="comp">${esc(f.comp)}</span>` : ''}<div class="claim">${esc(f.effect)}</div>${f.note ? `<div class="note">⚠️ ${esc(f.note)}</div>` : ''}</div>`).join('');
-  if (r.supplements?.length) h += `<h3>💊 건강기능식품</h3>` + r.supplements.map(s => `<div class="item"><b>${esc(s.name)}</b><span class="tag-mfds">식약처 인정 기능성</span><div class="claim">“${esc(s.claim)}”</div>${s.note ? `<div class="note">⚠️ ${esc(s.note)}</div>` : ''}</div>`).join('');
-  if (r.otc?.length) h += `<h3>🌿 한방 일반의약품</h3>` + r.otc.map(o => `<div class="item"><b>${esc(o.name)}</b><span class="tag-otc">일반의약품</span><div class="claim">효능·효과: ${esc(o.claim)}</div>${o.note ? `<div class="note">ℹ️ ${esc(o.note)}</div>` : ''}</div>`).join('');
-  if (r.excluded?.length) h += `<h3>🚫 회원님 안전 정보로 제외한 항목</h3><div class="excl">` + r.excluded.map(e => `<div>• <s>${esc(e.name)}</s> — ${esc(e.reason)}</div>`).join('') + '</div>';
-  if (r.warnings?.length) h += `<h3>⚠️ 주의</h3><div class="warnbox">` + [...new Set(r.warnings)].map(w => '• ' + esc(w)).join('<br>') + '</div>';
-  if (r.followup) h += `<div class="follow">💬 ${esc(r.followup)}</div>`;
-  h += `<div class="disc">ⓘ ${esc(r.disclaimer)}</div>`;
-  add(h, 'card');
-  state.messages.push({ role: 'assistant', content: JSON.stringify({ intro: r.intro, foods: (r.foods||[]).map(f=>f.name), supplements: (r.supplements||[]).map(s=>s.name), otc: (r.otc||[]).map(o=>o.name) }) });
-  setChips(['요즘 피곤해요', '속이 더부룩해요', '운동도 추천해줘']);
-}
-
-// ---------- 식단 기록 ----------
-let lastMealCard = null, lastGiftCard = null;
-function renderMealLog() {
-  const foods = window.BapsimEngine.MEAL_FOODS, picked = [];
-  const card = add(`<div class="safety">
-    <div class="grp"><div>🍽️ 오늘 먹은 음식을 눌러 담아 주세요 (여러 번 누르면 추가)</div>${foods.map(f => `<span class="addchip" data-id="${f.id}">+ ${esc(f.name)}</span>`).join('')}</div>
-    <div class="sel" id="msel">아직 담은 음식이 없어요</div>
-    <div class="kv"><span>대략 합계 <span class="approx">예시값</span></span><span class="big" id="mkcal">0 kcal</span></div>
-    <button class="btn" id="mgo">영양 균형 보기</button>
-  </div>`, 'card');
-  lastMealCard = card;
-  const upd = () => {
-    const sel = card.querySelector('#msel');
-    sel.textContent = picked.length ? picked.map(id => foods.find(f => f.id === id).name).join(', ') : '아직 담은 음식이 없어요';
-    card.querySelector('#mkcal').textContent = picked.reduce((a, id) => a + foods.find(f => f.id === id).kcal, 0).toLocaleString() + ' kcal';
-  };
-  card.querySelectorAll('.addchip').forEach(c => c.onclick = () => { if (card.dataset.done) return; picked.push(c.dataset.id); upd(); });
-  card.querySelector('#mgo').onclick = () => {
-    if (!picked.length) return;
-    card.dataset.done = 1; card.querySelector('#mgo').disabled = true; card.querySelector('#mgo').textContent = '✓ 기록 완료';
-    state.messages.push({ role:'user', content:'식단 기록: ' + picked.join(',') });
-    if (!state.profile) {
-      state.pendingMeal = picked.slice();
-      add('부족한 부분을 채울 먹거리를 추천하기 전에, 안전하게 고를 수 있도록 몇 가지만 확인할게요.', 'msg bot');
-      renderSafety();
-      return;
-    }
-    return showMealResult(picked);
-  };
-}
-async function showMealResult(ids) {
-  const t0 = add('분석 중…', 'msg bot typing'); await new Promise(r => setTimeout(r, 450)); t0.remove();
-  const r = window.BapsimEngine.analyzeMeals(ids, state.profile), t = r.total;
-  const pct = (v, ref) => Math.min(100, Math.round(v / ref * 100));
-  let h = `<div class="kv"><span>오늘 대략 섭취 열량 <span class="approx">예시값</span></span><span class="big">${t.kcal.toLocaleString()} kcal</span></div>
-    <div class="bar"><i style="width:${pct(t.kcal, r.ref.kcal)}%"></i></div>
-    <div style="font-size:11px;color:#8a938d;margin-top:-4px">성인 하루 참고 예시 ${r.ref.kcal.toLocaleString()} kcal 기준 (나이·성별·활동량에 따라 달라요)</div>
-    <h3>⚖️ 탄수화물 · 단백질 · 지방 비율</h3>
-    <div class="stack"><i style="width:${r.ratio.carb}%;background:#e0a33a">탄 ${r.ratio.carb}%</i><i style="width:${r.ratio.prot}%;background:#2f8f5b">단 ${r.ratio.prot}%</i><i style="width:${r.ratio.fat}%;background:#c0623b">지 ${r.ratio.fat}%</i></div>
-    <div style="font-size:11px;color:#8a938d">참고 범위 예시: 탄수화물 55~65% · 단백질 7~20% · 지방 15~30%</div>
-    <h3>🥬 그 밖의 균형 <span class="approx">예시값</span></h3>
-    <div class="kv"><span>식이섬유</span><span>${t.fiber}g / ${r.ref.fiber}g</span></div><div class="bar"><i style="width:${pct(t.fiber, r.ref.fiber)}%"></i></div>
-    <div class="kv"><span>채소·과일</span><span>${t.veg}회 / ${r.ref.veg}회</span></div><div class="bar"><i style="width:${pct(t.veg, r.ref.veg)}%"></i></div>
-    <div class="kv"><span>나트륨</span><span>${t.na.toLocaleString()}mg / ${r.ref.na.toLocaleString()}mg</span></div><div class="bar"><i style="width:${pct(t.na, r.ref.na)}%;background:${t.na > r.ref.na ? '#c0392b' : 'var(--g)'}"></i></div>`;
-  if (r.gaps.length) h += `<h3>📌 오늘 기록에서 보이는 점</h3><div class="warnbox" style="background:#eef6f1;color:#1f4d33">` + r.gaps.map(g => '• ' + esc(g.label)).join('<br>') + '</div>';
-  h += `<div style="margin-top:10px">${esc(r.intro)}</div>`;
-  if (r.foods.length) h += `<h3>🥣 채우기 좋은 먹거리</h3>` + r.foods.map(f => `<div class="item"><b>${esc(f.name)}</b><span class="comp">${esc(f.comp)}</span><div class="claim">${esc(f.effect)}</div>${f.note ? `<div class="note">⚠️ ${esc(f.note)}</div>` : ''}</div>`).join('');
-  if (r.supplements.length) h += `<h3>💊 건강기능식품</h3>` + r.supplements.map(s => `<div class="item"><b>${esc(s.name)}</b><span class="tag-mfds">식약처 인정 기능성</span><div class="claim">“${esc(s.claim)}”</div></div>`).join('');
-  if (r.excluded.length) h += `<h3>🚫 회원님 안전 정보로 제외한 항목</h3><div class="excl">` + r.excluded.map(e => `<div>• <s>${esc(e.name)}</s> — ${esc(e.reason)}</div>`).join('') + '</div>';
-  if (r.warnings.length) h += `<h3>⚠️ 주의</h3><div class="warnbox">` + r.warnings.map(w => '• ' + esc(w)).join('<br>') + '</div>';
-  h += `<div class="disc">ⓘ 칼로리·영양 수치는 1인분 기준 대략적인 예시값이며 실제와 다를 수 있어요. ${esc(r.disclaimer)}</div>`;
-  add(h, 'card');
-  state.messages.push({ role:'assistant', content:'식단 분석 결과' });
-  setChips(['🎁 건강식품 선물 추천해줘', '요즘 피곤해요']);
-}
-
-// ---------- 선물 추천 ----------
-function renderGiftForm() {
-  const radios = (name, list) => list.map(([v, l], i) => `<label><input type="radio" name="${name}" value="${v}" ${i === 0 ? 'checked' : ''}>${l}</label>`).join('');
-  const card = add(`<div class="safety">
-    <div class="grp"><div>🎁 받는 분</div>${radios('gr', [['부모님','부모님'],['조부모님','조부모님'],['지인·동료','지인·동료'],['친구·연인','친구·연인']])}</div>
-    <div class="grp"><div>🎂 연령대</div>${radios('ga', [['60s','60대'],['70s','70대 이상'],['40s','40~50대'],['young','20~30대']])}</div>
-    <div class="grp"><div>🩺 알고 있는 건강 정보</div>${[['hypertension','고혈압'],['diabetes','당뇨'],['heart','심장질환'],['kidney','신장질환'],['pregnant','임신·수유'],['unknown','잘 모름']].map(([v,l]) => `<label><input type="checkbox" name="gc" value="${v}">${l}</label>`).join('')}</div>
-    <div class="grp"><div>💊 드시는 약 (아는 경우)</div><input type="text" id="gmeds" placeholder="예: 아스피린, 혈압약"></div>
-    <div class="grp"><div>⚠️ 알레르기</div>${['견과류','생선','유제품'].map(a => `<label><input type="checkbox" name="gal" value="${a}">${a}</label>`).join('')}</div>
-    <div class="grp"><div>✨ 선물 테마</div>${radios('gp', [['general','무난하게'],['energy','기력'],['eye','눈 건강'],['bone','뼈 건강'],['blood','혈행'],['gut','장 건강']])}</div>
-    <button class="btn" id="ggo">선물 추천 받기</button>
-  </div>`, 'card');
-  lastGiftCard = card;
-  card.querySelector('#ggo').onclick = async () => {
-    const val = n => (card.querySelector(`input[name=${n}]:checked`) || {}).value;
-    const cs = [...card.querySelectorAll('input[name=gc]:checked')].map(i => i.value);
-    const g = { recipient: val('gr'), recipientLabel: val('gr'), age: val('ga'), purpose: val('gp'), conditions: cs.filter(c => c !== 'unknown'), unknown: cs.includes('unknown'),
-      meds: card.querySelector('#gmeds').value.trim(), allergies: [...card.querySelectorAll('input[name=gal]:checked')].map(i => i.value) };
-    card.querySelectorAll('input,button').forEach(e => e.disabled = true);
-    card.querySelector('#ggo').textContent = '✓ 받는 분 정보 반영됨';
-    const t0 = add('고르는 중…', 'msg bot typing'); await new Promise(r => setTimeout(r, 450)); t0.remove();
-    const r = window.BapsimEngine.giftRecommend(g);
-    let h = `<div style="margin-bottom:8px">${esc(r.intro)}</div><h3>🎁 추천 선물</h3>` + r.items.map(i => `<div class="item"><b>${esc(i.name)}</b>${i.kind === '건강기능식품' ? '<span class="tag-mfds">식약처 인정 기능성</span>' : '<span class="comp">식품</span>'}<div class="claim">${i.kind === '건강기능식품' ? '“' + esc(i.claim) + '”' : esc(i.claim)}</div>${i.note ? `<div class="note">⚠️ ${esc(i.note)}</div>` : ''}</div>`).join('');
-    if (r.excluded.length) h += `<h3>🚫 받는 분 건강 정보로 제외한 선물</h3><div class="excl">` + r.excluded.map(e => `<div>• <s>${esc(e.name)}</s> — ${esc(e.reason)}</div>`).join('') + '</div>';
-    if (r.warnings.length || r.notes.length) h += `<h3>⚠️ 주의</h3><div class="warnbox">` + [...r.notes, ...r.warnings].map(w => '• ' + esc(w)).join('<br>') + '</div>';
-    h += `<div class="disc">ⓘ 건강기능식품은 질병의 예방·치료를 위한 의약품이 아니에요. 받는 분이 드시는 약이 있다면 섭취 전 약사와 확인하도록 안내해 주세요. ${esc(r.disclaimer)}</div>`;
-    add(h, 'card');
-    state.messages.push({ role:'assistant', content:'선물 추천 결과' });
-    setChips(['🍱 오늘 식단 기록할래요', '요즘 피곤해요']);
-  };
-}
-
-// ---------- 스크립트 시나리오 ----------
-const SCENARIOS = [
-  { id:'s1', title:'🍂 환절기 으슬으슬', desc:'특이사항 없는 사용자 → 음식·건기식·쌍화탕/갈근탕까지 추천',
-    steps:[{ say:'환절기라 그런지 몸이 으슬으슬해요' }, { profile:{} }] },
-  { id:'s2', title:'😮‍💨 만성 피로', desc:'아스피린 복용 + 견과류 알레르기 → 홍삼·견과류 제외, 쌍화탕은 약사 확인 주의',
-    steps:[{ say:'요즘 계속 피곤하고 기운이 없어요' }, { profile:{ meds:'아스피린', allergies:['견과류'] } }] },
-  { id:'s3', title:'🍚 소화불량', desc:'더부룩함 → 무·양배추·평위산 추천, 운동 질문은 범위 밖으로 안내',
-    steps:[{ say:'밥 먹고 나면 속이 더부룩해요' }, { profile:{} }, { say:'운동도 같이 추천해줘' }] },
-  { id:'s4', title:'🩺 고혈압 + 감기 기운', desc:'고혈압 체크 → 감초·마황 든 쌍화탕·갈근탕 제외',
-    steps:[{ say:'감기 기운이 있는지 으슬으슬하고 콧물이 나요' }, { profile:{ conditions:['hypertension'], meds:'혈압약' } }] },
-  { id:'s5', title:'🤰 임신 중 더부룩함', desc:'임신 + 유제품 알레르기 → 한방제제·요거트 제외',
-    steps:[{ say:'임신 중인데 속이 자꾸 더부룩해요' }, { profile:{ conditions:['pregnant'], allergies:['유제품'] } }] },
-  { id:'s7', title:'🍱 식단 기록', desc:'라떼·김밥·라면·떡볶이 기록 → 대략 칼로리·영양 균형 → 단백질·채소 채울 먹거리 (유제품 알레르기 반영)',
-    steps:[{ say:'오늘 먹은 거 기록할래요' }, { meal:['latte','kimbap','ramen','tteok'] }, { profile:{ allergies:['유제품'] } }] },
-  { id:'s8', title:'🎁 부모님 선물', desc:'60대 부모님 · 고혈압 · 아스피린 복용 → 홍삼·감초차 제외한 선물 추천',
-    steps:[{ say:'부모님 선물로 건강식품 추천해줘' }, { gift:{ recipient:'부모님', age:'60s', conditions:['hypertension'], meds:'아스피린', purpose:'general' } }] },
-  { id:'s6', title:'🚨 위험 신호', desc:'흉통·호흡곤란 → 추천 중단, 의료진 상담 안내',
-    steps:[{ say:'가슴이 아프고 숨이 차요' }] },
+const KEY = 'bapsim.profile.v1';
+const CONDS = [['pregnant','임신·수유 중'],['hypertension','고혈압'],['diabetes','당뇨'],['heart','심장질환'],['kidney','신장질환'],['thyroid','갑상선기능항진증']];
+const ALLERGIES = ['유제품','견과류','생선','대두','계란','국화과','감귤류'];
+const PERSONAS = [
+  { id:'none', e:'🙂', name:'특이사항 없음', desc:'지병·복용약·알레르기 없음', p:{ conditions:[], meds:'', allergies:[] } },
+  { id:'htn', e:'🩺', name:'고혈압 · 혈압약 복용', desc:'감초·마황 함유 한방제제 제외', p:{ conditions:['hypertension'], meds:'혈압약', allergies:[] } },
+  { id:'preg', e:'🤰', name:'임신 중 · 유제품 알레르기', desc:'한방제제·홍삼 제외, 유제품 제외', p:{ conditions:['pregnant'], meds:'', allergies:['유제품'] } },
+  { id:'asp', e:'💊', name:'아스피린 복용 · 견과류 알레르기', desc:'홍삼 제외, 오메가3·생강 주의', p:{ conditions:[], meds:'아스피린', allergies:['견과류'] } },
+  { id:'dm', e:'🩸', name:'당뇨 · 당뇨약 복용', desc:'홍삼 저혈당 주의, 당 많은 음식 주의', p:{ conditions:['diabetes'], meds:'당뇨약', allergies:[] } },
+  { id:'ckd', e:'🫘', name:'신장질환', desc:'마그네슘 보충제 제외, 칼륨·감초 주의', p:{ conditions:['kidney'], meds:'', allergies:[] } },
 ];
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-let playing = false;
-function resetChat() { chat.innerHTML=''; state.messages=[]; state.profile=null; state.pendingMeal=null; const bar=document.getElementById('pbar'); bar.style.display='none'; setChips([]); }
-async function typeAndSend(text) {
-  inp.value=''; for (const ch of text) { inp.value += ch; await sleep(35); }
-  await sleep(250); await send();
-}
-async function play(sc) {
-  if (playing) return; playing = true;
-  document.querySelectorAll('#scenRow button').forEach(b => { b.disabled = true; b.classList.toggle('on', b.dataset.id===sc.id); });
-  document.getElementById('scenDesc').textContent = sc.desc;
-  resetChat(); greet(); setChips([]); await sleep(500);
-  for (const st of sc.steps) {
-    if (st.say) await typeAndSend(st.say);
-    if (st.meal) {
-      await sleep(500); const c = lastMealCard;
-      for (const id of st.meal) { c.querySelector(`.addchip[data-id=${id}]`).click(); await sleep(450); }
-      await sleep(500); await c.querySelector('#mgo').onclick();
-    }
-    if (st.gift) {
-      await sleep(500); const c = lastGiftCard, g = st.gift;
-      const pick = (n, v) => { const i = c.querySelector(`input[name=${n}][value="${v}"]`); if (i && !i.checked) i.click(); };
-      pick('gr', g.recipient); await sleep(350); pick('ga', g.age); await sleep(350);
-      for (const v of (g.conditions||[])) { pick('gc', v); await sleep(350); }
-      if (g.meds) { const m = c.querySelector('#gmeds'); for (const ch of g.meds) { m.value += ch; await sleep(60); } }
-      pick('gp', g.purpose); await sleep(600);
-      await c.querySelector('#ggo').onclick();
-    }
-    if (st.profile) {
-      await sleep(500);
-      const c = lastSafetyCard, p = st.profile;
-      for (const v of (p.conditions||[])) { c.querySelector(`input[name=c][value=${v}]`).click(); await sleep(350); }
-      for (const v of (p.allergies||[])) { c.querySelector(`input[name=a][value="${v}"]`).click(); await sleep(350); }
-      if (p.meds) { const m=c.querySelector('#meds'); for (const ch of p.meds) { m.value+=ch; await sleep(60); } }
-      await sleep(600);
-      await c.querySelector('#psave').onclick();
-    }
-    await sleep(700);
-  }
-  document.querySelectorAll('#scenRow button').forEach(b => b.disabled = false);
-  playing = false;
-}
-const row = document.getElementById('scenRow');
-SCENARIOS.forEach(sc => { const b=document.createElement('button'); b.textContent=sc.title; b.dataset.id=sc.id; b.onclick=()=>play(sc); row.appendChild(b); });
-document.getElementById('reset').onclick = () => { if (playing) return; resetChat(); greet(); document.getElementById('scenDesc').textContent=''; row.querySelectorAll('button').forEach(b=>b.classList.remove('on')); };
+const NAMES = Object.fromEntries(CONDS);
+let profile = load();
+function load(){ try { return JSON.parse(localStorage.getItem(KEY)); } catch { return null; } }
+function save(p){ profile = p; localStorage.setItem(KEY, JSON.stringify(p)); refreshProfileUI(); }
+function summary(p){ if(!p) return '미설정'; const a=[...p.conditions.map(c=>NAMES[c]), p.meds&&('약: '+p.meds), ...(p.allergies||[]).map(x=>x+' 알레르기')].filter(Boolean); return a.length?a.join(' · '):'특이사항 없음'; }
 
-document.getElementById('send').onclick = () => send();
-inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) send(); });
+// ---------- 프로필 폼 ----------
+function profileFormHTML(prefix){
+  return `<div class="sec">🤰 임신·지병</div><div class="chips">${CONDS.map(([v,l])=>`<label class="chip"><input type="checkbox" name="${prefix}c" value="${v}">${l}</label>`).join('')}</div>
+  <div class="sec">💊 복용 중인 약 (없으면 비워두세요)</div><input type="text" id="${prefix}meds" placeholder="예: 아스피린, 혈압약, 와파린">
+  <div class="sec">⚠️ 알레르기</div><div class="chips">${ALLERGIES.map(a=>`<label class="chip"><input type="checkbox" name="${prefix}a" value="${a}">${a}</label>`).join('')}</div>`;
+}
+function fillForm(prefix,p){ p=p||{conditions:[],allergies:[],meds:''}; $$(`input[name=${prefix}c]`).forEach(i=>i.checked=p.conditions.includes(i.value)); $$(`input[name=${prefix}a]`).forEach(i=>i.checked=(p.allergies||[]).includes(i.value)); $('#'+prefix+'meds').value=p.meds||''; }
+function readForm(prefix){ return { conditions:$$(`input[name=${prefix}c]:checked`).map(i=>i.value), allergies:$$(`input[name=${prefix}a]:checked`).map(i=>i.value), meds:$('#'+prefix+'meds').value.trim(), demo:null }; }
+$('#profileForm').innerHTML = profileFormHTML('o'); $('#profileForm2').innerHTML = profileFormHTML('p');
+$('#saveProfile').onclick = () => { save(readForm('o')); go('home'); };
+$('#saveProfile2').onclick = () => { save(readForm('p')); toast('저장했어요'); };
+$('#toDemo').onclick = () => { go('profile'); };
+$('#resetAll').onclick = () => { localStorage.removeItem(KEY); profile=null; mealPicked.length=0; go('onboard'); };
+function renderPersonas(){ $('#personas').innerHTML = PERSONAS.map(x=>`<div class="persona ${profile&&profile.demo===x.id?'on':''}" data-id="${x.id}"><div class="e">${x.e}</div><div><b>${x.name}</b><div>${x.desc}</div></div></div>`).join('');
+  $$('#personas .persona').forEach(el=>el.onclick=()=>{ const x=PERSONAS.find(p=>p.id===el.dataset.id); save({...JSON.parse(JSON.stringify(x.p)), demo:x.id}); fillForm('p',profile); toast(`'${x.name}' 페르소나를 불러왔어요`); go('home'); }); }
+function refreshProfileUI(){
+  $('#homeProfile').innerHTML = `🛡️ 내 안전 정보: <b>${esc(summary(profile))}</b> · <a data-go="profile">수정</a>`;
+  $('#demoBadge').style.display = profile&&profile.demo ? 'inline-block' : 'none';
+  $('#demoBadge').textContent = profile&&profile.demo ? '데모 · '+PERSONAS.find(p=>p.id===profile.demo).name.split(' ')[0] : '';
+  bindGo(); renderPersonas();
+}
+function toast(t){ const d=document.createElement('div'); d.textContent=t; d.style.cssText='position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#1f2a24;color:#fff;padding:9px 14px;border-radius:99px;font-size:13px;z-index:20;opacity:.92'; document.body.appendChild(d); setTimeout(()=>d.remove(),1600); }
+
+// ---------- 라우팅 ----------
+const TITLES = { onboard:'밥심 시작하기', home:'밥심', condition:'오늘 컨디션 체크', meal:'식단 기록·칼로리', gift:'건강식품 선물', product:'제품 확인', profile:'내 정보', chat:'직접 물어보기' };
+let cur = null;
+function go(name, push=true){
+  if (!profile && name!=='onboard' && name!=='profile') name='onboard';
+  cur = name;
+  $$('.screen').forEach(s=>s.classList.toggle('on', s.id==='s-'+name));
+  $$('nav button').forEach(b=>b.classList.toggle('on', b.dataset.tab===name));
+  $('#nav').style.display = name==='onboard' ? 'none' : 'flex';
+  $('#ttl').textContent = TITLES[name];
+  $('#back').style.display = ['gift','chat'].includes(name) ? 'block' : 'none';
+  if (name==='profile') fillForm('p', profile);
+  if (push && location.hash !== '#'+name) history.replaceState(null,'','#'+name);
+  window.scrollTo(0,0);
+}
+function bindGo(){ $$('[data-go]').forEach(el=>el.onclick=()=>go(el.dataset.go)); }
+$$('nav button').forEach(b=>b.onclick=()=>go(b.dataset.tab));
+$('#back').onclick=()=>go('home');
+
+// ---------- 결과 카드 렌더러 (음식 / 건기식 / 한방 / 제외·주의) ----------
+function recCards(r){
+  let h='';
+  if (r.intro) h+=`<div class="card" style="font-size:14px;line-height:1.55">${esc(r.intro)}</div>`;
+  if (r.foods?.length) h+=`<div class="card"><div class="rh">🥣 음식</div>`+r.foods.map(f=>`<div class="item"><b>${esc(f.name)}</b>${f.comp?`<span class="tag t-comp">${esc(f.comp)}</span>`:''}<div>${esc(f.effect)}</div>${f.note?`<div class="note">⚠️ ${esc(f.note)}</div>`:''}</div>`).join('')+`</div>`;
+  if (r.supplements?.length) h+=`<div class="card"><div class="rh">💊 건강기능식품</div>`+r.supplements.map(s=>`<div class="item"><b>${esc(s.name)}</b><span class="tag t-mfds">식약처 인정 기능성</span><div>“${esc(s.claim)}”</div>${s.note?`<div class="note">⚠️ ${esc(s.note)}</div>`:''}</div>`).join('')+`</div>`;
+  if (r.otc?.length) h+=`<div class="card"><div class="rh">🌿 한방 일반의약품</div>`+r.otc.map(o=>`<div class="item"><b>${esc(o.name)}</b><span class="tag t-otc">일반의약품</span><div>효능·효과: ${esc(o.claim)}</div>${o.note?`<div class="note">ℹ️ ${esc(o.note)}</div>`:''}</div>`).join('')+`</div>`;
+  if (r.excluded?.length || r.warnings?.length) {
+    h+=`<div class="card">`;
+    if (r.excluded?.length) h+=`<div class="rh x">🚫 제외</div><div class="excl">`+r.excluded.map(e=>`<div>• <s>${esc(e.name)}</s> — ${esc(e.reason)}</div>`).join('')+`</div>`;
+    if (r.warnings?.length) h+=`<div class="rh w" style="margin-top:8px">⚠️ 주의</div><div class="warnbox">`+[...new Set(r.warnings)].map(w=>'• '+esc(w)).join('<br>')+`</div>`;
+    h+=`</div>`;
+  }
+  h+=`<p class="disc">ⓘ ${esc(r.disclaimer||E.DISCLAIMER)}</p>`;
+  return h;
+}
+
+// ---------- 컨디션 ----------
+const CICON = { chill:'🍂', fatigue:'😮‍💨', digest:'🍚', sleep:'🌙', eye:'👀', hangover:'🍺' };
+$('#condChips').innerHTML = E.TOPICS.map(t=>`<div class="chip" data-t="${t.id}">${CICON[t.id]||''} ${esc(t.label)}</div>`).join('');
+$$('#condChips .chip').forEach(c=>c.onclick=()=>{
+  $$('#condChips .chip').forEach(x=>x.classList.toggle('on', x===c));
+  const r = E.recommendTopic(c.dataset.t, profile);
+  $('#condResult').innerHTML = `<div class="sec">🛡️ ${esc(summary(profile))} 기준</div>` + recCards(r);
+  $('#condResult').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+// ---------- 식단 ----------
+const mealPicked = [];
+$('#mealGrid').innerHTML = E.MEAL_FOODS.map(f=>`<button class="add" data-id="${f.id}"><span class="n">0</span>${esc(f.name)}<small>약 ${f.kcal} kcal</small></button>`).join('');
+function mealUpdate(){
+  $$('#mealGrid .add').forEach(b=>{ const n=mealPicked.filter(x=>x===b.dataset.id).length; b.classList.toggle('has', n>0); b.querySelector('.n').textContent=n; });
+  $('#mealKcal').textContent = mealPicked.reduce((a,id)=>a+E.MEAL_FOODS.find(f=>f.id===id).kcal,0).toLocaleString()+' kcal';
+  $('#mealGo').disabled = !mealPicked.length;
+}
+$$('#mealGrid .add').forEach(b=>b.onclick=()=>{ mealPicked.push(b.dataset.id); mealUpdate(); });
+$('#mealReset').onclick=()=>{ mealPicked.length=0; mealUpdate(); $('#mealResult').innerHTML=''; };
+$('#mealGo').onclick=()=>{
+  const r = E.analyzeMeals(mealPicked, profile), t=r.total, pct=(v,ref)=>Math.min(100,Math.round(v/ref*100));
+  let h = `<div class="card"><div class="kv"><span>오늘 대략 섭취 열량 <span class="tag t-ap">예시값</span></span><span class="big">${t.kcal.toLocaleString()} kcal</span></div>
+    <div class="bar"><i style="width:${pct(t.kcal,r.ref.kcal)}%"></i></div><div style="font-size:11.5px;color:var(--mut)">성인 하루 참고 예시 ${r.ref.kcal.toLocaleString()} kcal (나이·성별·활동량에 따라 달라요)</div>
+    <div class="rh" style="margin-top:14px">⚖️ 탄·단·지 비율</div>
+    <div class="stack"><i style="width:${r.ratio.carb}%;background:#e0a33a">탄 ${r.ratio.carb}%</i><i style="width:${r.ratio.prot}%;background:#2f8f5b">단 ${r.ratio.prot}%</i><i style="width:${r.ratio.fat}%;background:#c0623b">지 ${r.ratio.fat}%</i></div>
+    <div style="font-size:11.5px;color:var(--mut);margin-bottom:12px">참고 범위 예시: 탄 55~65% · 단 7~20% · 지 15~30%</div>
+    <div class="kv"><span>식이섬유</span><span>${t.fiber}g / ${r.ref.fiber}g</span></div><div class="bar"><i style="width:${pct(t.fiber,r.ref.fiber)}%"></i></div>
+    <div class="kv"><span>채소·과일</span><span>${t.veg}회 / ${r.ref.veg}회</span></div><div class="bar"><i style="width:${pct(t.veg,r.ref.veg)}%"></i></div>
+    <div class="kv"><span>나트륨</span><span>${t.na.toLocaleString()}mg / ${r.ref.na.toLocaleString()}mg</span></div><div class="bar"><i style="width:${pct(t.na,r.ref.na)}%;background:${t.na>r.ref.na?'#c0392b':'var(--g)'}"></i></div>`;
+  if (r.gaps.length) h+=`<div class="warnbox" style="background:#eef6f1;color:#1f4d33">`+r.gaps.map(g=>'• '+esc(g.label)).join('<br>')+`</div>`;
+  h+=`</div>`;
+  h += recCards({ ...r, disclaimer: '칼로리·영양 수치는 1인분 기준 대략적인 예시값이며 실제와 다를 수 있어요. ' + r.disclaimer });
+  $('#mealResult').innerHTML = h;
+  $('#mealResult').scrollIntoView({behavior:'smooth', block:'start'});
+};
+
+// ---------- 선물 ----------
+const radio=(name,list)=>`<div class="chips">`+list.map(([v,l],i)=>`<label class="chip"><input type="radio" name="${name}" value="${v}" ${i===0?'checked':''}>${l}</label>`).join('')+`</div>`;
+$('#giftForm').innerHTML = `<div class="sec">🎁 받는 분</div>${radio('gr',[['부모님','부모님'],['조부모님','조부모님'],['지인·동료','지인·동료'],['친구·연인','친구·연인']])}
+  <div class="sec">🎂 연령대</div>${radio('ga',[['60s','60대'],['70s','70대 이상'],['40s','40~50대'],['young','20~30대']])}
+  <div class="sec">🩺 알고 있는 건강 정보</div><div class="chips">${[['hypertension','고혈압'],['diabetes','당뇨'],['heart','심장질환'],['kidney','신장질환'],['pregnant','임신·수유'],['unknown','잘 모름']].map(([v,l])=>`<label class="chip"><input type="checkbox" name="gc" value="${v}">${l}</label>`).join('')}</div>
+  <div class="sec">💊 드시는 약 (아는 경우)</div><input type="text" id="gmeds" placeholder="예: 아스피린, 혈압약">
+  <div class="sec">⚠️ 알레르기</div><div class="chips">${['견과류','생선','유제품'].map(a=>`<label class="chip"><input type="checkbox" name="gal" value="${a}">${a}</label>`).join('')}</div>
+  <div class="sec">✨ 선물 테마</div>${radio('gp',[['general','무난하게'],['energy','기력'],['eye','눈 건강'],['bone','뼈 건강'],['blood','혈행'],['gut','장 건강']])}`;
+$('#giftGo').onclick=()=>{
+  const val=n=>($(`input[name=${n}]:checked`)||{}).value, cs=$$('input[name=gc]:checked').map(i=>i.value);
+  const r=E.giftRecommend({ recipientLabel:val('gr'), age:val('ga'), purpose:val('gp'), conditions:cs.filter(c=>c!=='unknown'), unknown:cs.includes('unknown'), meds:$('#gmeds').value.trim(), allergies:$$('input[name=gal]:checked').map(i=>i.value) });
+  let h=`<div class="card" style="font-size:14px;line-height:1.55">${esc(r.intro)}</div><div class="card"><div class="rh">🎁 추천 선물</div>`+r.items.map(i=>`<div class="item"><b>${esc(i.name)}</b>${i.kind==='건강기능식품'?'<span class="tag t-mfds">식약처 인정 기능성</span>':'<span class="tag t-food">식품</span>'}<div>${i.kind==='건강기능식품'?'“'+esc(i.claim)+'”':esc(i.claim)}</div>${i.note?`<div class="note">⚠️ ${esc(i.note)}</div>`:''}</div>`).join('')+`</div>`;
+  if (r.excluded.length||r.warnings.length||r.notes.length){ h+=`<div class="card">`; if(r.excluded.length) h+=`<div class="rh x">🚫 제외</div><div class="excl">`+r.excluded.map(e=>`<div>• <s>${esc(e.name)}</s> — ${esc(e.reason)}</div>`).join('')+`</div>`; if(r.warnings.length||r.notes.length) h+=`<div class="rh w" style="margin-top:8px">⚠️ 주의</div><div class="warnbox">`+[...r.notes,...r.warnings].map(w=>'• '+esc(w)).join('<br>')+`</div>`; h+=`</div>`; }
+  h+=`<p class="disc">ⓘ 건강기능식품은 질병의 예방·치료를 위한 의약품이 아니에요. 받는 분이 드시는 약이 있다면 섭취 전 약사와 확인하도록 안내해 주세요.</p>`;
+  $('#giftResult').innerHTML=h; $('#giftResult').scrollIntoView({behavior:'smooth', block:'start'});
+};
+
+// ---------- 제품 확인 ----------
+function renderPList(q=''){
+  const list=E.PRODUCTS.filter(p=>!q||p.name.includes(q)||p.ingredients.includes(q));
+  $('#plist').innerHTML = `<div class="sec">${q?'검색 결과':'전체 제품'} (${list.length})</div>`+list.map(p=>`<div class="row" data-n="${esc(p.name)}"><div>${esc(p.name)} <span>${p.kind}</span></div><span>›</span></div>`).join('') || '<p class="sub">찾는 제품이 없어요.</p>';
+  $$('#plist .row').forEach(r=>r.onclick=()=>showProduct(r.dataset.n));
+}
+function showProduct(name){
+  const r=E.checkProduct(name, profile), p=r.product;
+  const V={ ok:['v-ok','✅ 내 정보 기준 특별한 주의사항은 없어요','제품 표시사항의 섭취량·용법을 지켜 주세요.'], caution:['v-caution','⚠️ 주의가 필요해요','아래 내용을 확인하고 약사와 상담 후 드세요.'], avoid:['v-avoid','🚫 내 정보 기준으로는 피하는 게 좋아요','아래 이유로 추천 목록에서도 제외하고 있어요.'] }[r.level];
+  $('#pdetail').innerHTML = `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">${esc(p.name)}</b><span class="tag ${p.kind==='건강기능식품'?'t-mfds':'t-otc'}">${p.kind}</span></div>
+    <div style="font-size:13px;color:var(--mut);margin:6px 0 10px">성분: ${esc(p.ingredients)}</div>
+    <div class="item">${p.kind==='건강기능식품'?'기능성: “'+esc(p.claim)+'”':'효능·효과: '+esc(p.claim)}</div></div>
+    <div class="verdict ${V[0]}"><b>${V[1]}</b>${V[2]}<div style="font-size:12px;margin-top:6px;opacity:.85">🛡️ ${esc(summary(profile))}</div></div>
+    ${r.avoid.length?`<div class="card"><div class="rh x">🚫 피해야 하는 이유</div><div class="excl">${r.avoid.map(m=>'<div>• '+esc(m)+'</div>').join('')}</div></div>`:''}
+    ${r.caution.length?`<div class="card"><div class="rh w">⚠️ 주의</div><div class="warnbox">${r.caution.map(m=>'• '+esc(m)).join('<br>')}</div></div>`:''}
+    <p class="disc">ⓘ ${esc(r.general)} ${esc(E.DISCLAIMER)}</p>`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+$('#pq').oninput=e=>renderPList(e.target.value.trim()); renderPList();
+
+// ---------- 직접 물어보기 (보조) ----------
+const chatState={ messages:[] };
+function bubble(html,cls){ const d=document.createElement('div'); d.className=cls; d.innerHTML=html; $('#chat').appendChild(d); window.scrollTo(0,document.body.scrollHeight); return d; }
+bubble('궁금한 걸 편하게 물어보세요. 내 안전 정보가 반영돼요.\n(먹는 것만 다루고, 진단·처방은 하지 않아요)','msg b');
+async function csend(){
+  const t=$('#cin').value.trim(); if(!t) return; $('#cin').value=''; bubble(esc(t),'msg u'); chatState.messages.push({role:'user',content:t});
+  const r=await E.chat({ messages:chatState.messages, profile });
+  if (r.type==='answer') { const d=bubble(recCards(r),''); d.style.alignSelf='stretch'; chatState.messages.push({role:'assistant',content:r.intro}); }
+  else if (r.type==='meallog') { bubble('식단 기록은 아래 🍱 식단 탭에서 눌러서 담을 수 있어요.','msg b'); }
+  else if (r.type==='gift') { bubble('선물 추천은 홈의 🎁 건강식품 선물에서 받는 분 정보를 고르면 돼요.','msg b'); }
+  else { bubble(esc(r.text),'msg b'+(r.level==='danger'?' danger':'')); chatState.messages.push({role:'assistant',content:r.text}); }
+}
+$('#csend').onclick=csend; $('#cin').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.isComposing) csend(); });
+
+// ---------- 시작 ----------
+refreshProfileUI();
+go(profile ? (location.hash.slice(1)||'home') : 'onboard');
 </script>
 </body>
 </html>

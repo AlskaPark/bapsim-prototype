@@ -346,7 +346,45 @@ handleChat = async function (state) {
   return _handleChat(state);
 };
 
+// ---------- 탭 앱용 API ----------
+function recommendTopic(topicId, profile) {
+  const t = TOPICS.find(x => x.id === topicId);
+  return ruleBased([{ role:'user', content: t.keywords[0] }], profile);
+}
+const PRODUCTS = [
+  { name:'쌍화탕', kind:'한방 일반의약품', claim:'피로회복, 허약체질, 병후의 체력저하 (대표 품목 허가사항 요약)', ingredients:'작약·숙지황·황기·당귀·천궁·계피·감초·생강·대추', tags:['licorice'] },
+  { name:'갈근탕', kind:'한방 일반의약품', claim:'감기, 코감기, 두통, 어깨결림, 근육통 (대표 품목 허가사항 요약)', ingredients:'갈근·마황·계지·작약·감초·생강·대추', tags:['licorice','ephedra'] },
+  { name:'소청룡탕', kind:'한방 일반의약품', claim:'기관지염, 비염, 감기의 콧물·재채기·기침 (대표 품목 허가사항 요약)', ingredients:'마황·작약·건강·감초·계지·세신·오미자·반하', tags:['licorice','ephedra'] },
+  { name:'평위산', kind:'한방 일반의약품', claim:'식욕부진, 소화불량, 위부팽만감 (대표 품목 허가사항 요약)', ingredients:'창출·후박·진피·감초·생강·대추', tags:['licorice'] },
+  { name:'천왕보심단', kind:'한방 일반의약품', claim:'신경쇠약, 불면, 건망증, 가슴두근거림 (대표 품목 허가사항 요약)', ingredients:'지황·인삼·당귀·산조인·백자인·천문동·맥문동 등', tags:['licorice'] },
+  { name:'홍삼', kind:'건강기능식품', claim:'면역력 증진·피로개선·혈소판 응집억제를 통한 혈액흐름·기억력 개선·항산화에 도움을 줄 수 있음', ingredients:'홍삼농축액(진세노사이드)', tags:['ginseng'] },
+  { name:'오메가3 (EPA·DHA)', kind:'건강기능식품', claim:'혈중 중성지질 개선·혈행 개선에 도움을 줄 수 있음, 건조한 눈을 개선하여 눈 건강에 도움을 줄 수 있음', ingredients:'EPA 및 DHA 함유 유지(어유)', tags:['omega3','fish'] },
+  { name:'비타민C', kind:'건강기능식품', claim:'결합조직 형성과 기능유지에 필요, 철의 흡수에 필요, 항산화 작용을 하여 유해산소로부터 세포를 보호하는데 필요', ingredients:'비타민C', tags:['vitc'] },
+  { name:'아연', kind:'건강기능식품', claim:'정상적인 면역기능에 필요, 정상적인 세포분열에 필요', ingredients:'아연', tags:['zinc'] },
+  { name:'마그네슘', kind:'건강기능식품', claim:'에너지 이용에 필요, 신경과 근육 기능 유지에 필요', ingredients:'마그네슘', tags:['magnesium'] },
+  { name:'프로바이오틱스', kind:'건강기능식품', claim:'유산균 증식 및 유해균 억제에 도움을 줄 수 있음, 배변활동 원활에 도움을 줄 수 있음', ingredients:'유산균', tags:[] },
+  { name:'루테인', kind:'건강기능식품', claim:'노화로 인해 감소될 수 있는 황반색소밀도를 유지하여 눈 건강에 도움을 줄 수 있음', ingredients:'마리골드꽃추출물(루테인)', tags:['ragweed'] },
+  { name:'밀크씨슬', kind:'건강기능식품', claim:'간 건강에 도움을 줄 수 있음', ingredients:'밀크씨슬(카르두스 마리아누스) 추출물', tags:['ragweed'] },
+  { name:'L-테아닌', kind:'건강기능식품', claim:'스트레스로 인한 긴장완화에 도움을 줄 수 있음', ingredients:'L-테아닌', tags:[] },
+  { name:'칼슘·비타민D', kind:'건강기능식품', claim:'(칼슘) 뼈와 치아 형성에 필요 · (비타민D) 칼슘과 인이 흡수되고 이용되는데 필요, 골다공증발생 위험 감소에 도움을 줌', ingredients:'칼슘·비타민D', tags:[] },
+  { name:'비타민B군', kind:'건강기능식품', claim:'탄수화물과 에너지 대사에 필요', ingredients:'비타민B1·B2·B6·B12 등', tags:[] },
+];
+function checkProduct(name, profile) {
+  const pr = PRODUCTS.find(x => x.name === name);
+  const conds = profileConds(profile);
+  const hits = SAFETY_RULES.filter(r => conds.includes(r.cond) && pr.tags.includes(r.tag));
+  const avoid = [...new Set(hits.filter(h => h.action === 'exclude').map(h => h.msg))];
+  const caution = [...new Set(hits.filter(h => h.action === 'warn').map(h => h.msg))];
+  const level = avoid.length ? 'avoid' : caution.length ? 'caution' : 'ok';
+  const general = pr.kind === '한방 일반의약품'
+    ? '일반의약품이에요. 제품 설명서의 용법·용량과 주의사항을 확인하고 약사와 상담 후 복용하세요.'
+    : '건강기능식품은 질병의 예방·치료를 위한 의약품이 아니에요. 제품 표시사항의 섭취량을 지켜 주세요.';
+  return { product: pr, level, avoid, caution, general };
+}
+
 window.BapsimEngine = { chat: async (state) => ({ ...(await handleChat(state)), disclaimer: DISCLAIMER }),
   analyzeMeals: (ids, profile) => ({ ...analyzeMeals(ids, profile), disclaimer: DISCLAIMER }),
-  giftRecommend: (g) => ({ ...giftRecommend(g), disclaimer: DISCLAIMER }), MEAL_FOODS };
+  giftRecommend: (g) => ({ ...giftRecommend(g), disclaimer: DISCLAIMER }), MEAL_FOODS,
+  recommendTopic: (id, p) => ({ ...recommendTopic(id, p), disclaimer: DISCLAIMER }), checkProduct, PRODUCTS, DISCLAIMER,
+  TOPICS: TOPICS.map(t => ({ id: t.id, label: t.label })) };
 })();
