@@ -479,7 +479,7 @@ function answer(text, profile, memory) {
   const enough = top && top.kind === 'food' && !['lipid','glucose'].includes(t.id);
   const fl = null; // 습관 교정 문구 없음
   const pl = personalLine(t.id, recent);
-  const lines = fl ? [fl.line, safetyLine(excluded, conds, p.meds)].filter(Boolean) : [pl || connectLine(t.id, recent), top ? (top.kind === 'food' ? `${enough ? top.name : josa(top.name,'을','를')}${enough ? (/차$|즙$|국$/.test(top.name) ? ' 한 잔이 조금이라도 도움이 될 수 있어요.'.replace('국 한 잔','국 한 그릇') : ' 정도가 조금이라도 도움이 될 수 있어요.') : ' 곁들여 보세요. 조금이라도 도움이 될 수 있어요.'}` : `${top.name}을 고려해 볼 만해요.`) : null, safetyLine(excluded, conds, p.meds)].filter(Boolean);
+  const lines = fl ? [fl.line, safetyLine(excluded, conds, p.meds)].filter(Boolean) : [pl || connectLine(t.id, recent), top ? (top.kind === 'food' ? `${enough ? top.name : josa(top.name,'을','를')}${enough ? (/국$|탕$/.test(top.name) ? ' 한 그릇이 조금이라도 도움이 될 수 있어요.' : /차$|즙$|물$/.test(top.name) ? ' 한 잔이 조금이라도 도움이 될 수 있어요.' : ' 정도가 조금이라도 도움이 될 수 있어요.') : ' 곁들여 보세요. 조금이라도 도움이 될 수 있어요.'}` : `${top.name}을 고려해 볼 만해요.`) : null, safetyLine(excluded, conds, p.meds)].filter(Boolean);
   const trace = fl ? fl.trace.map(e => ({ day:e.day, text:e.text })) : recent.filter(e => (e.tags||[]).some(x => ['alcohol','sleepless','overwork','fried'].includes(x))).map(e => ({ day:e.day, text:e.text }));
   return { type:'answer', topic:t.id, top, lines, enough, trace, title: titles[t.id] || t.label, insights, scope, groups, excluded, warnings:[...new Set(warnings)], textMeds,
     consult:{ emphasize: consultWhy.length > 0, why: consultWhy[0] || '' }, disclaimer:DISCLAIMER };

@@ -1,0 +1,39 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><title>밥심 D · 공유하기로 저장</title>
+<style>
+body{margin:0;font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#000;color:#fff;min-height:100vh}
+.hd{display:flex;justify-content:space-between;padding:14px 16px;font-size:14px}.photo{margin:20px 0;height:52vh;display:flex;align-items:center;justify-content:center;font-size:150px;background:#151515}
+.thumbs{display:flex;gap:6px;overflow-x:auto;padding:0 10px}.thumbs button{flex:0 0 auto;width:48px;height:48px;border:2px solid transparent;border-radius:8px;background:#222;font-size:24px}.thumbs button.on{border-color:#fff}
+.tb{display:flex;justify-content:space-around;padding:16px 0 50px;font-size:22px}.tb button{border:0;background:none;color:#4ea1ff;font-size:24px}
+.share{position:fixed;left:0;right:0;bottom:0;background:#f2f2f6;color:#111;border-radius:16px 16px 0 0;padding:14px 14px 50px;display:none;z-index:45}
+.share .apps{display:flex;gap:16px;overflow-x:auto;padding:12px 2px}.share .a{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;min-width:62px}.share .a i{font-style:normal;width:56px;height:56px;border-radius:14px;background:#ddd;display:flex;align-items:center;justify-content:center;font-size:26px}.share .a.bap i{background:#2f8f5b}
+.share .rows div{background:#fff;padding:12px;border-radius:10px;margin-top:6px;font-size:14px}
+.banner{position:fixed;top:8px;left:8px;right:8px;z-index:50}.mini{position:fixed;inset:0;background:#f6f4ef;color:#1f2a24;display:none;overflow:auto;padding:16px 16px 60px;z-index:44}.row{font-size:13px;padding:6px 0;border-bottom:1px solid #ebe7de}
+.lock{position:fixed;inset:0;background:linear-gradient(170deg,#1d2b3a,#3d5a6c);color:#fff;z-index:35;display:none;flex-direction:column;align-items:center;padding-top:60px}.lock .tm{font-size:64px;font-weight:300}.lock .dt{font-size:15px;opacity:.85;margin-bottom:30px}
+.noti{width:92%;max-width:400px;background:rgba(255,255,255,.88);color:#1f2a24;border-radius:18px;padding:10px 34px 10px 12px;font-size:13.5px;line-height:1.45;position:relative;text-align:left;box-sizing:border-box}.noti .app{font-size:11px;color:#6b766f;display:flex;gap:6px;align-items:center;margin-bottom:2px}.noti .app i{font-style:normal;background:#2f8f5b;color:#fff;border-radius:5px;padding:0 4px}
+.noti .tr{font-size:11px;color:#6b766f;margin-top:3px}.noti .x{position:absolute;top:6px;right:8px;border:0;background:none;color:#999}.lock .hint{font-size:11px;opacity:.7;margin-top:10px}.lock .unl{position:absolute;bottom:60px;border:0;background:rgba(255,255,255,.2);color:#fff;border-radius:99px;padding:8px 16px;font-size:12px}
+.noti{width:100%;max-width:none;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+</style></head><body>
+<div class="hd"><span>‹ 사진</span><span id="cap">오늘</span><span id="openbap" style="color:#7fd1a4">밥심 열기</span></div>
+<div class="photo" id="photo">☕</div>
+<div class="thumbs" id="th"></div>
+<div class="tb"><button id="sh" aria-label="공유">⬆️</button><span>♡</span><span>ⓘ</span><span>🗑️</span></div>
+<div class="share" id="share"><b style="font-size:14px">사진 1장</b><div class="apps"><div class="a"><i>💬</i>메시지</div><div class="a"><i>✉️</i>메일</div><div class="a bap" id="tobap"><i>🍚</i>밥심</div><div class="a"><i>📝</i>메모</div><div class="a"><i>☁️</i>드라이브</div></div><div class="rows"><div>복사하기</div><div>앨범에 추가</div></div></div>
+<div class="banner" id="ban"></div>
+<div class="mini" id="mini"><button id="mclose" style="border:0;background:none;color:#2f8f5b">‹ 닫기</button><h3>밥심 · 저장된 것</h3><div id="rows"></div></div>
+<script src="../engine.js"></script><script src="../proto/shared.js"></script>
+<script>
+const B=Bapsim, st=B.Store('d'), $=s=>document.querySelector(s); let cur='coffee';
+$('#th').innerHTML=Object.entries(B.SNAPS).map(([k,s])=>`<button data-k="${k}" class="${k===cur?'on':''}">${s.e}</button>`).join('');
+document.querySelectorAll('#th button').forEach(b=>b.onclick=()=>{ cur=b.dataset.k; $('#photo').textContent=B.SNAPS[cur].e; document.querySelectorAll('#th button').forEach(x=>x.classList.toggle('on',x===b)); });
+$('#sh').onclick=()=>$('#share').style.display='block';
+$('#share').onclick=e=>{ if(e.target===$('#share')) $('#share').style.display='none'; };
+$('#tobap').onclick=()=>{ st.snap(cur); $('#share').style.display='none'; B.toast('밥심에 저장됨'); render(); };
+function render(){
+  const n=B.nudge(st);
+  $('#ban').innerHTML=n?`<div class="noti" id="noti"><div class="app"><i>밥</i>밥심 · 지금</div>${B.esc(n.text)}<div class="tr">📷 ${B.esc(n.trace)}</div><button class="x" aria-label="닫기">✕</button></div>`:'';
+  if(n){ $('#noti .x').onclick=e=>{ e.stopPropagation(); st.dismiss(n.id); render(); }; $('#noti').onclick=()=>B.openSheet(B.detailHTML(n.tap.q, st)); }
+  $('#rows').innerHTML=st.visible().slice().reverse().map(e=>`<div class="row">${B.dayLabel(e.day,st.today())} · ${e.snap?B.SNAPS[e.snap].e:'📝'} ${B.esc(e.text)}</div>`).join('');
+}
+$('#openbap').onclick=()=>$('#mini').style.display='block'; $('#mclose').onclick=()=>$('#mini').style.display='none';
+B.demoBar(st, render); render();
+</script></body></html>
