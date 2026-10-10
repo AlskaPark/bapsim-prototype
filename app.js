@@ -18,6 +18,15 @@ const ITEMS = {
 // 모의 이미지 인식: 서버가 붙으면 실제 모델로 교체. 지금은 파일 이름 단서만 사용, 확실하지 않으면 이름표 없음 (묻지 않음)
 const REC = [[/tylenol|타이레놀|acetaminophen/i,'tylenol'],[/beer|맥주/i,'beer'],[/soju|소주/i,'soju'],[/filter|drip|드립|필터/i,'filter'],[/decaf|디카페인/i,'decaf'],[/latte|라떼/i,'latte'],[/americano|아메리카노/i,'americano'],[/coffee|커피/i,'coffee'],[/ssanghwa|쌍화/i,'ssanghwa'],[/grapefruit|자몽/i,'grapefruit'],[/iron|철분/i,'iron'],[/energy|에너지/i,'energy'],[/banana|바나나/i,'banana'],[/tofu|두부/i,'tofu'],[/dosirak|도시락|lunch/i,'dosirak'],[/onigiri|삼각김밥/i,'onigiri'],[/protein|프로틴/i,'protein'],[/pizza|피자/i,'pizza'],[/chicken|치킨/i,'chicken'],[/tteok|떡볶이/i,'tteok'],[/ramen|라면/i,'ramen'],[/salad|샐러드/i,'salad'],[/cola|콜라/i,'cola'],[/samgyeop|삼겹/i,'samgyeop'],[/snack|과자/i,'snack'],[/yogurt|요거트|요구르트/i,'yogurt']];
 const recognize = name => { const h = REC.find(([r]) => r.test(name || '')); return h ? h[1] : null; };
+ITEMS.soda = { l:'탄산음료', t:['fizzy','sweet'], img:'cola' }; ITEMS.cancoffee = { l:'커피 캔', t:['coffee','caffeine','sweet'], img:'energy' }; ITEMS.makgeolli = { l:'막걸리', t:['alcohol'], img:'soju' };
+ITEMS.vitamin = { l:'영양제', t:[], img:'iron' }; ITEMS.coldmed = { l:'감기약', t:['apap'], img:'tylenol' }; ITEMS.gingertea = { l:'생강차', t:[], img:'ssanghwa' };
+// 모의 인식기 top-k: 그 사진에 그럴듯한 후보 2~3개 (실제 서비스에선 모델 점수 순)
+const CANDS = { energy:['energy','soda','cancoffee'], cola:['cola','soda','energy'], beer:['beer','soda','makgeolli'], soju:['soju','makgeolli','beer'], coffee:['coffee','latte','americano'], latte:['latte','coffee','americano'],
+  americano:['americano','coffee','filter'], filter:['filter','americano','coffee'], tylenol:['tylenol','coldmed','vitamin'], iron:['iron','vitamin','tylenol'], ssanghwa:['ssanghwa','gingertea','coldmed'],
+  dosirak:['dosirak','onigiri','chicken'], pizza:['pizza','chicken','tteok'], chicken:['chicken','pizza','samgyeop'], yogurt:['yogurt','banana','salad'] };
+const IMGK = k => IMG((ITEMS[k] && ITEMS[k].img) || k);
+function candidates(e){ if (e.k && CANDS[e.k]) return CANDS[e.k]; if (e.k) return [e.k];
+  const h = parseInt((e.time || '12').slice(0, 2)); return h < 11 ? ['coffee','yogurt','onigiri'] : h < 17 ? ['dosirak','coffee','salad'] : ['beer','chicken','soju']; }
 const TRAY = ['coffee','beer','soju','tylenol','ssanghwa','grapefruit','iron','energy','banana'];
 const MEDS = ['혈압약','고지혈증약','타이레놀·감기약','아스피린','와파린','철분제','항생제'];
 const CONDS = [['hypertension','고혈압'],['diabetes','당뇨'],['kidney','신장 질환'],['pregnant','임신·수유']];
@@ -44,7 +53,7 @@ const get = async id => { const db = await DB; if (!db) return null; return new 
 const del = async id => { const db = await DB; if (db) db.transaction('p','readwrite').objectStore('p').delete(id); };
 const src = e => e.pid ? (URLS[e.pid] || '') : e.k ? IMG(e.k) : '';
 async function loadUrls(){ for (const e of S.entries) if (e.pid && !URLS[e.pid]) { const b = await get(e.pid); if (b) URLS[e.pid] = URL.createObjectURL(b); } }
-async function shrink(f){ try { const bm = await createImageBitmap(f); const k = Math.min(1, 1080 / Math.max(bm.width, bm.height)); const c = document.createElement('canvas'); c.width = bm.width * k; c.height = bm.height * k; c.getContext('2d').drawImage(bm, 0, 0, c.width, c.height); return await new Promise(r => c.toBlob(r, 'image/jpeg', .85)); } catch { return f; } }
+async function shrink(f){ try { const bm = await createImageBitmap(f, { imageOrientation: 'from-image' }); /* EXIF 회전을 저장 시점에 반영 */ const k = Math.min(1, 1080 / Math.max(bm.width, bm.height)); const c = document.createElement('canvas'); c.width = bm.width * k; c.height = bm.height * k; c.getContext('2d').drawImage(bm, 0, 0, c.width, c.height); return await new Promise(r => c.toBlob(r, 'image/jpeg', .85)); } catch { return f; } }
 const now = () => new Date().toTimeString().slice(0,5);
 const memoTags = text => { const c = E.classify(text), t = [...c.tags]; [[/타이레놀|아세트아미노펜|감기약/,'apap'],[/쌍화탕/,'licorice'],[/술|맥주|소주|와인|막걸리/,'alcohol'],[/커피|아메리카노|라떼/,'coffee'],[/자몽/,'grapefruit'],[/철분/,'iron'],[/두부|바나나|아몬드/,'mg'],[/우유|라떼|치즈|요거트/,'dairy'],[/요거트|요구르트/,'yogurt'],[/두부|두유|콩/,'soy'],[/콜라|사이다|탄산/,'fizzy'],[/치킨|튀김|삼겹|기름진/,'oily'],[/케이크|초콜릿|과자|디저트|빵/,'sweet']].forEach(([r,x]) => { if (r.test(text) && !t.includes(x)) t.push(x); }); return t; };
 
@@ -137,7 +146,7 @@ function render(){
   if (!keys.includes(t)) keys.unshift(t);
   const tl = keys.map((d, i) => { const es = (days[d] || []).slice().reverse(), ph = es.filter(e => e.kind === 'photo'), me = es.filter(e => e.kind === 'memo');
     return `<section class="day"${i===0?why('날짜별 기록. 저장됐다는 믿음과, 한 줄의 근거를 확인하는 곳이에요. 숫자나 분석은 없어요.'):''}><h3>${esc(dayName(d,t))}</h3>
-      ${ph.length ? `<div class="grid">${ph.map(e => `<button class="tile${e.id===lastNew?' new':''}" data-id="${e.id}" aria-label="${esc(e.text||'사진')}"><img src="${src(e)}" alt="" loading="lazy">${e.rec==='pending'?'<span class="lb pend">확인 중</span>':e.k?`<span class="lb">${esc(e.text)}</span>`:''}</button>`).join('')}</div>` : (me.length ? '' : `<div class="empty">아직 찍은 게 없어요</div>`)}
+      ${ph.length ? `<div class="grid">${ph.map(e => `<button class="tile${e.id===lastNew?' new':''}" data-id="${e.id}" aria-label="${esc(e.text||'사진')}"><img src="${src(e)}" alt="" loading="lazy">${e.rec==='pending'?'<span class="lb pend">확인 중</span>':(e.k||e.custom)?`<span class="lb">${esc(e.text)}</span>`:''}</button>`).join('')}</div>` : (me.length ? '' : `<div class="empty">아직 찍은 게 없어요</div>`)}
       ${me.length ? `<div class="memos">${me.map(e => `<span class="memo"><i data-lucide="pen-line"></i>${esc(e.text)}</span>`).join('')}</div>` : ''}</section>`; }).join('');
   const ins = insights();
   const insLink = ins.length ? `<button class="ins-link" id="insl"${why('따로 탭을 만들지 않았어요. 알게 된 게 생겼을 때만 이 작은 줄이 나타나요.')}><i data-lucide="sprout"></i>나에 대해 알게 된 것<i data-lucide="chevron-right"></i></button>` : '';
@@ -168,7 +177,8 @@ function capture(multi){
     setTimeout(() => { made.forEach(([x, name]) => { const k = recognize(name); delete x.rec; if (k) { x.k = k; x.text = ITEMS[k].l; x.tags = ITEMS[k].t; x.auto = true; } }); save(); render(); }, 1000); };
   inp.click();
 }
-function setLabel(id, k){ const e = S.entries.find(x => x.id === id); if (!e) return; e.k = k; e.text = ITEMS[k].l; e.tags = ITEMS[k].t; e.auto = false; save(); }
+function setCustom(id, text){ const e = S.entries.find(x => x.id === id); if (!e || !text) return; e.k = null; e.custom = true; e.text = text; e.tags = memoTags(text); e.auto = false; save(); }
+function setLabel(id, k){ const e = S.entries.find(x => x.id === id); if (!e) return; e.custom = false; e.k = k; e.text = ITEMS[k].l; e.tags = ITEMS[k].t; e.auto = false; save(); }
 
 // ---- 시트 ----
 function sheet(html, cls = ''){ const bg = document.createElement('div'); bg.className = 'sh-bg'; bg.innerHTML = `<div class="sh ${cls}"><div class="grab"></div><button class="x" aria-label="닫기"><i data-lucide="x"></i></button>${html}</div>`;
@@ -196,11 +206,14 @@ function variants(v){ return `<details><summary>제품으로 고른다면</summa
 
 function photoView(id){
   const e = S.entries.find(x => x.id === id); if (!e) return;
-  const bg = sheet(`<div class="pv"><img src="${src(e)}" alt=""><div class="meta">${esc(dayName(e.day, today()))}${e.time ? ' · ' + esc(e.time) : ''}</div>
-    <button class="curtag" id="ct"${why('고치는 건 선택이고, 사진을 눌러 본 사람만 발견해요. 찍을 때마다 묻지 않기 위해서예요.')}>${e.k ? `<img src="${IMG(e.k)}" alt="">${esc(e.text)}` : '이름표 없음'}<span>${e.k ? '바꾸기' : '붙이기'}</span></button>
-    <div class="tags" id="tg" hidden>${TRAY.map(k => `<button class="tag${e.k===k?' on':''}" data-k="${k}"><img src="${IMG(k)}" alt="">${ITEMS[k].l}</button>`).join('')}</div>
+  const bg = sheet(`<div class="pv"><div class="meta">${esc(dayName(e.day, today()))}${e.time ? ' · ' + esc(e.time) : ''}</div><div class="pv-ph"${why('세로·가로 사진 모두 잘리지 않게 원래 비율 그대로, 화면 높이에 맞춰요. 닫기 버튼과 겹치지 않게 사진은 제목 줄 아래에서 시작해요.')}><img src="${src(e)}" alt=""></div>
+    <button class="curtag" id="ct"${why('고치는 건 선택이고, 사진을 눌러 본 사람만 발견해요. 찍을 때마다 묻지 않기 위해서예요.')}>${e.k ? `<img src="${IMGK(e.k)}" alt="">` : ''}${e.k || e.custom ? esc(e.text) : '이름표 없음'}<span>${e.k || e.custom ? '바꾸기' : '붙이기'}</span></button>
+    <div class="pick" id="tg" hidden${why('긴 목록 대신, 이 사진에 그럴듯한 후보 두세 개만 보여 줘요(인식기의 상위 후보). 없으면 직접 짧게 적으면 돼요.')}><div class="tags">${candidates(e).map(k => `<button class="tag${e.k===k?' on':''}" data-k="${k}"><img src="${IMGK(k)}" alt="">${ITEMS[k].l}</button>`).join('')}</div>
+      <form class="pick-f" id="pf"><input id="pi" placeholder="직접 적기 (예: 오트 라떼)" maxlength="20" autocomplete="off"><button type="submit" id="pok" disabled>저장</button></form></div>
     <button class="danger" id="del">이 기록 지우기</button></div>`);
   $('#ct', bg).onclick = () => { $('#tg', bg).hidden = false; $('#ct', bg).hidden = true; notesRefresh(); };
+  $('#pi', bg).oninput = () => $('#pok', bg).disabled = !$('#pi', bg).value.trim();
+  $('#pf', bg).onsubmit = ev => { ev.preventDefault(); const v = $('#pi', bg).value.trim(); if (!v) return; buzz(); setCustom(id, v); render(); setTimeout(() => bg.close(), 150); };
   $$('.tag', bg).forEach(b => b.onclick = () => { $$('.tag', bg).forEach(x => x.classList.remove('on')); b.classList.add('on'); buzz(); setLabel(id, b.dataset.k); render(); setTimeout(() => bg.close(), 200); });
   $('#del', bg).onclick = () => { S.entries = S.entries.filter(x => x.id !== id); if (e.pid) del(e.pid); save(); bg.close(); render(); };
   notesRefresh();
