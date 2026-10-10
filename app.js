@@ -559,7 +559,7 @@ function insightsPage(){
       ${x.inter ? `<div class="fd-tag"${why('밥심이 실제로 챙겼던 약 조합. 같은 카드 형식이지만 옅은 바탕으로 조용히 구분해요.')}><i data-lucide="shield-check"></i>챙겼던 조합</div>` : ''}
       ${x.pos ? `<div class="fd-tag pos"${why('좋았던 날의 겹침도 같은 규칙으로 모아요. 잎 하나로만 구분해요.')}><i data-lucide="leaf"></i>좋았던 날</div>` : ''}
       <p class="fd-t">${esc(x.text)}</p>
-      ${x.rule && x.rule.claim ? `<p class="fd-cl"${why('출처가 확인된 문장만 한 줄 덧붙여요. 링크를 눌러 원문을 직접 볼 수 있어요.')}>${esc(x.rule.claim)} ${refA(x.rule.ref)}</p>` : ''}
+      ${x.rule && x.rule.claim ? `<p class="fd-cl"${why('출처가 확인된 문장만 한 줄 덧붙여요. 링크를 눌러 원문을 직접 볼 수 있어요.')}>${esc(x.rule.claim)} <a class="ref" href="${REFS[x.rule.ref].u}" target="_blank" rel="noopener noreferrer" title="${esc(REFS[x.rule.ref].l)}">연구 원문<span aria-hidden="true">↗</span></a></p>` : ''}
       ${x.hl ? `<p class="fd-hl"${why('건강 데이터는 원인으로 쓰지 않고, \'이런 날이기도 했어요\'처럼 곁들여 적기만 해요.')}><i data-lucide="heart-pulse"></i>${esc(x.hl)}</p>` : ''}
       ${stepsHTML(x)}
       ${c ? ckHTML(x, c) : act(x)}
