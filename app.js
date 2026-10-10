@@ -105,7 +105,7 @@ function pick(){
     refs:['tylenol','ibuprofen'], quote:[{ ref:'tylenol', t:'매일 세잔 이상 정기적으로 술을 마시는 사람이 이 약이나 다른 해열 진통제를 복용해야 할 경우 반드시 의사 또는 약사와 상의해야 한다. 이러한 사람이 이 약을 복용하면 간손상이 유발될 수 있다.', s:'타이레놀정500밀리그람(아세트아미노펜) 사용상의 주의사항' }, { ref:'ibuprofen', t:'매일 세잔 이상 정기적으로 술을 마시는 사람이 이 약이나 다른 해열진통제를 복용해야 할 경우 반드시 의사 또는 약사와 상의해야 한다. 이러한 사람이 이 약을 복용하면 위장출혈이 유발될 수 있다.', s:'부루펜정200밀리그램(이부프로펜) 사용상의 주의사항' }] }); }
   const lic = [...on(t,'licorice'), ...on(y,'licorice')];
   if (lic.length && htn) C.push({ id:'lic', src:lic.slice(-1), pair:`${lic.at(-1).text} + 혈압약`,
-    msg:'쌍화탕엔 감초가 들어 있어요. 혈압약을 드시는 동안은 맞지 않을 수 있어요. 오늘은 따뜻한 물이면 충분해요.',
+    msg:'쌍화탕엔 감초가 들어 있어요. 혈압약을 드시는 동안은 맞지 않을 수 있어요.',
     short:'쌍화탕 감초는 혈압약과 안 맞을 수 있어요', title:'쌍화탕과 혈압약', why:'감초 성분(글리시리진)은 몸에 나트륨과 물을 붙잡아 두는 쪽으로 작용할 수 있어요. 그래서 혈압약을 먹는 동안에는 감초가 든 차·탕을 피하라고 안내하는 경우가 많아요.', q:'감기 기운 있어요', refs:['ssanghwa','licorice'], quote:[{ ref:'ssanghwa', t:'다음과 같은 사람은 이 약을 복용하기 전에 의사, 한의사, 치과의사, 약사, 한약사와 상의할 것. 1) 고혈압 환자', s:'경방쌍화탕액 사용상의 주의사항' }] });
   const gf = [...on(t,'grapefruit'), ...on(y,'grapefruit')];
   if (gf.length && (htn || lipid)) C.push({ id:'gf', src:gf.slice(-1), pair:`자몽주스 + ${lipid ? '고지혈증약' : '혈압약'}`,
@@ -275,7 +275,7 @@ function intro(again){
    <section class="slide"${why('다음 화면에서 약을 묻는 이유를 미리 보여 줘요. 설정이 설문처럼 느껴지지 않게.')}><div class="viz">
       <span class="chipviz" style="left:20px;top:20px;animation-delay:.1s"><i data-lucide="pill"></i>혈압약</span>
       <div class="ph" style="right:28px;top:12px;--r:5deg;animation-delay:.35s"><img src="img/ssanghwa.jpg" alt=""><span class="lb">쌍화탕</span></div>
-      <div style="position:absolute;left:0;right:0;bottom:0" class="mini-w">${note('오늘 · 쌍화탕 + 혈압약','쌍화탕엔 감초가 들어 있어요. 혈압약을 드시는 동안은 맞지 않을 수 있어요. 오늘은 따뜻한 물이면 충분해요.',['img/ssanghwa.jpg'])}</div></div>
+      <div style="position:absolute;left:0;right:0;bottom:0" class="mini-w">${note('오늘 · 쌍화탕 + 혈압약','쌍화탕엔 감초가 들어 있어요. 혈압약을 드시는 동안은 맞지 않을 수 있어요.',['img/ssanghwa.jpg'])}</div></div>
       <h2>내 약과 몸에<br>맞춰서</h2><p>먹는 약을 알려 주시면, <b>그 약과 겹치는 순간</b>을 챙겨요.</p></section>
   </div><div class="in-bot"><div class="dots"><i class="on"></i><i></i><i></i></div><button class="primary" id="next">다음</button></div>`;
   document.body.appendChild(ov); icons();
