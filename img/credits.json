@@ -204,10 +204,11 @@
  },
  {
   "k": "zerodrink",
-  "title": "A cup and can of Sprite.jpg",
+  "title": "Glass of sparkling drink (crop, no brand visible)",
   "page": "https://commons.wikimedia.org/wiki/File:A_cup_and_can_of_Sprite.jpg",
   "artist": "see page",
   "license": "CC BY-SA 4.0",
-  "note": "cropped to the glass only; no brand visible (derivative, CC BY-SA 4.0)"
+  "note": "derivative: cropped to the glass only; can and logo removed. Original page linked for CC BY-SA 4.0 attribution.",
+  "source_file": "A cup and can of Sprite.jpg"
  }
 ]
