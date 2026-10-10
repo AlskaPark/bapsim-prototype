@@ -1,36 +1,40 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><title>밥심 C · 앨범 자동 가져오기</title>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><link rel="stylesheet" href="../proto/ui.css"><script src="https://unpkg.com/lucide@0.453.0/dist/umd/lucide.min.js"></script><link rel="stylesheet" href="../proto/notif.css"><title>밥심 C · 앨범 자동 가져오기</title>
 <style>
-body{margin:0;font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#f6f4ef;color:#1f2a24}
-.top{padding:16px 16px 6px}.top h2{margin:0;font-size:18px}.top p{margin:4px 0 0;font-size:12.5px;color:#6b766f}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;padding:10px}.cell{aspect-ratio:1;background:#e6e2d8;display:flex;align-items:center;justify-content:center;font-size:30px;position:relative;border-radius:6px}
-.cell.food::after{content:'✓';position:absolute;right:4px;bottom:4px;background:#2f8f5b;color:#fff;font-size:11px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center}
-.cell.other{opacity:.45}.day{font-size:12px;color:#6b766f;padding:8px 12px 0}
-.perm{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:60}.perm div{background:#fff;width:80%;border-radius:16px;text-align:center;overflow:hidden}.perm p{padding:18px 16px 8px;margin:0;font-size:14px;line-height:1.5}.perm small{display:block;color:#888;padding:0 16px 12px;font-size:11.5px}.perm button{display:block;width:100%;border:0;border-top:1px solid #eee;background:#fff;padding:12px;font-size:14px;color:#2f6fd6}
-.bar{display:flex;gap:6px;padding:0 12px}.bar button{border:1px solid #ddd;background:#fff;border-radius:10px;padding:6px 10px;font-size:12px}
-.lock{position:fixed;inset:0;background:linear-gradient(170deg,#1d2b3a,#3d5a6c);color:#fff;z-index:35;display:none;flex-direction:column;align-items:center;padding-top:60px}.lock .tm{font-size:64px;font-weight:300}.lock .dt{font-size:15px;opacity:.85;margin-bottom:30px}
-.noti{width:92%;max-width:400px;background:rgba(255,255,255,.88);color:#1f2a24;border-radius:18px;padding:10px 34px 10px 12px;font-size:13.5px;line-height:1.45;position:relative;text-align:left;box-sizing:border-box}.noti .app{font-size:11px;color:#6b766f;display:flex;gap:6px;align-items:center;margin-bottom:2px}.noti .app i{font-style:normal;background:#2f8f5b;color:#fff;border-radius:5px;padding:0 4px}
-.noti .tr{font-size:11px;color:#6b766f;margin-top:3px}.noti .x{position:absolute;top:6px;right:8px;border:0;background:none;color:#999}.lock .hint{font-size:11px;opacity:.7;margin-top:10px}.lock .unl{position:absolute;bottom:60px;border:0;background:rgba(255,255,255,.2);color:#fff;border-radius:99px;padding:8px 16px;font-size:12px}
+.top{padding:4px 20px 0}.top h2{margin:0;font-size:28px;font-weight:700;letter-spacing:-.025em}.top p{margin:6px 0 0;font-size:14px;color:var(--sub);word-break:keep-all}
+.bar{display:flex;gap:8px;padding:16px 20px 4px}.bar button{display:inline-flex;align-items:center;gap:6px;border:0;background:var(--surface);box-shadow:var(--sh-1);border-radius:999px;padding:9px 14px;font-size:13px;font-weight:600;color:var(--ink2)}.bar button svg{width:16px;height:16px}
+.day{font-size:15px;font-weight:650;padding:20px 20px 10px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:0 0}
+.cell{aspect-ratio:1;background:#ddd center/cover;position:relative}
+.cell.food::after{content:'';position:absolute;right:6px;bottom:6px;width:20px;height:20px;border-radius:50%;background:var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/12px no-repeat;box-shadow:0 0 0 2px #fff}
+.cell.other{background:var(--fill);display:flex;align-items:center;justify-content:center;color:var(--faint)}.cell.other svg{width:22px;height:22px}
+.perm{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:60;animation:fade .2s both}
+.perm .d{background:rgba(242,242,247,.96);width:280px;border-radius:16px;text-align:center;overflow:hidden;animation:nIn .35s var(--ease) both}
+.perm .ai{width:52px;height:52px;margin:20px auto 8px;border-radius:13px;background:linear-gradient(#F0905A,#E06A2E);color:#fff;display:flex;align-items:center;justify-content:center}.perm .ai svg{width:26px;height:26px}
+.perm p{padding:0 18px;margin:0;font-size:16px;font-weight:600;line-height:1.35}.perm small{display:block;color:var(--sub);padding:6px 18px 16px;font-size:13px;line-height:1.4}
+.perm button{display:block;width:100%;border:0;border-top:.5px solid rgba(60,60,67,.29);background:none;padding:12px;font-size:16px;color:#007AFF}.perm button.b{font-weight:600}
 </style></head><body>
-<div class="top"><h2>밥심</h2><p>앨범에서 먹고 마신 사진만 골라 조용히 저장해요. 다른 사진은 저장하지 않아요.</p></div>
-<div class="bar"><button id="shoot">데모: 카메라로 새 사진 찍기</button><button id="lockbtn">🔒 잠금화면 보기</button></div>
+<div id="sb"></div>
+<div class="top"><h2>밥심</h2><p>평소처럼 찍고, 가끔 앨범에서 한 번에 가져오세요. 조용히 모아 둬요.</p></div>
+<div class="bar"><button id="shoot"><i data-lucide="images"></i>앨범에서 가져오기</button><button id="snap1"><i data-lucide="camera"></i>찍기</button><button id="lockbtn"><i data-lucide="lock"></i>잠금화면</button></div>
 <div id="g"></div>
-<div class="lock" id="lock"><div class="tm">8:12</div><div class="dt" id="dt"></div><div id="nslot" style="width:100%;display:flex;justify-content:center"></div><div class="hint">알림은 하루 한 번까지, 그날이 지나면 사라져요</div><button class="unl" id="unl">밀어서 열기</button></div>
-<div class="perm" id="perm" style="display:none"><div><p>‘밥심’이 사진에 접근하려고 해요</p><small>음식·음료·약 사진만 골라 이 기기에 저장해요 (목업)</small><button id="ok">모든 사진 허용</button><button id="no" style="color:#888">허용 안 함</button></div></div>
+<div class="lock" id="lock"><div id="sbl" style="width:100%"></div><div class="dt" id="dt"></div><div class="tm">8:12</div><div id="nslot" style="width:100%;display:flex;justify-content:center"></div><div class="hint">알림은 하루 한 번까지, 다음 날이면 사라져요</div><button class="unl" id="unl">밀어서 열기</button></div>
+<div class="perm" id="perm" style="display:none!important"><div class="d"><div class="ai"><i data-lucide="soup"></i></div><p>‘밥심’이 사진에<br>접근하려고 합니다</p><small>음식·음료·약 사진만 골라 이 기기 안에 저장해요. 다른 사진은 보지 않아요. (목업)</small><button id="ok" class="b">모든 사진 허용</button><button id="no">허용 안 함</button></div></div>
+<div class="homebar"></div>
 <script src="../engine.js"></script><script src="../proto/shared.js"></script>
 <script>
 const B=Bapsim, st=B.Store('c'), $=s=>document.querySelector(s);
-const OTHER=['🌳','🐶','📄','🖥️','👨‍👩‍👧','🚗','🌆','📸'];
+$('#sb').innerHTML=B.statusBar(false); $('#sbl').innerHTML=B.statusBar(true);
+const OTHER=['trees','dog','file-text','monitor','users','car','building-2','sunset'];
 function render(){
   const by={}; st.visible().filter(e=>e.kind==='photo').slice().reverse().forEach(e=>{ (by[e.day]=by[e.day]||[]).push(e); });
-  $('#g').innerHTML=Object.entries(by).map(([d,es],i)=>`<div class="day">${B.dayLabel(d,st.today())}</div><div class="grid">${es.map(e=>`<div class="cell food" title="${B.esc(e.text)}">${B.SNAPS[e.snap].e}</div>`).join('')}${[0,1].map(j=>`<div class="cell other">${OTHER[(i*2+j)%OTHER.length]}</div>`).join('')}</div>`).join('');
+  $('#g').innerHTML=Object.entries(by).map(([d,es],i)=>`<div class="day">${B.dayLabel(d,st.today())}</div><div class="grid">${es.map(e=>`<div class="cell food" title="${B.esc(e.text)}" style="background-image:url(${B.src(e)})"></div>`).join('')}</div>`).join('');
   const n=B.nudge(st); $('#dt').textContent=new Date(st.today()+'T09:00:00').toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'});
-  $('#nslot').innerHTML=n?`<div class="noti" id="noti"><div class="app"><i>밥</i>밥심 · 지금</div>${B.esc(n.text)}<div class="tr">📷 ${B.esc(n.trace)}</div><button class="x" aria-label="닫기">✕</button></div>`:'<div style="opacity:.6;font-size:13px">알림 없음</div>';
-  if(n){ $('#noti .x').onclick=e=>{ e.stopPropagation(); st.dismiss(n.id); render(); }; $('#noti').onclick=()=>{ $('#lock').style.display='none'; B.openSheet(B.detailHTML(n.tap.q, st)); }; }
+  $('#nslot').innerHTML=n?`<div class="noti" id="noti"><div class="hd"><span class="ai"><i data-lucide="soup"></i></span><b>밥심</b><span>지금</span></div><div class="m">${B.esc(n.text)}</div>${B.traceHTML(n.trace)}<button class="x" aria-label="닫기"><i data-lucide="x"></i></button></div>`:'<div class="quiet">알림 없음</div>';
+  if(n){ $('#noti .x').onclick=e=>{ e.stopPropagation(); $('#noti').classList.add('out'); setTimeout(()=>{ st.dismiss(n.id); render(); },260); }; $('#noti').onclick=()=>{ $('#lock').style.display='none'; B.openSheet(B.detailHTML(n.tap.q, st)); }; }
+  B.icons();
 }
-if(!st.s.perm){ $('#perm').style.display='flex'; }
-$('#ok').onclick=()=>{ st.s.perm=1; st.save(); $('#perm').style.display='none'; B.toast('음식·음료·약 사진만 골라 저장했어요'); render(); };
+$('#ok').onclick=()=>{ st.s.perm=1; st.save(); $('#perm').style.display='none'; B.toast('먹고 마신 사진만 골라 저장했어요'); render(); };
 $('#no').onclick=()=>{ $('#perm').style.display='none'; };
-$('#shoot').onclick=()=>{ const ks=['salad','kimbap','ramen','bibim']; st.snap(ks[Math.floor(Math.random()*ks.length)]); B.toast('새 음식 사진을 가져왔어요'); render(); };
+$('#shoot').onclick=()=>B.capture(st, render, { multiple:true }); $('#snap1').onclick=()=>B.capture(st, render);
 $('#lockbtn').onclick=()=>$('#lock').style.display='flex'; $('#unl').onclick=()=>$('#lock').style.display='none';
-B.demoBar(st, render); render();
+B.demoBar(st, render); B.ready(st).then(()=>{ render(); B.onboard(st, render); });
 </script></body></html>

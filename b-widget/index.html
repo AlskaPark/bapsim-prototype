@@ -1,40 +1,53 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><title>밥심 B · 위젯 우선</title>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><link rel="stylesheet" href="../proto/ui.css"><script src="https://unpkg.com/lucide@0.453.0/dist/umd/lucide.min.js"></script><title>밥심 B · 위젯 우선</title>
 <style>
-body{margin:0;font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;min-height:100vh;background:linear-gradient(160deg,#7aa6c2,#c9b6d9 60%,#f1c9b0);color:#fff}
-.sb{display:flex;justify-content:space-between;padding:10px 22px;font-size:13px;font-weight:600}
-.wg{margin:18px 18px 10px;background:rgba(255,255,255,.92);color:#1f2a24;border-radius:24px;padding:14px;display:flex;gap:12px;align-items:stretch;min-height:130px;box-shadow:0 8px 24px rgba(0,0,0,.12)}
-.wg .cam{flex:0 0 96px;border:0;border-radius:18px;background:#2f8f5b;color:#fff;font-size:34px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}.wg .cam small{font-size:11px}
-.wg .slot{flex:1;font-size:13px;line-height:1.5;display:flex;flex-direction:column;justify-content:center;position:relative}
-.wg .slot .tr{font-size:10.5px;color:#6b766f;margin-top:4px}.wg .slot .x{position:absolute;top:-6px;right:-4px;border:0;background:none;color:#aaa;font-size:14px}
-.wg .slot .quiet{color:#8a948e;font-size:12.5px}.wg .lab{font-size:10.5px;color:#2f8f5b;font-weight:700;margin-bottom:2px}
-.wname{text-align:center;font-size:11px;margin-bottom:14px;opacity:.9}
-.icons{display:grid;grid-template-columns:repeat(4,1fr);gap:18px 0;padding:0 14px}.ic{display:flex;flex-direction:column;align-items:center;font-size:11px;gap:4px}.ic i{font-style:normal;width:58px;height:58px;border-radius:14px;background:rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;font-size:28px}
-.ic.bap i{background:#2f8f5b}
-.pick{position:fixed;left:0;right:0;bottom:0;background:#fff;color:#1f2a24;border-radius:20px 20px 0 0;padding:14px 14px 50px;display:none;z-index:45}.pick small{color:#6b766f}
-.pick .g{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}.pick .g button{border:1px solid #eee;background:#fafafa;border-radius:12px;font-size:24px;padding:6px 0}
-.app{position:fixed;inset:0;background:#f6f4ef;color:#1f2a24;display:none;overflow:auto;padding:16px 16px 60px;z-index:42}.app h3{margin:6px 0}.row{font-size:13px;padding:6px 0;border-bottom:1px solid #ebe7de}
-.app input{width:100%;box-sizing:border-box;border:1px solid #ddd;border-radius:12px;padding:10px;font-size:14px;margin:8px 0}
+body{min-height:100vh;background:radial-gradient(120% 80% at 20% 0%,#F6D9C4 0%,#E9C7B4 30%,#B9A3B8 65%,#7C8AA8 100%);overflow:hidden}
+.wg{margin:12px 20px 0;height:170px;border-radius:24px;background:rgba(255,255,255,.78);backdrop-filter:blur(30px) saturate(1.6);box-shadow:0 8px 30px rgba(40,30,60,.12);display:flex;gap:14px;padding:14px;animation:nIn .5s var(--ease) both}
+.wg .cam{flex:0 0 120px;border:0;border-radius:18px;background:url(../img/coffee.jpg) center/cover;position:relative;overflow:hidden;color:#fff;display:flex;align-items:flex-end;padding:10px}
+.wg .cam::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.55))}
+.wg .cam .in{position:relative;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600}.wg .cam .ring{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.95);color:#18181B;display:flex;align-items:center;justify-content:center}.wg .cam .ring svg{width:16px;height:16px}
+.slot{flex:1;min-width:0;position:relative;display:flex;flex-direction:column;padding:2px 2px 0 0}
+.slot .ey{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--sub)}.slot .ey .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.slot .m{margin-top:6px;font-size:13.5px;line-height:1.45;font-weight:550;color:var(--ink);display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;word-break:keep-all;cursor:pointer}
+.slot .more{margin-top:auto;font-size:11.5px;color:var(--accent-ink);font-weight:600;display:flex;align-items:center;gap:2px}.slot .more svg{width:13px;height:13px}
+.slot .x{position:absolute;top:-6px;right:-6px;width:28px;height:28px;border:0;background:none;color:var(--faint);display:flex;align-items:center;justify-content:center}.slot .x svg{width:15px;height:15px}
+.slot.out{animation:nOut .28s var(--ease) both}.slot .quiet{margin:auto 0;font-size:13.5px;color:var(--sub);line-height:1.5}
+.wname{text-align:center;font-size:12px;font-weight:500;color:rgba(255,255,255,.95);margin:8px 0 22px;text-shadow:0 1px 2px rgba(0,0,0,.15)}
+.icons{display:grid;grid-template-columns:repeat(4,1fr);gap:24px 0;padding:0 22px}
+.ic{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;font-weight:500;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.18)}
+.ic i{width:62px;height:62px;border-radius:15px;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.1)}.ic i svg{width:28px;height:28px}
+.dock{position:fixed;left:12px;right:12px;bottom:72px;height:92px;border-radius:32px;background:rgba(255,255,255,.3);backdrop-filter:blur(30px);display:flex;justify-content:space-around;align-items:center}
+.pick{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-radius:28px 28px 0 0;padding:12px 20px 110px;display:none;z-index:45;animation:up .3s var(--ease) both;box-shadow:0 -10px 40px rgba(0,0,0,.12)}
+.pick .grab{width:36px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 12px}.pick h4{margin:0;font-size:17px}.pick p{margin:2px 0 12px;font-size:13px;color:var(--sub)}
+.pick .g{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.pick .g button{aspect-ratio:1;border:0;border-radius:14px;background:#eee center/cover;padding:0}
+.app{position:fixed;inset:0;background:var(--bg);display:none;overflow:auto;padding:0 20px 110px;z-index:42;animation:fade .2s both}
+.app .top{display:flex;align-items:center;gap:4px;height:44px}.app .top button{border:0;background:none;color:var(--accent-ink);font-weight:600;display:flex;align-items:center}
+.app h3{margin:8px 0 4px;font-size:26px;font-weight:700;letter-spacing:-.02em}.app .s{color:var(--sub);font-size:13.5px;margin-bottom:16px}
+.app input{width:100%;border:0;background:var(--surface);box-shadow:var(--sh-1);border-radius:var(--r-m);padding:14px 16px;font:inherit;margin-bottom:16px;outline:none}
+.row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px}.row img,.row .mi{width:44px;height:44px;border-radius:12px;object-fit:cover;background:var(--fill);display:flex;align-items:center;justify-content:center;color:var(--faint)}.row .d{margin-left:auto;font-size:12.5px;color:var(--faint)}
 </style></head><body>
-<div class="sb"><span>9:41</span><span>●●● 🔋</span></div>
-<div class="wg"><button class="cam" id="cam">📷<small>찍어 두기</small></button><div class="slot" id="slot"></div></div>
+<div id="sb"></div>
+<div class="wg"><button class="cam" id="cam" aria-label="찍어 두기"><span class="in"><span class="ring"><i data-lucide="camera"></i></span>찍어 두기</span></button><div class="slot" id="slot"></div></div>
 <div class="wname">밥심</div>
-<div class="icons"><div class="ic"><i>📞</i>전화</div><div class="ic"><i>💬</i>메시지</div><div class="ic"><i>📷</i>카메라</div><div class="ic"><i>🗓️</i>캘린더</div>
-<div class="ic"><i>🎵</i>음악</div><div class="ic"><i>🗺️</i>지도</div><div class="ic bap" id="openapp"><i>🍚</i>밥심</div><div class="ic"><i>⚙️</i>설정</div></div>
-<div class="pick" id="pick"><small>데모: 찍은 사진 대신 샘플을 골라요. 분석 없이 저장만 돼요.</small><div class="g" id="g"></div></div>
-<div class="app" id="app"><button id="close" style="border:0;background:none;font-size:14px;color:#2f8f5b">‹ 홈 화면</button><h3>밥심</h3><input id="q" placeholder="한 줄 메모나 궁금한 것 (선택)"><div id="rows"></div></div>
+<div class="icons">
+<div class="ic"><i style="background:linear-gradient(#5AC8FA,#2F9BF0)"><i data-lucide="calendar"></i></i>캘린더</div><div class="ic"><i style="background:linear-gradient(#FFD15C,#F5A623)"><i data-lucide="sticky-note"></i></i>메모</div><div class="ic"><i style="background:linear-gradient(#8E8E93,#5D5D62)"><i data-lucide="camera"></i></i>카메라</div><div class="ic"><i style="background:linear-gradient(#FF8A65,#F4511E)"><i data-lucide="image"></i></i>사진</div>
+<div class="ic"><i style="background:linear-gradient(#34C759,#1FA347)"><i data-lucide="map"></i></i>지도</div><div class="ic"><i style="background:linear-gradient(#5E5CE6,#3E3BB8)"><i data-lucide="podcast"></i></i>팟캐스트</div><div class="ic" id="openapp"><i style="background:linear-gradient(#F0905A,#E06A2E)"><i data-lucide="soup"></i></i>밥심</div><div class="ic"><i style="background:linear-gradient(#AEAEB2,#7C7C80)"><i data-lucide="settings"></i></i>설정</div>
+</div>
+<div class="dock"><div class="ic"><i style="background:linear-gradient(#4CD964,#2DB84C)"><i data-lucide="phone"></i></i></div><div class="ic"><i style="background:linear-gradient(#5AC8FA,#1E88E5)"><i data-lucide="compass"></i></i></div><div class="ic"><i style="background:linear-gradient(#4CD964,#2DB84C)"><i data-lucide="message-circle"></i></i></div><div class="ic"><i style="background:linear-gradient(#FF5E7E,#FF2D55)"><i data-lucide="music"></i></i></div></div>
+<div class="app" id="app"><div id="sb2"></div><div class="top"><button id="close"><i data-lucide="chevron-left"></i>홈</button></div><h3>밥심</h3><div class="s">찍어 둔 것만 모여 있어요.</div><input id="q" placeholder="한 줄 메모나 궁금한 것 (선택)"><div id="rows"></div></div>
+<div class="homebar light"></div>
 <script src="../engine.js"></script><script src="../proto/shared.js"></script>
 <script>
 const B=Bapsim, st=B.Store('b'), $=s=>document.querySelector(s);
+$('#sb').innerHTML=B.statusBar(true); $('#sb2').innerHTML=B.statusBar(false);
 function render(){
-  const n=B.nudge(st);
-  $('#slot').innerHTML=n?`<button class="x" aria-label="닫기">✕</button><div class="lab">${n.kind==='catch'?'잠깐만요':'오늘'}</div><div id="nt">${B.esc(n.text)}</div><div class="tr">📷 ${B.esc(n.trace)}</div>`:'<div class="quiet">오늘은 짚어 드릴 게 없어요.<br>찍어 두기만 하세요.</div>';
-  if(n){ $('#slot .x').onclick=e=>{ e.stopPropagation(); st.dismiss(n.id); render(); }; $('#nt').onclick=()=>B.openSheet(`<p style="font-size:12px;color:#6b766f">${B.esc(n.tap.label)}</p>`+B.detailHTML(n.tap.q, st)); }
-  $('#rows').innerHTML=st.visible().slice().reverse().map(e=>`<div class="row">${B.dayLabel(e.day,st.today())} · ${e.snap?B.SNAPS[e.snap].e:'📝'} ${B.esc(e.text)}</div>`).join('');
+  const n=B.nudge(st), sl=$('#slot'); sl.classList.remove('out');
+  sl.innerHTML=n?`<button class="x" aria-label="닫기"><i data-lucide="x"></i></button><div class="ey"><span class="dot"></span>${n.kind==='catch'?'잠깐만요':'오늘'}</div><div class="m" id="nt">${B.esc(n.text)}</div><div class="more">${B.esc(n.tap.label)}<i data-lucide="chevron-right"></i></div>`:'<div class="quiet">오늘은 짚어 드릴 게 없어요.<br>찍어 두기만 하세요.</div>';
+  if(n){ $('#slot .x').onclick=e=>{ e.stopPropagation(); sl.classList.add('out'); setTimeout(()=>{ st.dismiss(n.id); render(); },260); }; $('#nt').onclick=$('#slot .more').onclick=()=>B.openSheet(B.detailHTML(n.tap.q, st)); }
+  $('#rows').innerHTML=st.visible().slice().reverse().map(e=>`<div class="row">${B.src(e)?`<img src="${B.src(e)}" alt="">`:'<span class="mi"><i data-lucide="pen-line"></i></span>'}${B.esc(e.text)}<span class="d">${B.dayLabel(e.day,st.today())}</span></div>`).join('');
+  B.icons();
 }
-$('#g').innerHTML=Object.entries(B.SNAPS).map(([k,s])=>`<button data-k="${k}" title="${s.l}">${s.e}</button>`).join('');
-$('#cam').onclick=()=>{ const p=$('#pick'); p.style.display=p.style.display==='block'?'none':'block'; };
-document.querySelectorAll('#g button').forEach(b=>b.onclick=()=>{ st.snap(b.dataset.k); $('#pick').style.display='none'; B.toast('밥심에 저장했어요'); render(); });
+$('#cam').onclick=()=>B.capture(st, render);
 $('#openapp').onclick=()=>$('#app').style.display='block'; $('#close').onclick=()=>$('#app').style.display='none';
 $('#q').onkeydown=e=>{ if(e.key!=='Enter'||e.isComposing) return; const v=e.target.value.trim(); if(!v) return; const need=st.memo(v); e.target.value=''; if(need) B.openSheet(B.detailHTML(v, st)); else B.toast('저장했어요'); render(); };
-B.demoBar(st, render); render();
+B.demoBar(st, render); B.ready(st).then(()=>{ render(); B.onboard(st, render); });
 </script></body></html>

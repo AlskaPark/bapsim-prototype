@@ -31,14 +31,19 @@ function Store(variant){
   const seed = () => ({ profile: PERSONA.profile, view: 0, dismissed: [], entries: PERSONA.log.map(([d,k,t]) => k==='note'
       ? { day: dk(addDays(baseToday,-d)), kind:'note', text:t, tags:E.classify(t).tags }
       : { day: dk(addDays(baseToday,-d)), kind:'photo', snap:k, text:SNAPS[k].l, time:t, tags:SNAPS[k].tags }) });
-  if (!s) s = seed();
+  const blank = () => ({ profile: {}, view: 0, dismissed: [], entries: [], onboarded: false, sample: false });
+  if (!s) s = blank();
   const api = {
     get s(){ return s; }, save(){ localStorage.setItem(KEY, JSON.stringify(s)); },
-    reset(){ s = seed(); api.save(); }, clear(){ s = { profile: PERSONA.profile, view:0, dismissed:[], entries:[] }; api.save(); },
+    reset(){ const p = s.profile, o = s.onboarded; s = blank(); s.profile = p; s.onboarded = o; api.save(); },
+    loadSample(){ const d = seed(); s.entries = d.entries.map(e => ({ ...e, sample: true })).concat(s.entries.filter(e => !e.sample)); s.profile = { ...PERSONA.profile }; s.sample = true; s.onboarded = true; s.view = 0; s.dismissed = []; api.save(); },
+    clearSample(){ s.entries = s.entries.filter(e => !e.sample); s.sample = false; api.save(); },
+    addPhoto(pid){ const e = { id: 'e' + Date.now(), day: api.today(), kind:'photo', pid, text:'사진', time:new Date().toTimeString().slice(0,5), tags:[] }; s.entries.push(e); api.save(); return e; },
+    label(id, k){ const e = s.entries.find(x => x.id === id); if (!e) return; e.snap = k; e.text = SNAPS[k].l; e.tags = SNAPS[k].tags; api.save(); }, clear(){ s = { profile: PERSONA.profile, view:0, dismissed:[], entries:[] }; api.save(); },
     today(){ return dk(addDays(baseToday, s.view)); },           // 데모: 날짜 넘겨 보기 (-3 ~ 0)
     visible(){ const t = api.today(); return s.entries.filter(e => e.day <= t); },
     snap(k){ s.entries.push({ day: api.today(), kind:'photo', snap:k, text:SNAPS[k].l, time:new Date().toTimeString().slice(0,5), tags:SNAPS[k].tags }); api.save(); },
-    memo(text){ const c = E.classify(text); s.entries.push({ day: api.today(), kind: c.need?'need':'note', text, tags:c.tags }); api.save(); return c.need; },
+    memo(text){ const c = E.classify(text), tags = [...c.tags]; [[/타이레놀|아세트아미노펜|감기약/,'apap'],[/쌍화탕/,'licorice'],[/술|맥주|소주|와인|막걸리/,'alcohol'],[/커피|아메리카노|라떼/,'coffee'],[/두부|바나나|아몬드/,'mg']].forEach(([r,t]) => { if (r.test(text) && !tags.includes(t)) tags.push(t); }); s.entries.push({ day: api.today(), kind: c.need?'need':'note', text, tags }); api.save(); return c.need; },
     dismiss(id){ s.dismissed.push(id); api.save(); },
     memory(){ const t = api.today(); return { recentEntries: api.visible().filter(e => between(e.day,t) <= 7).map(e => ({ ...e, dayDiff: between(e.day,t) })) }; },
   };
@@ -49,7 +54,7 @@ function Store(variant){
 function nudge(st){
   const t = st.today(), es = st.visible(), on = (d, tag) => es.filter(e => e.day === d && (e.tags||[]).includes(tag));
   const y = dk(addDays(new Date(t+'T09:00:00'), -1)), P = st.s.profile, htn = (P.conditions||[]).includes('hypertension');
-  const tr = a => a.map(e => `${dayLabel(e.day,t)} ${e.snap?SNAPS[e.snap].e:'📝'}${e.text}`).join(' · ');
+  const tr = a => a.map(e => ({ day: dayLabel(e.day,t), snap: e.snap, src: src(e), text: e.text }));
   const week = tag => es.filter(e => between(e.day,t) <= 7 && (e.tags||[]).includes(tag));
   const cands = [];
   const apap = on(t,'apap'), alc = [...on(t,'alcohol')];
@@ -65,42 +70,87 @@ function nudge(st){
   return cands.find(c => !st.s.dismissed.includes(c.id)) || null;
 }
 
+const IMG = k => `../img/${k}.jpg`;
+function traceHTML(items){ if(!items||!items.length) return ''; return `<div class="trace">${items.slice(0,4).map(i => (i.src || i.snap) ? `<span class="tchip"><img src="${i.src || IMG(i.snap)}" alt="">${esc(i.day)} ${esc(i.text)}</span>` : `<span class="tchip memo"><i data-lucide="pen-line"></i>${esc(i.day)} ${esc(i.text)}</span>`).join('')}</div>`; }
+function traceText(items){ return (items||[]).map(i => `${i.day} ${i.text}`).join(' · '); }
+function icons(){ if (window.lucide) window.lucide.createIcons({ attrs: { 'stroke-width': 1.75 } }); }
+const SB_ICONS = `<svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg>
+<svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 2.5c2.3 0 4.4.9 6 2.4l1.1-1.2A10.2 10.2 0 0 0 8 .8 10.2 10.2 0 0 0 .9 3.7L2 4.9a8.5 8.5 0 0 1 6-2.4Zm0 3.4c1.4 0 2.6.5 3.6 1.4l1.1-1.2A7 7 0 0 0 8 4.2a7 7 0 0 0-4.7 1.9l1.1 1.2c1-.9 2.2-1.4 3.6-1.4Zm0 3.3c.6 0 1.1.2 1.5.6L8 11.5 6.5 9.8c.4-.4.9-.6 1.5-.6Z" fill="currentColor"/></svg>
+<svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" stroke="currentColor" opacity=".4" fill="none"/><rect x="2" y="2" width="20" height="9" rx="2" fill="currentColor"/><path d="M25 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2Z" fill="currentColor" opacity=".45"/></svg>`;
+function statusBar(dark){ return `<div class="sbar ${dark?'dark':''}"><span class="t">9:41</span><span class="island"></span><span class="r">${SB_ICONS}</span></div>`; }
+function nudgeHTML(n, o={}){ return `<div class="nudge ${o.cls||''}" id="${o.id||'nc'}"><div class="eyebrow"><span class="dot"></span>${o.label||'밥심'}${o.time?` · ${o.time}`:''}</div><div class="msg">${esc(n.text)}</div>${traceHTML(n.trace)}${o.tap===false?'':`<button class="tap">${esc(n.tap.label)}<i data-lucide="chevron-right"></i></button>`}<button class="x" aria-label="닫기"><i data-lucide="x"></i></button></div>`; }
+function bindNudge(root, n, st, rerender){ const el = root.querySelector('.nudge'); if(!el) return; icons();
+  el.querySelector('.x').onclick = e => { e.stopPropagation(); el.classList.add('out'); setTimeout(() => { st.dismiss(n.id); rerender(); }, 260); };
+  const open = () => openSheet(detailHTML(n.tap.q, st)); const t = el.querySelector('.tap'); if (t) t.onclick = e => { e.stopPropagation(); open(); }; return open; }
+// ---- 기기 저장 (IndexedDB) ----
+const DB = new Promise((res, rej) => { const r = indexedDB.open('bapsim-photos', 1); r.onupgradeneeded = () => r.result.createObjectStore('p'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+const URLS = {};
+async function idbPut(id, blob){ const db = await DB; return new Promise((res, rej) => { const t = db.transaction('p','readwrite'); t.objectStore('p').put(blob, id); t.oncomplete = res; t.onerror = () => rej(t.error); }); }
+async function idbGet(id){ const db = await DB; return new Promise(res => { const q = db.transaction('p').objectStore('p').get(id); q.onsuccess = () => res(q.result); q.onerror = () => res(null); }); }
+async function ready(st){ for (const e of st.s.entries) if (e.pid && !URLS[e.pid]) { const b = await idbGet(e.pid); if (b) URLS[e.pid] = URL.createObjectURL(b); } }
+const src = e => e.pid ? (URLS[e.pid] || '') : e.snap ? IMG(e.snap) : '';
+async function shrink(file){ try { const bmp = await createImageBitmap(file); const k = Math.min(1, 1080 / Math.max(bmp.width, bmp.height)); const c = document.createElement('canvas'); c.width = bmp.width * k; c.height = bmp.height * k; c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height); return await new Promise(r => c.toBlob(r, 'image/jpeg', .85)); } catch { return file; } }
+// 실제 카메라/앨범: <input capture>. 찍으면 저장만 하고, 선택 라벨 칩은 막지 않고 잠깐 떠 있다 사라짐
+function capture(st, onDone, opts={}){
+  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; if (opts.multiple) inp.multiple = true; else inp.capture = 'environment';
+  inp.style.display = 'none'; document.body.appendChild(inp);
+  inp.onchange = async () => { const files = [...inp.files]; inp.remove(); if (!files.length) return; let last;
+    for (const f of files) { const pid = 'p' + Date.now() + Math.random().toString(36).slice(2,6); const b = await shrink(f); await idbPut(pid, b); URLS[pid] = URL.createObjectURL(b); last = st.addPhoto(pid); }
+    toast(files.length > 1 ? '사진을 저장했어요' : '저장했어요'); onDone && onDone(); if (files.length === 1) labelChips(st, last, onDone); };
+  inp.click(); return inp;
+}
+async function saveBlob(st, blob, onDone){ const pid = 'p' + Date.now() + Math.random().toString(36).slice(2,6); await idbPut(pid, blob); URLS[pid] = URL.createObjectURL(blob); const e = st.addPhoto(pid); toast('저장했어요'); onDone && onDone(); labelChips(st, e, onDone); }
+const CHIP_KEYS = ['coffee','beer','soju','tylenol','ssanghwa','ramen','banana','tofu'];
+function labelChips(st, e, onDone){
+  document.querySelectorAll('.chips').forEach(x => x.remove());
+  const d = document.createElement('div'); d.className = 'chips';
+  d.innerHTML = `<span class="cl">원하면 한 번 눌러 두세요</span><div class="cr">${CHIP_KEYS.map(k => `<button data-k="${k}">${SNAPS[k].l}</button>`).join('')}</div>`;
+  document.body.appendChild(d); const kill = () => { d.classList.add('out'); setTimeout(() => d.remove(), 250); }; const t = setTimeout(kill, 6000);
+  d.querySelectorAll('button').forEach(b => b.onclick = () => { clearTimeout(t); st.label(e.id, b.dataset.k); kill(); onDone && onDone(); });
+}
+// 한 번만: 안전 정보 (질문은 여기서만)
+function onboard(st, onDone){
+  if (st.s.onboarded) return false;
+  const C = [['hypertension','고혈압'],['diabetes','당뇨'],['kidney','신장 질환'],['pregnant','임신·수유'],['anticoag','항응고제 복용']];
+  const bg = document.createElement('div'); bg.className = 'ob';
+  bg.innerHTML = `<div class="obc"><div class="ob-ic"><i data-lucide="soup"></i></div><h2>밥심</h2><p>먹고 마신 걸 찍어 두기만 하세요.<br>필요한 순간에만 한 줄로 알려 드려요.</p>
+  <div class="ob-l">맞지 않는 걸 걸러 드릴게요 (선택)</div><div class="ob-c">${C.map(([k,l]) => `<button data-c="${k}">${l}</button>`).join('')}</div>
+  <input id="ob-meds" placeholder="드시는 약 (예: 혈압약, 타이레놀)"><input id="ob-al" placeholder="알레르기 (예: 새우, 땅콩)">
+  <button class="ob-go" id="ob-go">시작하기</button><button class="ob-s" id="ob-s">샘플 기록으로 둘러보기</button><p class="ob-f">이 기기 안에만 저장돼요. 서버로 보내지 않아요.</p></div>`;
+  document.body.appendChild(bg); icons();
+  bg.querySelectorAll('[data-c]').forEach(b => b.onclick = () => b.classList.toggle('on'));
+  const done = () => { bg.classList.add('out'); setTimeout(() => bg.remove(), 250); onDone && onDone(); };
+  bg.querySelector('#ob-go').onclick = () => { const conds = [...bg.querySelectorAll('[data-c].on')].map(b => b.dataset.c); const meds = bg.querySelector('#ob-meds').value.trim() + (conds.includes('anticoag') ? ' 항응고제' : '');
+    st.s.profile = { conditions: conds.filter(c => c !== 'anticoag'), meds: meds.trim(), allergies: bg.querySelector('#ob-al').value.split(/[,\s]+/).filter(Boolean) }; st.s.onboarded = true; st.save(); done(); };
+  bg.querySelector('#ob-s').onclick = () => { st.loadSample(); done(); };
+  return true;
+}
 // 탭 뒤 상세 (엔진 답변 + 제품 비교(예시) + 상담 목업)
 function detailHTML(q, st){
   const r = E.answer(q, st.s.profile, st.memory());
-  if (r.type === 'stop') return `<div class="d-stop">🚑 ${esc(r.title)} ${esc(r.text)}</div>`;
-  let h = `<p class="d-say">${esc((r.lines||[]).join(' '))}</p>`;
+  if (r.type === 'stop') return `<div class="d-stop">${esc(r.title)} ${esc(r.text)}</div>`;
+  let h = `<div class="d-eyebrow">밥심이 찾아본 것</div><p class="d-say">${esc((r.lines||[]).join(' '))}</p>`;
   for (const g of r.groups) for (const i of g.items) {
-    h += `<div class="d-it"><b>${esc(i.name)}</b> <span class="d-k">${/일반식품/.test(i.claim||'')?'식품':g.kind==='supp'?'건강기능식품':g.kind==='otc'?'일반의약품':'음식·차'}</span><div>${esc(g.kind==='food'?i.effect:i.claim)}</div>${i.note?`<div class="d-note">⚠️ ${esc(i.note)}</div>`:''}`;
+    h += `<div class="d-it"><b>${esc(i.name)}</b> <span class="d-k">${/일반식품/.test(i.claim||'')?'식품':g.kind==='supp'?'건강기능식품':g.kind==='otc'?'일반의약품':'음식·차'}</span><div>${esc(g.kind==='food'?i.effect:i.claim)}</div>${i.note?`<div class="d-note">${esc(i.note)}</div>`:''}`;
     if (i.variants) { const v = i.variants; h += `<details><summary>제품으로 고른다면</summary>${r.enough&&g.kind==='food'?'<div class="d-note">집에서 만들어 드셔도 충분해요. 굳이 사지 않아도 돼요.</div>':''}<div class="d-demo">예시 데이터 · 가상의 제품·가격</div>
       <table class="d-cmp"><tr><th></th>${v.items.map(p=>`<th>${esc(p.name)}</th>`).join('')}</tr>${v.axis.map((ax,k)=>`<tr><th>${esc(ax)}</th>${v.items.map(p=>`<td>${esc(p.vals[k])}</td>`).join('')}</tr>`).join('')}
       <tr><th>좋은 점</th>${v.items.map(p=>`<td>${esc(p.pro||'-')}</td>`).join('')}</tr><tr><th>아쉬운 점</th>${v.items.map(p=>`<td>${esc(p.con||'-')}</td>`).join('')}</tr></table>
-      ${v.items.map(p=>`<div class="d-badge">✔ ${esc(p.name)} · ${esc(p.badge)} · ${esc(String(p.price).replace('예시가','가격(예시)'))}</div>`).join('')}</details>`; }
+      ${v.items.map(p=>`<div class="d-badge"><i data-lucide="badge-check"></i>${esc(p.name)} · ${esc(p.badge)} · ${esc(String(p.price).replace('예시가','가격(예시)'))}</div>`).join('')}</details>`; }
     h += `</div>`;
   }
   if (r.excluded.length) h += `<div class="d-it d-ex"><b>피하는 게 좋아요</b>${r.excluded.map(e=>`<div>• ${esc(e.name)} — ${esc(e.reason)}</div>`).join('')}</div>`;
-  h += `<button class="d-consult" onclick="this.outerHTML='<div class=d-note>✅ 상담 요청 목업이에요. 실제로는 전송되지 않아요.</div>'">약사·영양사 상담 요청 (목업)</button>
-    <p class="d-disc">ⓘ 진단·처방이 아닌 일반 정보예요. 상호작용 문구는 예시이며 약사 검수 전이에요.</p>`;
+  h += `<button class="d-consult" onclick="this.outerHTML='<div class=d-note>상담 요청 목업이에요. 실제로는 전송되지 않아요.</div>'">약사·영양사 상담 요청 (목업)</button>
+    <p class="d-disc">진단·처방이 아닌 일반 정보예요. 상호작용 문구는 예시이며 약사 검수 전이에요.</p>`;
   return h;
 }
-const SHEET_CSS = `.sh-bg{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:50;display:flex;align-items:flex-end;justify-content:center}
-.sh{background:#fff;width:100%;max-width:430px;max-height:82vh;overflow:auto;border-radius:20px 20px 0 0;padding:16px 16px 28px;font-size:14px;line-height:1.55;color:#1f2a24}
-.sh .x{float:right;border:0;background:none;font-size:18px;color:#888}.d-say{font-size:15px;margin:4px 0 10px}.d-it{border:1px solid #ebe7de;border-radius:12px;padding:10px;margin:8px 0;font-size:13px}
-.d-k{font-size:11px;color:#2f8f5b;background:#e8f5ee;border-radius:6px;padding:1px 6px}.d-note{background:#fff4e5;color:#8a4b0c;border-radius:8px;padding:6px 8px;margin-top:6px;font-size:12px}
-.d-ex{border-color:#f3d2cc}.d-demo{display:inline-block;background:#fdecea;color:#c0392b;font-size:10.5px;border-radius:6px;padding:1px 6px;margin:6px 0}
-.d-cmp{width:100%;border-collapse:collapse;font-size:11px}.d-cmp th,.d-cmp td{border-top:1px solid #eee;padding:4px;text-align:left;vertical-align:top}.d-cmp th{color:#6b766f;font-weight:500}
-.d-badge{font-size:11px;color:#24508f;margin-top:4px}details summary{color:#2f8f5b;cursor:pointer;margin-top:6px;font-size:12.5px}
-.d-consult{width:100%;margin-top:10px;border:1px solid #cfe3d7;background:#fff;color:#2f8f5b;border-radius:12px;padding:10px;font-size:13px}.d-disc{font-size:11px;color:#888}.d-stop{background:#fdecea;color:#c0392b;padding:12px;border-radius:12px}
-.tst{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#1f2a24;color:#fff;padding:8px 14px;border-radius:99px;font-size:13px;z-index:60;opacity:.92}
-.demo{position:fixed;left:0;right:0;bottom:0;display:flex;gap:6px;justify-content:center;align-items:center;padding:6px;font-size:11px;color:#666;background:rgba(255,255,255,.85);z-index:40}
-.demo button{border:1px solid #ccc;background:#fff;border-radius:8px;padding:3px 8px;font-size:11px}`;
-function openSheet(html){ const bg = document.createElement('div'); bg.className='sh-bg'; bg.innerHTML=`<div class="sh"><button class="x" aria-label="닫기">✕</button>${html}</div>`; bg.onclick=e=>{ if(e.target===bg||e.target.classList.contains('x')) bg.remove(); }; document.body.appendChild(bg); return bg; }
+const SHEET_CSS = '';
+function openSheet(html){ const bg = document.createElement('div'); bg.className='sh-bg'; bg.innerHTML=`<div class="sh"><div class="grab"></div><button class="x" aria-label="닫기"><i data-lucide="x"></i></button>${html}</div>`; bg.onclick=e=>{ if(e.target===bg||e.target.closest('.x')) { bg.classList.add('out'); setTimeout(()=>bg.remove(),220); } }; document.body.appendChild(bg); icons(); return bg; }
 function toast(t){ const d=document.createElement('div'); d.className='tst'; d.textContent=t; document.body.appendChild(d); setTimeout(()=>d.remove(),1400); }
 function demoBar(st, rerender){ const b=document.createElement('div'); b.className='demo'; document.body.appendChild(b);
-  const draw=()=>{ b.innerHTML=`데모 날짜 <button data-d="-1">◀</button> <b id="dl">${st.s.view===0?'오늘':(-st.s.view)+'일 전'}</b> <button data-d="1">▶</button> <button data-r>기록 초기화</button> <a href="../compare/" style="color:#2f8f5b">비교 ›</a>`;
+  const draw=()=>{ b.innerHTML=`<span class="lbl">데모</span><button data-d="-1" aria-label="전날"><i data-lucide="chevron-left"></i></button><b id="dl">${st.s.view===0?'오늘':(-st.s.view)+'일 전'}</b><button data-d="1" aria-label="다음 날"><i data-lucide="chevron-right"></i></button><button data-s>${st.s.sample?'샘플 끄기':'샘플'}</button><a href="../compare/">비교</a>`; icons();
     b.querySelectorAll('[data-d]').forEach(x=>x.onclick=()=>{ st.s.view=Math.max(-4,Math.min(0,st.s.view+ +x.dataset.d)); st.save(); draw(); rerender(); });
-    b.querySelector('[data-r]').onclick=()=>{ st.reset(); st.s.view=0; st.save(); draw(); rerender(); }; };
+    b.querySelector('[data-s]').onclick=()=>{ st.s.sample ? st.clearSample() : st.loadSample(); draw(); rerender(); }; };
   draw(); }
 const st0 = document.createElement('style'); st0.textContent = SHEET_CSS; document.head.appendChild(st0);
-window.Bapsim = { E, esc, SNAPS, PERSONA, Store, nudge, detailHTML, openSheet, toast, demoBar, dayLabel, between };
+window.Bapsim = { E, esc, SNAPS, PERSONA, Store, nudge, detailHTML, openSheet, toast, demoBar, dayLabel, between, IMG, src, ready, capture, saveBlob, labelChips, onboard, traceHTML, traceText, icons, statusBar, nudgeHTML, bindNudge };
 })();
