@@ -194,5 +194,19 @@
   "page": "https://commons.wikimedia.org/wiki/File:Yogurt,_fruit,_granola_bowl_(34999358091).jpg",
   "artist": "T.Tseng",
   "license": "CC BY 2.0"
+ },
+ {
+  "k": "icecream",
+  "title": "Ice cream in cup with sprinkles and spoon.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Ice_cream_in_cup_with_sprinkles_and_spoon.jpg",
+  "artist": "see page",
+  "license": "CC0"
+ },
+ {
+  "k": "zerodrink",
+  "title": "A cup and can of Sprite.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:A_cup_and_can_of_Sprite.jpg",
+  "artist": "see page",
+  "license": "CC BY-SA 4.0"
  }
 ]

@@ -16,12 +16,13 @@ const ITEMS = {
   pizza:{l:'피자',t:['dairy','oily']}, chicken:{l:'치킨',t:['oily']}, samgyeop:{l:'삼겹살',t:['oily']}, snack:{l:'과자',t:['sweet']}, tteok:{l:'떡볶이',t:['sweet','spicy']}, ramen:{l:'라면',t:['spicy','oily']}, salad:{l:'샐러드',t:['veg']}, yogurt:{l:'요거트',t:['dairy','yogurt']}, cola:{l:'콜라',t:['fizzy','sweet']},
 };
 // 모의 이미지 인식: 서버가 붙으면 실제 모델로 교체. 지금은 파일 이름 단서만 사용, 확실하지 않으면 이름표 없음 (묻지 않음)
-const REC = [[/tylenol|타이레놀|acetaminophen/i,'tylenol'],[/ibuprofen|이부프로펜|부루펜|advil/i,'ibuprofen'],[/beer|맥주/i,'beer'],[/soju|소주/i,'soju'],[/filter|drip|드립|필터/i,'filter'],[/decaf|디카페인/i,'decaf'],[/latte|라떼/i,'latte'],[/americano|아메리카노/i,'americano'],[/coffee|커피/i,'coffee'],[/ssanghwa|쌍화/i,'ssanghwa'],[/grapefruit|자몽/i,'grapefruit'],[/iron|철분/i,'iron'],[/energy|에너지/i,'energy'],[/banana|바나나/i,'banana'],[/tofu|두부/i,'tofu'],[/dosirak|도시락|lunch/i,'dosirak'],[/onigiri|삼각김밥/i,'onigiri'],[/protein|프로틴/i,'protein'],[/pizza|피자/i,'pizza'],[/chicken|치킨/i,'chicken'],[/tteok|떡볶이/i,'tteok'],[/ramen|라면/i,'ramen'],[/salad|샐러드/i,'salad'],[/cola|콜라/i,'cola'],[/samgyeop|삼겹/i,'samgyeop'],[/snack|과자/i,'snack'],[/yogurt|요거트|요구르트/i,'yogurt']];
+const REC = [[/allulose|알룰로스|zero|제로/i,'zerodrink'],[/icecream|ice-cream|아이스크림/i,'icecream'],[/tylenol|타이레놀|acetaminophen/i,'tylenol'],[/ibuprofen|이부프로펜|부루펜|advil/i,'ibuprofen'],[/beer|맥주/i,'beer'],[/soju|소주/i,'soju'],[/filter|drip|드립|필터/i,'filter'],[/decaf|디카페인/i,'decaf'],[/latte|라떼/i,'latte'],[/americano|아메리카노/i,'americano'],[/coffee|커피/i,'coffee'],[/ssanghwa|쌍화/i,'ssanghwa'],[/grapefruit|자몽/i,'grapefruit'],[/iron|철분/i,'iron'],[/energy|에너지/i,'energy'],[/banana|바나나/i,'banana'],[/tofu|두부/i,'tofu'],[/dosirak|도시락|lunch/i,'dosirak'],[/onigiri|삼각김밥/i,'onigiri'],[/protein|프로틴/i,'protein'],[/pizza|피자/i,'pizza'],[/chicken|치킨/i,'chicken'],[/tteok|떡볶이/i,'tteok'],[/ramen|라면/i,'ramen'],[/salad|샐러드/i,'salad'],[/cola|콜라/i,'cola'],[/samgyeop|삼겹/i,'samgyeop'],[/snack|과자/i,'snack'],[/yogurt|요거트|요구르트/i,'yogurt']];
 const recognize = name => { const h = REC.find(([r]) => r.test(name || '')); return h ? h[1] : null; };
 ITEMS.soda = { l:'탄산음료', t:['fizzy','sweet'], img:'cola' }; ITEMS.cancoffee = { l:'커피 캔', t:['coffee','caffeine','sweet'], img:'energy' }; ITEMS.makgeolli = { l:'막걸리', t:['alcohol'], img:'soju' };
+ITEMS.zerodrink = { l:'제로 음료', t:['fizzy','allulose'] }; ITEMS.icecream = { l:'저당 아이스크림', t:['allulose'] };
 ITEMS.vitamin = { l:'영양제', t:[], img:'iron' }; ITEMS.coldmed = { l:'감기약', t:['apap'], img:'tylenol' }; ITEMS.gingertea = { l:'생강차', t:[], img:'ssanghwa' };
 // 모의 인식기 top-k: 그 사진에 그럴듯한 후보 2~3개 (실제 서비스에선 모델 점수 순)
-const CANDS = { energy:['energy','soda','cancoffee'], cola:['cola','soda','energy'], beer:['beer','soda','makgeolli'], soju:['soju','makgeolli','beer'], coffee:['coffee','latte','americano'], latte:['latte','coffee','americano'],
+const CANDS = { zerodrink:['zerodrink','soda','cola'], icecream:['icecream','snack','yogurt'], energy:['energy','soda','cancoffee'], cola:['cola','soda','energy'], beer:['beer','soda','makgeolli'], soju:['soju','makgeolli','beer'], coffee:['coffee','latte','americano'], latte:['latte','coffee','americano'],
   americano:['americano','coffee','filter'], filter:['filter','americano','coffee'], tylenol:['tylenol','coldmed','vitamin'], iron:['iron','vitamin','tylenol'], ssanghwa:['ssanghwa','gingertea','coldmed'],
   dosirak:['dosirak','onigiri','chicken'], pizza:['pizza','chicken','tteok'], chicken:['chicken','pizza','samgyeop'], yogurt:['yogurt','banana','salad'] };
 const IMGK = k => IMG((ITEMS[k] && ITEMS[k].img) || k);
@@ -65,7 +66,7 @@ const hasMed = re => re.test([...S.profile.meds, S.profile.other].join(' '));
 const SAMPLE = { meds:['혈압약'], shortSleep:[12,6,4], log:[
   [13,'latte','09:00'],[13,'n','피곤'],[13,'n','커피 마시고 속이 불편함'],[13,'salad','12:40'],[13,'n','개운함'],[5,'salad','12:30'],[5,'n','개운함'],[12,'americano','08:30'],[12,'energy','15:40'],[12,'n','다리에 쥐 났음'],
   [11,'chicken','20:00'],[9,'yogurt','08:10'],[9,'n','속 편함'],[9,'cola','21:00'],[8,'n','아침에 배에 가스 참'],[8,'snack','16:00'],[7,'samgyeop','12:30'],[7,'n','소화가 잘 안 됨'],[6,'n','턱에 뾰루지'],[11,'soju','21:30'],[10,'n','속이 더부룩함'],[10,'latte','10:00'],[10,'n','피곤'],[10,'n','커피 마시고 속이 불편함'],[9,'ramen','13:00'],[8,'americano','09:10'],[8,'n','피곤'],[11,'energy','15:00'],[7,'tofu','19:00'],
-  [6,'filter','08:40'],[6,'iron','09:00'],[6,'dosirak','12:30'],[6,'energy','16:10'],
+  [11,'zerodrink','15:30'],[11,'n','설사'],[4,'icecream','21:00'],[3,'n','설사'],[6,'filter','08:40'],[6,'iron','09:00'],[6,'dosirak','12:30'],[6,'energy','16:10'],
   [5,'yogurt','08:00'],[5,'n','속 편함'],[5,'filter','08:50'],[5,'banana','15:20'],[5,'n','다리에 쥐 났음'],
   [4,'filter','09:00'],[4,'onigiri','13:10'],[4,'energy','17:00'],
   [3,'tylenol','09:10'],[3,'pizza','20:10'],[3,'beer','21:00'],
@@ -120,6 +121,8 @@ function pick(){
   /* 술 다음 날 카드: 출처 있는 도움이 없어 숨김 (NIAAA: 숙취 해소법 중 과학적으로 입증된 것 없음) */
   const cramp = es.filter(e => e.kind === 'memo' && /쥐/.test(e.text) && gap(e.day, t) >= 1 && gap(e.day, t) <= 2), cw = wk('caffeine'), mg = wk('mg');
   /* 다리에 쥐 카드: 출처 있는 도움이 없어 숨김 */
+  { const al = on(t,'allulose'), f = al.length && insights().find(x => x.id === 'allu');
+    if (f) C.push({ id:'allu', src:[al.at(-1)], pair:`${al.at(-1).text} · 알룰로스`, msg:'이것도 알룰로스가 든 제품이에요. 전에 설사와 겹쳤던 그 성분이에요.', short:'이것도 알룰로스가 든 제품이에요', title:'알룰로스', why:'전에 제로·저당 제품 다음에 설사가 겹쳤고, 둘 다 알룰로스가 들어 있었어요. 알룰로스는 많이 먹을수록 설사가 잦았다는 연구가 있어요.', refs:['allulose'] }); }
   if (!C.length && S.watch) for (const [name, w] of Object.entries(S.watch)) { const now = priceOn(name, w.base, t); if (now < w.at && t > w.day) { C.push({ id:'price', src:[], product: w.key, pair:'지켜보던 가격', msg:`지켜보던 ${name} 가격이 내려갔어요. 확인된 판매처 기준이에요.`, short:`지켜보던 ${name} 가격이 내려갔어요` }); break; } }
   const kind = d => d.slice(0, d.indexOf('-')), dday = d => d.slice(d.indexOf('-') + 1);
   return C.find(c => !S.dismissed.some(d => kind(d) === c.id && gap(dday(d), t) >= 0 && gap(dday(d), t) <= 3)) || null;
@@ -317,6 +320,7 @@ const RULES = [
   { id:'bloat', kind:'trig', sym:'더부룩함', area:'gut', re:/더부룩|체했/, g:[['alcohol','술']], from:1, to:1, t:n => `속이 더부룩했던 날은 매번 전날 밤에 ${n}이 있었어요.` },
   { id:'skin', kind:'trig', sym:'뾰루지', area:'skin', re:/뾰루지|여드름|트러블/, g:[['sweet','단 것'],['dairy','유제품'],['alcohol','술']], from:1, to:3, t:n => `뾰루지가 났던 며칠 전엔 매번 ${n}이 있었어요.` },
   { id:'cramp', kind:'trig', sym:'다리에 쥐', area:'body', re:/쥐/, g:[['caffeine','커피']], from:0, to:3, need:2, t:() => '다리에 쥐가 났던 때는 매번 커피가 잦던 며칠 뒤였어요.' },
+  { id:'allu', kind:'trig', sym:'설사', area:'gut', re:/설사/, g:[['allulose','제로·저당 제품']], from:0, to:1, t:() => '제로·저당 제품 다음에 설사가 겹쳐요. 둘 다 알룰로스가 든 제품이었어요.', claim:'알룰로스는 많이 먹을수록 설사가 잦았다는 연구가 있어요.', ref:'allulose' },
   { id:'calm', kind:'help', sym:'속 편한 날', pos:true, area:'gut', re:/속 편/, g:[['yogurt','요거트']], from:0, to:0, t:n => `속 편했던 날은 매번 아침에 ${n}가 있었어요.` },
   { id:'fresh', kind:'help', sym:'개운한 날', pos:true, area:'energy', re:/개운/, g:[['veg','채소']], from:0, to:1, t:n => `개운했던 날은 매번 그 전에 ${n}가 있었어요.` },
   { id:'skinok', kind:'help', sym:'피부 좋은 날', pos:true, area:'skin', re:/피부 좋/, g:[['soy','콩'],['veg','채소']], from:0, to:2, t:n => `피부가 좋았던 날은 매번 며칠 전에 ${n}이 있었어요.` },
@@ -451,6 +455,7 @@ const REFS = {
   morck:{ l:'Morck 등, Am J Clin Nutr 1983 (커피와 철분 흡수)', u:'https://pubmed.ncbi.nlm.nih.gov/6402915/' },
   licorice:{ l:'Penninkilampi 등, J Hum Hypertens 2017 (체계적 문헌고찰)', u:'https://pubmed.ncbi.nlm.nih.gov/28660884/' },
   honey:{ l:'Oduwole 등, Cochrane 2018 (어린이 기침과 꿀)', u:'https://doi.org/10.1002/14651858.CD007094.pub5' },
+  allulose:{ l:'Han 등, Nutrients 2018 (알룰로스 위장 내성 시험)', u:'https://pubmed.ncbi.nlm.nih.gov/30572580/' },
   chamomile:{ l:'Hieu 등, Phytother Res 2019 (체계적 문헌고찰)', u:'https://pubmed.ncbi.nlm.nih.gov/31006899/' },
 };
 const refA = k => { const r = REFS[k]; return r ? `<a class="ref" href="${r.u}" target="_blank" rel="noopener noreferrer">${esc(r.l)}<span aria-hidden="true">↗</span></a>` : ''; };
@@ -554,6 +559,7 @@ function insightsPage(){
       ${x.inter ? `<div class="fd-tag"${why('밥심이 실제로 챙겼던 약 조합. 같은 카드 형식이지만 옅은 바탕으로 조용히 구분해요.')}><i data-lucide="shield-check"></i>챙겼던 조합</div>` : ''}
       ${x.pos ? `<div class="fd-tag pos"${why('좋았던 날의 겹침도 같은 규칙으로 모아요. 잎 하나로만 구분해요.')}><i data-lucide="leaf"></i>좋았던 날</div>` : ''}
       <p class="fd-t">${esc(x.text)}</p>
+      ${x.rule && x.rule.claim ? `<p class="fd-cl"${why('출처가 확인된 문장만 한 줄 덧붙여요. 링크를 눌러 원문을 직접 볼 수 있어요.')}>${esc(x.rule.claim)} ${refA(x.rule.ref)}</p>` : ''}
       ${x.hl ? `<p class="fd-hl"${why('건강 데이터는 원인으로 쓰지 않고, \'이런 날이기도 했어요\'처럼 곁들여 적기만 해요.')}><i data-lucide="heart-pulse"></i>${esc(x.hl)}</p>` : ''}
       ${stepsHTML(x)}
       ${c ? ckHTML(x, c) : act(x)}
