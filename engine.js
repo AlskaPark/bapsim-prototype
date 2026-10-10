@@ -94,7 +94,7 @@ const TOPICS = [
   },
   {
     id: 'hangover', label: '음주 후 · 간 컨디션',
-    keywords: ['숙취','술','음주','회식','간 건강','간이'],
+    keywords: ['숙취','술','음주','회식','간 건강','간이','마셔','마심','마신'],
     foods: [
       { name: '콩나물국', comp: '아스파라긴산', effect: '아스파라긴산 성분이 연구에서 알코올 대사 관련 작용이 보고되어, 음주 후 컨디션에 도움이 될 수 있어요', tags: [] },
       { name: '북엇국', comp: '메티오닌·타우린', effect: '북어의 아미노산 성분이 연구에서 간 해독 관련 작용이 보고되어 있어요', tags: ['fish'] },
@@ -231,7 +231,7 @@ TOPICS.push(
     foods:[
       { name:'도라지차', comp:'플라티코딘(사포닌)', effect:'도라지의 사포닌 성분이 연구에서 기도 점액 분비 관련 작용이 보고되어, 목 컨디션 관리에 도움이 될 수 있어요', tags:[] },
       { name:'배숙 · 배즙', comp:'루테올린·수분', effect:'배의 루테올린 성분이 연구에서 항염 관련 작용이 보고되어 있어요', tags:[] },
-      { name:'생강차', comp:'진저롤', effect:'진저롤 성분이 연구에서 항염 관련 작용이 보고되어, 따뜻하게 마시면 목 편안함에 도움이 될 수 있어요', tags:['ginger'] },
+      { name:'대추생강차', comp:'진저롤·대추 플라보노이드', effect:'진저롤 성분이 연구에서 항염 작용이 보고되어, 따뜻하게 마시면 목이 편해질 수 있어요', tags:['ginger','warm'] },
       { name:'꿀물(따뜻하게)', comp:'과당·폴리페놀', effect:'꿀이 연구에서 기침 관련 증상 완화 작용이 보고되어 있어요 (돌 전 아기에게는 금지)', tags:['sugar'] },
     ],
     supplements:[ { name:'아연', claim:'정상적인 면역기능에 필요', tags:['zinc'] }, { name:'비타민C', claim:'항산화 작용을 하여 유해산소로부터 세포를 보호하는데 필요', tags:['vitc'] } ],
@@ -315,6 +315,18 @@ VARIANTS['식이섬유(차전자피·난소화성말토덱스트린)'] = { axis:
   { name:'A사 차전자피 식이섬유', vals:['차전자피','물에 타서','배변활동 원활'], badge:'건강기능식품 · 품목신고 제2026-0000031호(예시)', price:'예시가 13,900원', seller:'예시몰 A' },
   { name:'B사 난소화성말토덱스트린', vals:['옥수수 유래','물에 타서','배변활동 원활, 식후 혈당상승 억제'], badge:'건강기능식품 · 품목신고 제2026-0000032호(예시)', price:'예시가 12,000원', seller:'예시몰 B' } ] };
 
+const PROSCONS = {
+  'A사 유산균':['보장균수가 많은 편','가격이 중간'], 'B사 프로바이오틱스':['가격 부담이 적음','보장균수는 보통'], 'C사 신바이오틱스':['프리바이오틱스 포함','가장 비싼 편'],
+  'A사 rTG 오메가3':['함량이 높은 편','알이 큰 편'], 'B사 오메가3':['가격 부담이 적음','함량은 보통'], 'C사 식물성 오메가3':['생선 원료가 아님','비싼 편'],
+  'A사 홍삼정':['진한 편','비싼 편'], 'B사 홍삼스틱':['간편함','함량은 보통'],
+  'A제약 갈근탕액':['마시기 편함','당이 들어 있음'], 'B제약 갈근탕 연조엑스':['휴대 편리','맛이 진함'], 'C제약 갈근탕정':['당 걱정 적음','알약이 여러 개'],
+  'A제약 쌍화탕':['구하기 쉬움','당이 들어 있을 수 있음'], 'B제약 쌍화 과립':['휴대 편리','물에 타야 함'],
+  'A사 생강차':['무난한 맛','당이 들어 있음'], 'B사 생강청':['진한 맛','당이 많은 편'], 'C사 생강차 티백':['저렴함','원산지 수입'],
+  'A사 대추차':['무난한 맛','당이 들어 있음'], 'B사 대추 진액':['진함','비싼 편'],
+  'A사 도라지배즙':['마시기 편함','도라지는 적음'], 'B사 도라지차':['도라지만','맛이 씀'],
+  'A사 차전자피 식이섬유':['효과 체감이 빠른 편','물을 충분히 마셔야 함'], 'B사 난소화성말토덱스트린':['물에 잘 녹음','가격이 중간'],
+};
+Object.values(VARIANTS).forEach(v => v.items.forEach(i => { const pc = PROSCONS[i.name]; if (pc) { i.pro = pc[0]; i.con = pc[1]; } }));
 const CONSULT_KEYS = ['계속','몇 주','몇주','오래','심해','심하','안 나아','안나아','한 달','반복','아직','검진','수치','LDL','ldl','약 먹','복용','같이 먹어도'];
 
 function parseMeds(text) {
@@ -325,11 +337,61 @@ function parseMeds(text) {
   return m;
 }
 
+
+// ---------- 생활 기록 분류: 필요가 담긴 입력만 답변 ----------
+const NEED_WORDS = ['아파','아픈','칼칼','따끔','더부룩','변비','피곤','힘들','높게','높다','안 좋','추천','뭐 먹','먹으면','좋을까','괜찮을까','같이 먹어도','심해','심하','으슬','몸살','속쓰','체한','체했','?','도와','어떡','방법','쓰려','막혀','콧물','기침'];
+const NOTE_TAGS = [
+  ['alcohol', ['술','회식','소주','맥주','한잔','와인','2차']],
+  ['late', ['야식','늦게','새벽','밤늦']],
+  ['sleepless', ['잠 못','못 잤','못잤','밤샘','설쳤','잠을 못']],
+  ['salty', ['라면','국물','짜게','짠 거','찌개']],
+  ['fried', ['치킨','삼겹','튀김','기름진','곱창']],
+  ['overwork', ['야근','마감','밤샘 작업']],
+  ['stress', ['스트레스']],
+];
+function noteTags(text){ return NOTE_TAGS.filter(([,ks]) => ks.some(k => text.includes(k))).map(([t]) => t); }
+function classify(text){
+  text = (text || '').trim();
+  const need = RED_FLAGS.some(k => text.includes(k)) || NEED_WORDS.some(k => text.includes(k));
+  return { need, tags: noteTags(text) };
+}
+
+const KN = ['','한','두','세','네','다섯','여섯','일곱'];
+const josa = (w, a, b) => { const c = w.charCodeAt(w.length - 1); return (c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28) ? w + a : w + b; };
+function connectLine(topicId, recent) {
+  const c = t => recent.filter(e => (e.tags || []).includes(t)).length, bits = [];
+  if (c('alcohol')) bits.push(`회식·술자리가 ${KN[Math.min(c('alcohol'),7)]} 번 있었고`);
+  if (c('overwork') >= 2) bits.push('야근이 잦았고');
+  if (c('sleepless')) bits.push(bits.length ? '잠도 부족하셨죠' : '잠을 설친 날이 있었죠');
+  if (topicId === 'lipid' && c('fried')) bits.splice(0, bits.length, `${recent.filter(e => (e.tags||[]).includes('fried')).map(e => e.text).slice(0,2).join(', ')} 기록이 있었죠`);
+  if (!bits.length) return null;
+  let line = '최근 일주일 ' + bits.join(', ');
+  if (!/죠$/.test(line)) line = line.replace(/고$/, '어요');
+  return line + '.';
+}
+const SUBJ = c => c === 'hypertension' ? '혈압이 있으시니' : c === 'anticoag' ? null : c === 'pregnant' ? '임신 중이시니' : c === 'kidney' ? '신장이 안 좋으시니' : c === 'diabetes' ? '당뇨가 있으시니' : c === 'heart' ? '심장질환이 있으시니' : c === 'thyroid' ? '갑상선 질환이 있으시니' : c.startsWith('allergy:') ? c.slice(8) + ' 알레르기가 있으시니' : c.startsWith('chk:') ? '검진 결과가 있으시니' : '복용 중인 약이 있으시니';
+const ING = { licorice:'감초 든 ', ephedra:'마황 든 ' };
+function safetyLine(excluded, conds, meds) {
+  if (!excluded.length) return null;
+  const e = excluded[0];
+  const rule = SAFETY_RULES.find(r => r.action === 'exclude' && conds.includes(r.cond) && e.reason === r.msg || (e.reason.includes(r.msg) && r.action === 'exclude' && conds.includes(r.cond)));
+  let subj = rule ? SUBJ(rule.cond) : '내 정보 기준으로';
+  if (rule && rule.cond === 'hypertension' && /혈압약/.test(meds || '')) subj = '혈압약 드시니';
+  if (rule && rule.cond === 'anticoag') subj = `${(meds || '').match(/아스피린|와파린|[가-힣]+/)?.[0] || '항응고제'} 드시니`;
+  const ing = rule ? (ING[rule.tag] || '') : '';
+  return `다만 ${subj} ${ing}${josa(e.name, '은', '는')} 피하세요.`;
+}
+function shortWhy(i, kind) {
+  if (kind === 'supp') return i.claim.split(/[,·]/)[0].trim();
+  if (kind === 'otc') return i.claim.replace(/ \(.*\)$/, '').split(',').slice(0, 2).join(',');
+  const e = i.effect || '', tail = e.includes(', ') ? e.split(', ').pop() : e;
+  return tail;
+}
 function answer(text, profile, memory) {
   memory = memory || { events:[] };
   text = (text || '').trim();
   if (!text) return { type:'empty' };
-  if (RED_FLAGS.some(k => text.includes(k))) return { type:'stop', title:'먹는 것으로 챙길 범위를 넘어 보여요', text:'말씀하신 증상은 음식·건강기능식품·일반의약품 추천을 드리지 않아요. 의료진 상담이 필요해요. 증상이 심하거나 급하면 119에 연락하세요.' };
+  if (RED_FLAGS.some(k => text.includes(k))) return { type:'stop', title:'의료진 상담이 필요해 보여요.', text:'급하면 119에 연락하세요.' };
   const p = JSON.parse(JSON.stringify(profile || {}));
   const textMeds = parseMeds(text);
   if (textMeds.length) p.meds = [p.meds, ...textMeds].filter(Boolean).join(', ');
@@ -342,33 +404,48 @@ function answer(text, profile, memory) {
     insights.unshift({ verdict:'피하는 게 좋아요', text:'지난번 검진에서 LDL이 높게 나왔다고 하셨죠. 튀김·삼겹살 같은 기름진 음식은 피하고 생선·콩 단백질로 바꿔 보세요.' });
   const scope = OUT_OF_SCOPE.some(k => text.includes(k)) ? '운동·생활습관은 다루지 않고, 먹는 것만 안내해요.' : null;
   const topics = matchTopics(text);
+  // 생활 기록을 배경으로: 지금 필요와 관련 있을 때만 짧게 언급
+  const nt = memory.recentNoteTags || [];
+  const cnt = t => nt.filter(x => x === t).length;
+  if (topics[0] && ['chill','throat','fatigue'].includes(topics[0].id) && (cnt('alcohol') >= 2 || cnt('sleepless') >= 2))
+    insights.push({ verdict:'조금 아쉬워요', text: cnt('alcohol') >= 2 ? '최근 기록을 보면 술자리가 잦았어요. 몸이 지쳐 있을 수 있으니 이번엔 따뜻하고 순한 것 위주로 골랐어요.' : '최근 기록을 보면 잠을 설친 날이 많았어요. 이번엔 따뜻하고 순한 것 위주로 골랐어요.' });
   // 식사 사진은 배경 맥락으로만: 관련 있는 질문일 때 한 줄 덧붙임
   const mt = memory.recentMealTags || [];
   const salty = mt.filter(x => x === 'salty').length, late = mt.filter(x => x === 'late').length;
   if (topics[0] && ['digest','sleep','latesnack','lipid','glucose','fatigue'].includes(topics[0].id) && (salty >= 3 || late >= 3))
     insights.push({ verdict:'조금 아쉬워요', text: late >= 3 ? '저장해 두신 식사 사진을 보면 요즘 저녁이 늦은 편이에요. 이것도 영향을 줄 수 있어요.' : '저장해 두신 식사 사진을 보면 요즘 짠 음식이 잦은 편이에요. 이것도 영향을 줄 수 있어요.' });
   const consultWhy = [];
-  if (CONSULT_KEYS.some(k => text.includes(k))) consultWhy.push(/검진|수치|LDL|ldl/.test(text) ? '검진 수치는 전문가와 함께 보는 게 좋아요' : /약|복용|같이 먹어도/.test(text) ? '복용 중인 약과의 상호작용은 약사 확인이 필요해요' : '증상이 오래가거나 반복되면 전문가 상담을 권해요');
+  if (CONSULT_KEYS.some(k => text.includes(k))) consultWhy.push(/검진|수치|LDL|ldl/.test(text) ? '검진 수치는 전문가와 보는 게 좋아요' : /약|복용|같이 먹어도/.test(text) ? '약과 함께 먹어도 되는지 확인이 필요해요' : '오래가면 상담을 권해요');
   if (!topics.length) {
     return { type:'answer', title:'딱 맞는 추천을 찾지 못했어요', insights, scope, groups:[], excluded:[], warnings:[], textMeds,
-      hint:'예: "어제 술 많이 마심", "목 칼칼함", "요즘 변비 심해요"처럼 상황을 한 줄로 적어 주세요.', consult:{ emphasize: consultWhy.length>0 || textMeds.length>0, why: consultWhy[0] || (textMeds.length ? '복용 중인 약과 함께 먹어도 되는지는 약사 확인이 필요해요' : '') }, disclaimer:DISCLAIMER };
+      hint:'조금 더 구체적으로 적어 주세요.', consult:{ emphasize: consultWhy.length>0 || textMeds.length>0, why: consultWhy[0] || (textMeds.length ? '복용 중인 약과 함께 먹어도 되는지는 약사 확인이 필요해요' : '') }, disclaimer:DISCLAIMER };
   }
   const t = topics[0];
   const warnings = [], excluded = [];
-  const foods = applySafety(t.foods, conds, warnings, excluded).slice(0, 3);
-  const supps = applySafety(t.supplements, conds, warnings, excluded).slice(0, 2);
+  const recent = memory.recentEntries || [];
+  const tired = recent.some(e => (e.tags||[]).some(x => ['alcohol','sleepless','overwork'].includes(x)));
+  const foodsSorted = tired ? [...t.foods].sort((a,b) => (b.tags||[]).includes('warm') - (a.tags||[]).includes('warm')) : t.foods;
+  const last = (memory.lastTops || [])[0], seen = memory.seen || {};
+  const ordered = [...foodsSorted].sort((a,b) => ((a.name===last)*2 + ((seen[a.name]||0)>=2)) - ((b.name===last)*2 + ((seen[b.name]||0)>=2)));
+  const foods = applySafety(ordered, conds, warnings, excluded).slice(0, 3);
+  const askSupp = /영양제|건강기능식품|추천|뭐 먹|먹으면|같이 먹어도/.test(text) || ['lipid','glucose','constipation'].includes(t.id);
+  const suppsAll = applySafety(t.supplements, conds, askSupp ? warnings : [], excluded).slice(0, 2);
+  const supps = askSupp ? suppsAll : [];
   const otc = applySafety(t.otc, conds, warnings, excluded).slice(0, 1);
-  const withVar = arr => arr.map(x => ({ ...x, variants: VARIANTS[x.name] || null }));
+  const withVar = arr => arr.map(x => ({ ...x, variants: VARIANTS[x.name] || (x.name==='대추생강차' ? VARIANTS['생강차'] : null) }));
   const groups = [
     { kind:'food', label:'🥣 음식 · 차', items: withVar(foods) },
     { kind:'supp', label:'💊 건강기능식품', items: withVar(supps) },
     { kind:'otc', label:'🌿 한방 일반의약품', items: withVar(otc) },
   ].filter(g => g.items.length);
-  if (warnings.length && /약/.test(p.meds || '')) consultWhy.push('복용 중인 약과의 상호작용은 약사 확인이 필요해요');
+  if (warnings.length && /약/.test(p.meds || '')) consultWhy.push('약과 함께 먹어도 되는지 확인이 필요해요');
   if ((p.checkups || []).length && t.id === 'lipid') consultWhy.push('검진 결과는 의사의 안내를 우선 따라 주세요');
   const titles = { hangover:'술 마신 다음 날', chill:'으슬으슬 감기 기운', throat:'목이 칼칼할 때', digest:'속이 더부룩할 때', fatigue:'피곤하고 기운 없을 때', sleep:'잠·긴장', eye:'눈 피로', constipation:'변비가 있을 때', lipid:'LDL·콜레스테롤 관리', glucose:'혈당 관리', latesnack:'야식이 잦을 때' };
-  const top = groups[0] ? { ...groups[0].items[0], kind: groups[0].kind } : null;
-  return { type:'answer', topic:t.id, top, title: titles[t.id] || t.label, insights, scope, groups, excluded, warnings:[...new Set(warnings)], textMeds,
+  const top = groups[0] ? { ...groups[0].items[0], kind: groups[0].kind, why: shortWhy(groups[0].items[0], groups[0].kind) } : null;
+  const enough = top && top.kind === 'food' && !['lipid','glucose'].includes(t.id);
+  const lines = [connectLine(t.id, recent), top ? (top.kind === 'food' ? `${top.name}${enough ? (/차$|즙$|국$/.test(top.name) ? ' 한 잔이면 충분해요.'.replace('국 한 잔','국 한 그릇') : ' 정도면 충분해요.') : '부터 바꿔 보세요.'}` : `${top.name}을 고려해 볼 만해요.`) : null, safetyLine(excluded, conds, p.meds)].filter(Boolean);
+  const trace = recent.filter(e => (e.tags||[]).some(x => ['alcohol','sleepless','overwork','fried'].includes(x))).map(e => ({ day:e.day, text:e.text }));
+  return { type:'answer', topic:t.id, top, lines, enough, trace, title: titles[t.id] || t.label, insights, scope, groups, excluded, warnings:[...new Set(warnings)], textMeds,
     consult:{ emphasize: consultWhy.length > 0, why: consultWhy[0] || '' }, disclaimer:DISCLAIMER };
 }
 
@@ -377,5 +454,17 @@ const SAMPLES = {
   meds: { label:'약 봉투 (샘플)', text:'아스피린 복용 중인데 같이 먹어도 되는 영양제? 요즘 피곤해요' },
 };
 
-window.BapsimEngine = { CHECKUPS, answer, SAMPLES, DISCLAIMER };
+const NOTE_TIPS = {
+  alcohol: ['자기 전 물 한 잔, 내일 아침은 콩나물국이나 북엇국이 편해요.', '안주는 튀김보다 두부·생선구이 쪽이 속이 편해요.', '다음 날 아침은 기름진 해장보다 맑은 국물이 좋아요.'],
+  sleepless: ['오늘 저녁 커피는 쉬고, 따뜻한 우유나 두유 한 잔 어때요.', '늦은 밤 간식은 바나나 정도로 가볍게요.'],
+  overwork: ['야근 땐 컵라면보다 김밥·두유처럼 덜 짠 쪽이 나아요.', '늦은 저녁은 양을 줄이고 따뜻한 국 위주로요.'],
+  fried: ['다음 끼니엔 나물이나 쌈채소를 곁들여 보세요.'],
+};
+function noteTip(tags, memory) {
+  const t = (tags || []).find(x => NOTE_TIPS[x]); if (!t) return null;
+  const used = (memory && memory.lastTips) || [];
+  const tip = NOTE_TIPS[t].find(x => !used.includes(x)) || NOTE_TIPS[t][0];
+  return used[0] === tip ? null : tip;
+}
+window.BapsimEngine = { CHECKUPS, answer, classify, noteTip, SAMPLES, DISCLAIMER };
 })();
