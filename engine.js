@@ -80,7 +80,7 @@ const TOPICS = [
   },
   {
     id: 'eye', label: '눈 피로',
-    keywords: ['눈이','눈 피','침침','눈건강','모니터','눈이 뻑'],
+    keywords: ['눈이','눈 피','침침','눈건강','모니터','눈이 뻑','눈이 피곤','눈 피곤'],
     foods: [
       { name: '시금치 · 케일', comp: '루테인·지아잔틴', effect: '루테인 성분이 연구에서 황반색소밀도 유지 작용이 보고되어, 눈 건강에 도움이 될 수 있어요', tags: [] },
       { name: '블루베리', comp: '안토시아닌', effect: '안토시아닌 성분이 연구에서 눈의 피로 관련 지표 개선 작용이 보고되어 있어요', tags: [] },
@@ -228,6 +228,22 @@ const CHECKUPS = [['bp','혈압 높음'],['glucose','혈당 높음'],['lipid','�
 
 // ---------- 추가 주제 ----------
 TOPICS.push(
+  { id: 'coldfeet', label: '손발 참', keywords: ['발이 차','손발','손이 차','수족냉'],
+    foods: [ { name: '생강차', comp: '진저롤', effect: '진저롤 성분이 말초 혈류 관련 작용이 보고되어, 조금이라도 따뜻해지는 데 도움이 될 수 있어요', tags: ['ginger','warm'] },
+             { name: '계피차', comp: '신남알데히드', effect: '계피 성분이 혈류 관련 작용이 보고되어 있어요', tags: ['warm'] } ],
+    supplements: [], otc: [] },
+  { id: 'cramp', label: '다리 쥐', keywords: ['쥐가','쥐 나','종아리','다리 경련'],
+    foods: [ { name: '바나나', comp: '칼륨·마그네슘', effect: '칼륨·마그네슘이 근육 수축·이완에 관여해요', tags: ['potassium'] },
+             { name: '두부', comp: '마그네슘', effect: '마그네슘이 근육 기능에 관여해요', tags: ['soy'] },
+             { name: '아몬드 한 줌', comp: '마그네슘', effect: '마그네슘이 근육 기능에 관여해요', tags: ['nut'] } ],
+    supplements: [ { name: '마그네슘', claim: '신경과 근육 기능 유지에 필요', tags: ['magnesium'] } ], otc: [] },
+  { id: 'itch', label: '피부 간지러움', keywords: ['간지러','가려','두드러기','피부가'],
+    foods: [ { name: '물·보리차', comp: '수분', effect: '건조할 때 수분 보충이 조금이라도 도움이 될 수 있어요', tags: [] } ],
+    supplements: [], otc: [] },
+  { id: 'mouthsore', label: '입병', keywords: ['입병','입안','구내염','혓바늘','입술이 터'],
+    foods: [ { name: '달걀', comp: '비타민B2', effect: '비타민B2가 피부·점막 유지에 필요해요', tags: ['egg'] },
+             { name: '우유·요구르트', comp: '비타민B2', effect: '비타민B2가 점막 유지에 필요해요', tags: ['dairy'] } ],
+    supplements: [ { name: '비타민B2(리보플라빈)', claim: '피부와 점막을 유지하는 데 필요', tags: [] } ], otc: [] },
   { id:'throat', label:'목 칼칼함', keywords:['목','칼칼','인후','따끔','목이','기침','가래','건조'],
     foods:[
       { name:'도라지차', comp:'플라티코딘(사포닌)', effect:'도라지의 사포닌 성분이 연구에서 기도 점액 분비 관련 작용이 보고되어, 목 컨디션 관리에 도움이 될 수 있어요', tags:[] },
@@ -357,13 +373,25 @@ const NOTE_TAGS = [
 function noteTags(text){ return NOTE_TAGS.filter(([,ks]) => ks.some(k => text.includes(k))).map(([t]) => t); }
 function classify(text){
   text = (text || '').trim();
-  const need = RED_FLAGS.some(k => text.includes(k)) || NEED_WORDS.some(k => text.includes(k)) || /못 자요|기운 있|기운이|더부룩|해요\?|\?$/.test(text);
+  const need = RED_FLAGS.some(k => text.includes(k)) || NEED_WORDS.some(k => text.includes(k)) || /못 자요|기운 있|기운이|더부룩|차요|쥐가|간지러|가려|입병|구내염|혓바늘|피곤|해요\?|\?$/.test(text);
   return { need, tags: noteTags(text) };
 }
 
 const KN = ['','한','두','세','네','다섯','여섯','일곱'];
 const josa = (w, a, b) => { const c = w.charCodeAt(w.length - 1); return (c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28) ? w + a : w + b; };
+
+function personalLine(topicId, recent) {
+  const snaps = recent.filter(e => e.kind === 'photo'), cnt = t => snaps.filter(e => (e.tags||[]).includes(t)).length;
+  if (topicId === 'cramp') { const c = cnt('coffee_pm'), a = cnt('alcohol');
+    if (c + a >= 2) return `이번 주 ${[c?`커피 ${KN[c]||c} 번`:'', a?`술 ${KN[a]||a} 번`:''].filter(Boolean).join('·')}이 있었죠. 둘 다 마그네슘이 빠져나가기 쉬워요.`; }
+  if (topicId === 'itch') {
+    const seenBefore = new Set(recent.filter(e => e.dayDiff > 2 && e.kind === 'photo').map(e => e.text));
+    const fresh = snaps.find(e => e.dayDiff <= 2 && !seenBefore.has(e.text) && /새우|게|땅콩|복숭아|고등어|자몽|키위|견과/.test(e.text));
+    if (fresh) return `${fresh.dayDiff === 0 ? '오늘' : fresh.dayDiff === 1 ? '어제' : '그저께'} 처음 기록된 ${josa(fresh.text,'이','가')} 있었죠. 간지러움이 그 뒤로 시작됐다면 한동안 빼 보고 지켜보세요.`; }
+  return null;
+}
 function connectLine(topicId, recent) {
+  if (['eye','constipation','lipid','glucose','coldfeet','itch','cramp','latesnack'].includes(topicId)) return null;
   const c = t => recent.filter(e => (e.tags || []).includes(t)).length, bits = [];
   if (c('alcohol')) bits.push(`회식·술자리가 ${KN[Math.min(c('alcohol'),7)]} 번 있었고`);
   if (c('overwork') >= 2) bits.push('야근이 잦았고');
@@ -446,10 +474,12 @@ function answer(text, profile, memory) {
   if (warnings.length && /약/.test(p.meds || '')) consultWhy.push('약과 함께 먹어도 되는지 확인이 필요해요');
   if ((p.checkups || []).length && t.id === 'lipid') consultWhy.push('검진 결과는 의사의 안내를 우선 따라 주세요');
   const titles = { hangover:'술 마신 다음 날', chill:'으슬으슬 감기 기운', throat:'목이 칼칼할 때', digest:'속이 더부룩할 때', fatigue:'피곤하고 기운 없을 때', sleep:'잠·긴장', eye:'눈 피로', constipation:'변비가 있을 때', lipid:'LDL·콜레스테롤 관리', glucose:'혈당 관리', latesnack:'야식이 잦을 때' };
-  const top = groups[0] ? { ...groups[0].items[0], kind: groups[0].kind, why: shortWhy(groups[0].items[0], groups[0].kind) } : null;
+  const g0 = groups[0], i0 = g0 ? (g0.items.find(i => !i.note) || g0.items[0]) : null;
+  const top = g0 ? { ...i0, kind: g0.kind, why: shortWhy(i0, g0.kind) } : null;
   const enough = top && top.kind === 'food' && !['lipid','glucose'].includes(t.id);
   const fl = null; // 습관 교정 문구 없음
-  const lines = fl ? [fl.line, safetyLine(excluded, conds, p.meds)].filter(Boolean) : [connectLine(t.id, recent), top ? (top.kind === 'food' ? `${top.name}${enough ? (/차$|즙$|국$/.test(top.name) ? ' 한 잔이 조금이라도 도움이 될 수 있어요.'.replace('국 한 잔','국 한 그릇') : ' 정도가 조금이라도 도움이 될 수 있어요.') : '부터 바꿔 보세요.'}` : `${top.name}을 고려해 볼 만해요.`) : null, safetyLine(excluded, conds, p.meds)].filter(Boolean);
+  const pl = personalLine(t.id, recent);
+  const lines = fl ? [fl.line, safetyLine(excluded, conds, p.meds)].filter(Boolean) : [pl || connectLine(t.id, recent), top ? (top.kind === 'food' ? `${enough ? top.name : josa(top.name,'을','를')}${enough ? (/차$|즙$|국$/.test(top.name) ? ' 한 잔이 조금이라도 도움이 될 수 있어요.'.replace('국 한 잔','국 한 그릇') : ' 정도가 조금이라도 도움이 될 수 있어요.') : ' 곁들여 보세요. 조금이라도 도움이 될 수 있어요.'}` : `${top.name}을 고려해 볼 만해요.`) : null, safetyLine(excluded, conds, p.meds)].filter(Boolean);
   const trace = fl ? fl.trace.map(e => ({ day:e.day, text:e.text })) : recent.filter(e => (e.tags||[]).some(x => ['alcohol','sleepless','overwork','fried'].includes(x))).map(e => ({ day:e.day, text:e.text }));
   return { type:'answer', topic:t.id, top, lines, enough, trace, title: titles[t.id] || t.label, insights, scope, groups, excluded, warnings:[...new Set(warnings)], textMeds,
     consult:{ emphasize: consultWhy.length > 0, why: consultWhy[0] || '' }, disclaimer:DISCLAIMER };

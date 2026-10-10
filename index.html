@@ -164,6 +164,7 @@ const PERSONAS=[
   { id:'preg', e:'🤰', name:'임신 중 · 철분제', desc:'철분제와 커피가 같은 날', p:{ conditions:['pregnant'], allergies:['유제품'], meds:'철분제' }, snaps:[[4,'iron'],[4,'coffee'],[2,'iron'],[2,'coffee'],[1,'bibim']], notes:[[3,'밤에 잠을 설쳤음'],[1,'잠 못 잤음']] },
   { id:'cold', e:'🤧', name:'감기약 복용 중 · 회식 많음', desc:'타이레놀 + 음주 → 간 부담 알림', p:{ meds:'타이레놀' }, notes:[[1,'목이 계속 칼칼']], snaps:[[3,'tylenol'],[2,'tylenol'],[2,'beer'],[1,'soju']] },
   { id:'drink', e:'🍺', name:'어젯밤 회식', desc:'다음 날 아침 물 한 줄 + 숙취해소제 비교(탭 뒤)', p:{}, snaps:[[3,'bibim'],[2,'coffee'],[1,'samgyeop'],[1,'soju'],[1,'beer']], notes:[[1,'팀 회식 2차까지']] },
+  { id:'cramp', e:'🦵', name:'커피·맥주 자주', desc:'쥐가 나요 → 기록 연결 · 새우 처음 → 간지러움', p:{}, snaps:[[6,'coffee'],[5,'beer'],[4,'coffee'],[3,'bibim'],[2,'coffee'],[1,'shrimp']] },
   { id:'asp', e:'💊', name:'아스피린 복용', desc:'홍삼 제외 · 이번 주 야근 기록', p:{ meds:'아스피린' }, notes:[[5,'마감이라 야근'],[4,'야근 또, 저녁은 컵라면'],[3,'잠 못 잤음'],[2,'점심 거름'],[1,'야근하고 늦게 잠']] },
   { id:'fish', e:'🐟', name:'생선 알레르기 · 검진 LDL 높음', desc:'스타틴 복용 · 자몽주스 사진 있음', p:{ allergies:['생선'], checkups:['lipid'], meds:'스타틴' }, notes:[[6,'삼겹살 회식'],[4,'퇴근하고 치킨 시켜 먹음']], snaps:[[6,'samgyeop'],[5,'grapefruit'],[4,'chicken'],[3,'salad'],[2,'grapefruit'],[1,'samgyeop']] },
 ];
@@ -219,7 +220,7 @@ const SNAPS={
   ramen:{e:'🍜',l:'라면',tags:['salty']}, jjigae:{e:'🍲',l:'김치찌개',tags:['salty']}, jjamppong:{e:'🍜',l:'짬뽕',tags:['salty']},
   chicken:{e:'🍗',l:'치킨',tags:['fried']}, samgyeop:{e:'🥓',l:'삼겹살',tags:['fried']}, salad:{e:'🥗',l:'샐러드',tags:[]}, bibim:{e:'🍚',l:'비빔밥',tags:[]},
   coffee:{e:'☕',l:'오후 커피',tags:['coffee_pm']}, beer:{e:'🍺',l:'맥주',tags:['alcohol']}, soju:{e:'🍶',l:'소주',tags:['alcohol']},
-  grapefruit:{e:'🧃',l:'자몽주스',tags:['grapefruit']}, spinach:{e:'🥬',l:'시금치나물',tags:['vitk']}, snack:{e:'🍪',l:'과자',tags:['sugar']},
+  grapefruit:{e:'🧃',l:'자몽주스',tags:['grapefruit']}, shrimp:{e:'🦐',l:'새우',tags:['shellfish']}, spinach:{e:'🥬',l:'시금치나물',tags:['vitk']}, snack:{e:'🍪',l:'과자',tags:['sugar']},
   ssanghwa:{e:'🫙',l:'쌍화탕',tags:['licorice']}, tylenol:{e:'💊',l:'타이레놀',tags:['apap']}, iron:{e:'💊',l:'철분제',tags:['iron']},
 };
 $('#grid').innerHTML=Object.entries(SNAPS).map(([k,s])=>`<button data-snap="${k}">${s.e}<span>${s.l}</span></button>`).join('');
