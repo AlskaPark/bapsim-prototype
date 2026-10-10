@@ -416,9 +416,6 @@ Object.assign(PRODUCTS, {
     { name:'A사 저당 초콜릿 (12개입)', unit:'개당', sellers:[['A사 공식 스토어',11900,true,'공식 판매처'],OK('B마켓',10500),NO('C몰',8800)] },
     { name:'B사 무가당 그릭요거트 (4개입)', unit:'개당', sellers:[['B사 공식 스토어',7900,true,'공식 판매처'],OK('D몰',7200)] },
     { name:'C사 구운 견과 (20봉)', unit:'봉당', sellers:[['C사 공식 스토어',19900,true,'공식 판매처'],OK('B마켓',17900)] } ] },
-  '해열진통제': { title:'아세트아미노펜 말고 다른 선택지 (정보)', why:'이부프로펜·나프록센 같은 다른 진통제도 술과 함께 먹으면 위장 출혈 위험이 보고되어 있어요. 술 마신 날엔 어느 쪽이든 먹기 전에 약사에게 먼저 물어보세요. 아래는 술을 마시지 않은 날을 위한 성분·값 정보일 뿐이에요.', items:[
-    { name:'A사 이부프로펜 정 (10정)', unit:'정당', sellers:[['약국 (참고가)',3500,true,'일반의약품 · 약국 판매'],OK('B약국',3000)] },
-    { name:'B사 나프록센 정 (10정)', unit:'정당', sellers:[['약국 (참고가)',4500,true,'일반의약품 · 약국 판매'],OK('C약국',4000)] } ] },
 });
 // 카드/발견 → 큐레이션 (음식 먼저 한 줄, 그다음 제품 보기)
 const CURATE = [
@@ -430,7 +427,6 @@ const CURATE = [
   { key:'유산균', on:'calm', food:'지금처럼 요거트면 충분해요. 제품은 굳이 아니어도 돼요.', trig:'속 편한 날 메모 + 그날 아침 요거트 사진' },
   { key:'저당 간식', on:'skin', when:x => /단 것/.test(x.what), food:'단 게 당길 땐 과일이나 견과류를 같은 자리에 둘 수 있어요.', trig:'뾰루지 메모 + 며칠 전 단 것 사진' },
   { key:'철분제', on:'iron', food:'철분제와 커피 사이를 한두 시간만 떼면 돼요.', trig:'철분제 사진 + 같은 시간대 커피 사진' },
-  { key:'해열진통제', on:'apap', food:'오늘은 술 대신 물. 진통제는 종류와 상관없이 술 마신 날엔 약사에게 먼저 물어보세요.', trig:'타이레놀 사진 + 같은 날 맥주 사진' },
 ];
 const curFor = x => CURATE.filter(c => c.on === x.id && (!c.when || c.when(x)) && !(x.id === 'coffee' && c.key === '필터 커피' && checkState(x) && checkState(x).result === 'yes'));
 const curHTML = (x, first) => { const cs = curFor(x); if (!cs.length) return '';
