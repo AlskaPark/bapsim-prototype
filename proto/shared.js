@@ -67,7 +67,9 @@ function nudge(st){
   const cof = week('coffee'), mg = week('mg');
   if (cramp.length && cof.length >= 3 && mg.length) { const foods = [...new Set(mg.map(e => e.text))].join('·');
     cands.push({ id:'mg-'+t, kind:'care', text:`커피·에너지 드링크가 잦은 주에 쥐가 났다고 하셨죠. 마시던 건 그대로, 이미 드시는 ${foods} 하나만 매일 곁들이면 마그네슘에 조금이라도 도움이 될 수 있어요.`, trace:tr([...cramp, ...mg, ...cof.slice(-2)]), tap:{ label:'자세히', q:'다리에 쥐가 자주 나요' } }); }
-  return cands.find(c => !st.s.dismissed.includes(c.id)) || null;
+  const kind = id => id.slice(0, id.indexOf('-')), dday = id => id.slice(id.indexOf('-') + 1);
+  const recentlyDismissed = c => st.s.dismissed.some(d => kind(d) === kind(c.id) && between(dday(d), t) >= 0 && between(dday(d), t) <= 3);
+  return cands.find(c => !recentlyDismissed(c)) || null;
 }
 
 const IMG = k => `../img/${k}.jpg`;
