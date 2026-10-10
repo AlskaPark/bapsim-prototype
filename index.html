@@ -163,6 +163,7 @@ const PERSONAS=[
   { id:'htn', e:'🩺', name:'고혈압 · 혈압약', desc:'쌍화탕 사진 · 회식 기록', p:{ conditions:['hypertension'], meds:'혈압약' }, notes:[[6,'팀 회식, 소주 꽤 마심'],[4,'거래처 회식 2차까지'],[3,'잠 못 잤음']], snaps:[[6,'soju'],[5,'jjigae'],[4,'jjamppong'],[3,'ramen'],[2,'ssanghwa'],[1,'jjigae']] },
   { id:'preg', e:'🤰', name:'임신 중 · 철분제', desc:'철분제와 커피가 같은 날', p:{ conditions:['pregnant'], allergies:['유제품'], meds:'철분제' }, snaps:[[4,'iron'],[4,'coffee'],[2,'iron'],[2,'coffee'],[1,'bibim']], notes:[[3,'밤에 잠을 설쳤음'],[1,'잠 못 잤음']] },
   { id:'cold', e:'🤧', name:'감기약 복용 중 · 회식 많음', desc:'타이레놀 + 음주 → 간 부담 알림', p:{ meds:'타이레놀' }, notes:[[1,'목이 계속 칼칼']], snaps:[[3,'tylenol'],[2,'tylenol'],[2,'beer'],[1,'soju']] },
+  { id:'drink', e:'🍺', name:'어젯밤 회식', desc:'다음 날 아침 물 한 줄 + 숙취해소제 비교(탭 뒤)', p:{}, snaps:[[3,'bibim'],[2,'coffee'],[1,'samgyeop'],[1,'soju'],[1,'beer']], notes:[[1,'팀 회식 2차까지']] },
   { id:'asp', e:'💊', name:'아스피린 복용', desc:'홍삼 제외 · 이번 주 야근 기록', p:{ meds:'아스피린' }, notes:[[5,'마감이라 야근'],[4,'야근 또, 저녁은 컵라면'],[3,'잠 못 잤음'],[2,'점심 거름'],[1,'야근하고 늦게 잠']] },
   { id:'fish', e:'🐟', name:'생선 알레르기 · 검진 LDL 높음', desc:'스타틴 복용 · 자몽주스 사진 있음', p:{ allergies:['생선'], checkups:['lipid'], meds:'스타틴' }, notes:[[6,'삼겹살 회식'],[4,'퇴근하고 치킨 시켜 먹음']], snaps:[[6,'samgyeop'],[5,'grapefruit'],[4,'chicken'],[3,'salad'],[2,'grapefruit'],[1,'samgyeop']] },
 ];
@@ -327,12 +328,15 @@ function snapNudges(m, today){
   if(lic.length && htn) out.push({ id:'n-lic-'+wk, text:'쌍화탕엔 감초가 들어 있어요. 혈압약 드시는 동안은 생강차·대추차가 나아요.', trace:tr(lic) });
   const iron=has('iron'), cof=has('coffee_pm');
   if(iron.length && iron.some(i=>cof.some(c=>c.day===i.day))) out.push({ id:'n-iron-'+wk, text:'철분제 드신 날 커피도 같이 있었어요. 커피는 철분제와 1~2시간 떨어뜨려 드세요.', trace:tr([...iron,...cof].slice(0,4)) });
+  // 어젯밤 음주 기록 → 오늘 아침 한 줄 (하루 한 번)
+  const yd=(m.entries||[]).filter(e=>daysBetween(e.day,today)===1 && (e.tags||[]).includes('alcohol'));
+  if(yd.length && !(apap.length && alc.length)) out.unshift({ id:'n-morning-'+today, text:`어젯밤 ${yd[0].text} 기록이 있었죠. 오늘 오전엔 물을 평소보다 몇 잔 더 드셔 보세요. 조금이라도 편해질 수 있어요.`, trace:tr(yd), acts:[['숙취해소제 비교 보기','ask:어제 술 마셨는데 숙취해소제 추천'],['괜찮아요','dismiss']] });
   // 고치라고 하지 않고, 이미 드시는 것에 하나 곁들이기 (프로필 확인)
   const salty=has('salty'), kOK=!conds.includes('kidney') && !/칼륨|스피로노락톤|ACE|사르탄|혈압약|이뇨제/.test(meds) && !htn;
   if(salty.length>=4 && kOK) out.push({ id:'n-k-'+wk, text:`${salty.slice(-1)[0].text} 드신 날, 후식으로 바나나나 참외 하나 곁들이면 칼륨이 나트륨 배출에 조금이라도 도움이 될 수 있어요.`, trace:tr(salty.slice(-4)) });
   const fr=has('fried');
   if(fr.length>=3 && (P.checkups||[]).includes('lipid')) out.push({ id:'n-fr-'+wk, text:'삼겹살 드실 때 쌈채소와 마늘·양파를 같이 구워 곁들이면 좋아요. 식이섬유가 조금이라도 도움이 될 수 있어요.', trace:tr(fr) });
-  return out.filter(f=>!(m.dismissed||[]).includes(f.id)).slice(0,2).map(x=>({ ...x, acts:[['알겠어요','dismiss']] }));
+  return out.filter(f=>!(m.dismissed||[]).includes(f.id)).slice(0,2).map(x=>({ acts:[['알겠어요','dismiss']], ...x }));
 }
 function renderFollowups(){
   const f=followups();
