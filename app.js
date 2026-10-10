@@ -53,19 +53,22 @@ const profile = () => ({ conditions: S.profile.conds, meds: [...S.profile.meds, 
 const hasMed = re => re.test([...S.profile.meds, S.profile.other].join(' '));
 
 // ---- 샘플 일주일 ----
-const SAMPLE = { meds:['혈압약'], log:[
+const SAMPLE = { meds:['혈압약'], shortSleep:[12,6,4], log:[
+  [13,'coffee','09:00'],[13,'salad','12:40'],[12,'coffee','08:30'],[12,'energy','15:40'],[12,'n','다리에 쥐 났음'],
+  [11,'chicken','20:00'],[11,'soju','21:30'],[10,'n','속이 더부룩함'],[10,'coffee','10:00'],[9,'ramen','13:00'],[8,'coffee','09:10'],[7,'tofu','19:00'],
   [6,'coffee','08:40'],[6,'dosirak','12:30'],[6,'energy','16:10'],
   [5,'coffee','08:50'],[5,'banana','15:20'],[5,'n','다리에 쥐 났음'],
   [4,'coffee','09:00'],[4,'onigiri','13:10'],[4,'energy','17:00'],
   [3,'tylenol','09:10'],[3,'pizza','20:10'],[3,'beer','21:00'],
-  [2,'coffee','08:45'],[2,'protein','15:00'],[2,'tteok','19:30'],
+  [2,'coffee','08:45'],[2,'n','속이 더부룩함'],[2,'protein','15:00'],[2,'tteok','19:30'],
   [1,'chicken','20:40'],[1,'soju','22:10'],[1,'n','팀 회식'],
   [0,'coffee','08:45'],[0,'n','감기 기운'],[0,'ssanghwa','13:20'] ] };
 function loadSample(){ S.entries = S.entries.filter(e => !e.sample).concat(SAMPLE.log.map(([d,k,t], i) => k === 'n'
   ? { id:'s'+i, sample:true, day: dk(add(base,-d)), kind:'memo', text:t, tags: memoTags(t) }
   : { id:'s'+i, sample:true, day: dk(add(base,-d)), kind:'photo', k, text: ITEMS[k].l, time:t, tags: ITEMS[k].t }));
-  S.profile = { meds:[...SAMPLE.meds], other:'', conds:[] }; S.sample = true; S.dismissed = []; S.view = 0; save(); }
-const clearSample = () => { S.entries = S.entries.filter(e => !e.sample); S.sample = false; save(); };
+  S.profile = { meds:[...SAMPLE.meds], other:'', conds:[] }; S.sample = true; S.health = { on:true, sample:true, short: SAMPLE.shortSleep.map(d => dk(add(base,-d))) }; S.dismissed = []; S.view = 0; save(); }
+const clearSample = () => { S.entries = S.entries.filter(e => !e.sample); S.sample = false; if (S.health && S.health.sample) S.health = null; save(); };
+const shortSleep = d => !!(S.health && S.health.on && (S.health.short||[]).includes(d));
 
 // ---- 한 줄 규칙: 기록 + 내 약/몸에서 연결된 것만. 하루 하나. 닫으면 그날 끝 ----
 function pick(){
@@ -79,31 +82,35 @@ function pick(){
   const apap = on(t,'apap'), alc = on(t,'alcohol');
   if (apap.length && alc.length) C.push({ id:'apap', src:[...apap.slice(-1), ...alc.slice(-1)], pair:`${apap.at(-1).text} + ${alc.at(-1).text}`,
     msg:`${apap.at(-1).text} 먹은 날 ${alc.at(-1).text}예요. 같이 들어가면 간에 부담이 될 수 있어서, 오늘 술은 여기까지가 좋아요.`,
-    title:'타이레놀 먹은 날의 술', why:'타이레놀(아세트아미노펜)과 술은 둘 다 간에서 처리돼요. 같은 날 겹치면 간이 평소보다 힘들 수 있다고 알려져 있어요. 감기약·두통약 중에도 같은 성분이 든 게 많아요.',
+    short:`${apap.at(-1).text} 먹은 날이에요. 오늘 술은 여기까지`, title:'타이레놀 먹은 날의 술', why:'타이레놀(아세트아미노펜)과 술은 둘 다 간에서 처리돼요. 같은 날 겹치면 간이 평소보다 힘들 수 있다고 알려져 있어요. 감기약·두통약 중에도 같은 성분이 든 게 많아요.',
     alts:[['물이나 꿀물','오늘 남은 저녁은 이쪽이 편해요'],['따뜻한 국물','속을 편하게 하는 데 조금이라도 도움이 될 수 있어요']] });
   const lic = [...on(t,'licorice'), ...on(y,'licorice')];
   if (lic.length && htn) C.push({ id:'lic', src:lic.slice(-1), pair:`${lic.at(-1).text} + 혈압약`,
     msg:'쌍화탕엔 감초가 들어 있어요. 혈압약을 드시는 동안은 맞지 않을 수 있어서, 생강차나 대추차가 나아요.',
-    title:'쌍화탕과 혈압약', why:'감초 성분(글리시리진)은 몸에 나트륨과 물을 붙잡아 두는 쪽으로 작용할 수 있어요. 그래서 혈압약을 먹는 동안에는 감초가 든 차·탕을 피하라고 안내하는 경우가 많아요.', q:'감기 기운 있어요' });
+    short:'쌍화탕 감초는 혈압약과 안 맞을 수 있어요', title:'쌍화탕과 혈압약', why:'감초 성분(글리시리진)은 몸에 나트륨과 물을 붙잡아 두는 쪽으로 작용할 수 있어요. 그래서 혈압약을 먹는 동안에는 감초가 든 차·탕을 피하라고 안내하는 경우가 많아요.', q:'감기 기운 있어요' });
   const gf = [...on(t,'grapefruit'), ...on(y,'grapefruit')];
   if (gf.length && (htn || lipid)) C.push({ id:'gf', src:gf.slice(-1), pair:`자몽주스 + ${lipid ? '고지혈증약' : '혈압약'}`,
     msg:`자몽은 일부 ${lipid ? '고지혈증약' : '혈압약'}의 효과를 세게 만들 수 있어요. 약을 드시는 동안엔 다른 과일 주스가 나아요.`,
-    title:'자몽과 내 약', why:'자몽은 장에서 약을 분해하는 효소를 막아서, 일부 약(특정 스타틴·칼슘 통로 차단제 등)이 몸에 더 많이 남게 할 수 있어요. 내 약이 해당되는지는 약 봉투나 약사에게 확인하면 정확해요.',
+    short:'자몽은 내 약 효과를 세게 할 수 있어요', title:'자몽과 내 약', why:'자몽은 장에서 약을 분해하는 효소를 막아서, 일부 약(특정 스타틴·칼슘 통로 차단제 등)이 몸에 더 많이 남게 할 수 있어요. 내 약이 해당되는지는 약 봉투나 약사에게 확인하면 정확해요.',
     alts:[['오렌지·사과 주스','이 상호작용과는 거리가 멀어요'],['물이나 탄산수','가장 무난해요']] });
   const iron = [...on(t,'iron')], cof = on(t,'coffee');
   if ((iron.length || hasMed(/철분/)) && cof.length && iron.length) C.push({ id:'iron', src:[...iron.slice(-1), ...cof.slice(-1)], pair:'철분제 + 커피',
     msg:'철분제 먹은 날 커피도 있었어요. 둘 사이에 시간 차를 두면 철분이 조금 더 잘 흡수될 수 있어요.',
-    title:'철분제와 커피', why:'커피·녹차의 탄닌 성분은 철분과 붙어서 흡수를 줄일 수 있어요. 커피는 그대로 드시고, 시간만 떨어뜨려도 충분해요.',
+    short:'철분제와 커피는 시간 차를 두면 좋아요', title:'철분제와 커피', why:'커피·녹차의 탄닌 성분은 철분과 붙어서 흡수를 줄일 수 있어요. 커피는 그대로 드시고, 시간만 떨어뜨려도 충분해요.',
     alts:[['오렌지 같은 과일과 함께','비타민 C가 철분 흡수에 조금이라도 도움이 될 수 있어요']] });
   const ya = on(y,'alcohol');
   if (ya.length && !alc.length) C.push({ id:'water', src:ya.slice(-1), pair:`어젯밤 ${ya.at(-1).text}`,
     msg:`어젯밤 ${ya.at(-1).text} 기록이 있어요. 오늘 오전엔 물을 평소보다 몇 잔 더 마시면 조금 편할 수 있어요.`,
-    title:'술 마신 다음 날', why:'술은 소변을 늘려 몸의 수분을 빼앗아요. 다음 날 물을 조금 더 마시면 그만큼 채우는 데 도움이 될 수 있어요.', q:'어제 술 마셨는데 숙취해소제 추천' });
+    short:`어젯밤 ${ya.at(-1).text}, 오늘 오전엔 물 몇 잔 더`, title:'술 마신 다음 날', why:'술은 소변을 늘려 몸의 수분을 빼앗아요. 다음 날 물을 조금 더 마시면 그만큼 채우는 데 도움이 될 수 있어요.', q:'어제 술 마셨는데 숙취해소제 추천' });
   const cramp = es.filter(e => e.kind === 'memo' && /쥐/.test(e.text) && gap(e.day, t) >= 1 && gap(e.day, t) <= 2), cw = wk('coffee'), mg = wk('mg');
   if (cramp.length && cw.length >= 3 && mg.length) { const f = mg.at(-1).text;
     C.push({ id:'mg', src:[cramp[0], mg.at(-1), cw.at(-1)], pair:'다리에 쥐 + 커피 잦은 주',
       msg:`커피 잦은 주에 다리에 쥐가 났다고 적으셨어요. 이미 드시는 ${f}${/[가-힣]/.test(f) && (f.charCodeAt(f.length-1)-0xAC00)%28 ? '을' : '를'} 매일 하나씩 곁들이면 조금이라도 도움이 될 수 있어요.`,
-      title:'다리에 쥐가 난 주', why:'카페인은 마그네슘·칼륨이 소변으로 빠지는 걸 조금 늘릴 수 있어요. 커피는 그대로 두고, 이미 드시는 것 중 마그네슘·칼륨이 든 걸 조금 더하는 정도면 충분해요.', q:'다리에 쥐가 자주 나요' }); }
+      short:`이미 드시는 ${f}, 매일 하나씩 곁들여 보세요`, title:'다리에 쥐가 난 주', why:'카페인은 마그네슘·칼륨이 소변으로 빠지는 걸 조금 늘릴 수 있어요. 커피는 그대로 두고, 이미 드시는 것 중 마그네슘·칼륨이 든 걸 조금 더하는 정도면 충분해요.', q:'다리에 쥐가 자주 나요' }); }
+  if (shortSleep(t) && cof.length && !C.length) C.push({ id:'sleep', src:cof.slice(-1), health:true, pair:'어젯밤 짧은 잠 + 커피',
+    msg:'어젯밤 잠이 짧았던 날이에요. 오늘 커피는 그대로 드시되, 오후 늦게는 따뜻한 보리차로 바꾸면 오늘 밤 잠에 조금이라도 도움이 될 수 있어요.',
+    short:'잠이 짧았던 날이에요. 늦은 오후엔 보리차로', title:'잠이 짧았던 날의 커피', why:'카페인은 마신 뒤에도 꽤 오래 몸에 남아 있어서, 늦은 오후에 마신 커피가 그날 밤 잠에 영향을 줄 수 있어요. 수면 정보는 연결한 건강 데이터에서 조용히 참고했어요.',
+    alts:[['보리차·옥수수차','카페인이 없어서 오후에 마시기 편해요'],['따뜻한 우유','자기 전에 마시기 무난해요']] });
   const kind = d => d.slice(0, d.indexOf('-')), dday = d => d.slice(d.indexOf('-') + 1);
   return C.find(c => !S.dismissed.some(d => kind(d) === c.id && gap(dday(d), t) >= 0 && gap(dday(d), t) <= 3)) || null;
 }
@@ -116,7 +123,7 @@ function render(){
   const head = `<header class="hd"><div class="brand"${why('로고 아래 한 줄이 앱이 하는 일을 매번 상기시켜요. 다시 열었을 때 뭐 하는 앱인지 잊지 않게.')}><span class="mark"><i></i></span><div><h1>밥심</h1><p>찍어 두면, 놓치면 안 될 때만 알려 드려요</p></div></div>
     <button class="icon-btn" id="gear" aria-label="설정"${why('약이 바뀌면 안내도 바뀌어야 해서 수정할 곳이 필요해요. 그 외 설정은 두지 않았어요.')}><i data-lucide="settings-2"></i></button></header>`;
   const top = n ? `<article class="note" id="note"${why('하루에 최대 하나. 기록과 내 약에서 연결된 것만. 질문이 아니라서 답할 필요가 없어요.')}>
-      <div class="n-src"${why('왜 지금 이 말을 하는지 근거가 바로 보여야 무작위 건강 상식처럼 느껴지지 않아요.')}>${thumbs(n.src)}<span class="n-pair">${esc(dayName(t,t))} · ${esc(n.pair)}</span></div>
+      <div class="n-src"${why('왜 지금 이 말을 하는지 근거가 바로 보여야 무작위 건강 상식처럼 느껴지지 않아요.')}>${thumbs(n.src)}<span class="n-pair">${esc(dayName(t,t))} · ${esc(n.pair)}</span>${n.health?`<i data-lucide="heart-pulse" class="n-h"${why('수면 같은 건강 데이터는 숫자로 보여 주지 않고, 근거 줄의 작은 표시로만 드러나요.')}></i>`:''}</div>
       <p class="n-msg">${esc(n.msg)}</p>
       <div class="n-foot"><button class="n-more" id="more"${why('자세한 이유와 대안은 원할 때만. 카드가 길어지지 않게 탭 뒤로 숨겼어요.')}>이유와 대안 보기<i data-lucide="chevron-right"></i></button><span class="n-exp"${why('스스로 사라진다는 걸 알려서, 쌓일까 봐 부담 갖지 않게 해요.')}>오늘까지</span></div>
       <button class="x" id="nx" aria-label="닫기"${why('무시할 권리. 닫으면 그날은 더 이상 아무것도 뜨지 않고, 같은 종류는 3일 동안 조용해요.')}><i data-lucide="x"></i></button></article>`
@@ -128,14 +135,16 @@ function render(){
     return `<section class="day"${i===0?why('날짜별 기록. 저장됐다는 믿음과, 한 줄의 근거를 확인하는 곳이에요. 숫자나 분석은 없어요.'):''}><h3>${esc(dayName(d,t))}</h3>
       ${ph.length ? `<div class="grid">${ph.map(e => `<button class="tile${e.id===lastNew?' new':''}" data-id="${e.id}" aria-label="${esc(e.text||'사진')}"><img src="${src(e)}" alt="" loading="lazy">${e.rec==='pending'?'<span class="lb pend">확인 중</span>':e.k?`<span class="lb">${esc(e.text)}</span>`:''}</button>`).join('')}</div>` : (me.length ? '' : `<div class="empty">아직 찍은 게 없어요</div>`)}
       ${me.length ? `<div class="memos">${me.map(e => `<span class="memo"><i data-lucide="pen-line"></i>${esc(e.text)}</span>`).join('')}</div>` : ''}</section>`; }).join('');
-  app.innerHTML = `<div class="wrap">${head}<div class="today">${top}</div>${tl}</div>
+  const ins = insights();
+  const insLink = ins.length ? `<button class="ins-link" id="insl"${why('따로 탭을 만들지 않았어요. 알게 된 게 생겼을 때만 이 작은 줄이 나타나요.')}><i data-lucide="sprout"></i>나에 대해 알게 된 것<i data-lucide="chevron-right"></i></button>` : '';
+  app.innerHTML = `<div class="wrap">${head}<div class="today">${top}</div>${insLink}${tl}</div>
     <nav class="dock"><div class="dock-in">
       <button class="side" id="pen" aria-label="한 줄 적기"${why('쥐가 남, 감기 기운처럼 찍을 수 없는 몸 상태를 남기는 곳. 이게 없으면 몸 상태와 연결된 순간을 놓쳐요.')}><i data-lucide="pen-line"></i></button>
       <button class="shutter" id="shot" aria-label="찍어 두기"${why('유일한 주 동작. 엄지가 닿는 하단 중앙에 가장 크게. 기본 카메라를 바로 열어요.')}><i><i data-lucide="camera"></i></i></button>
       <button class="side" id="album" aria-label="앨범에서 가져오기"${why('이미 기본 카메라로 음식 사진을 찍는 사람이 많아서, 앨범에서 여러 장을 한 번에 가져올 수 있게 했어요.')}><i data-lucide="images"></i></button>
     </div></nav>`;
   icons(); lastNew = null;
-  $('#gear').onclick = settings; $('#shot').onclick = () => capture(false); $('#album').onclick = () => capture(true); $('#pen').onclick = composer;
+  $('#gear').onclick = settings; if ($('#insl')) $('#insl').onclick = insightsPage; $('#shot').onclick = () => capture(false); $('#album').onclick = () => capture(true); $('#pen').onclick = composer;
   $$('.tile').forEach(b => b.onclick = () => photoView(b.dataset.id));
   const ft = $('.tile'); if (ft) ft.setAttribute('data-why', '밥심이 사진을 스스로 알아보고, 이름표를 사진 위에 작게만 붙여요. 아무것도 뜨지 않아요. 확실하지 않으면 이름표를 붙이지 않고, 묻지도 않아요.');
   if (n) { $('#more').onclick = () => detail(n); $('#nx').onclick = () => { buzz(); $('#note').classList.add('out'); setTimeout(() => { S.dismissed.push(n.id + '-' + t); save(); render(); }, 260); }; }
@@ -207,10 +216,16 @@ function settings(){
   const bg = sheet(`<h2 class="s-title" style="margin-top:8px">설정</h2>
     <button class="row" id="r-p"><span>먹는 약과 몸 상태<small>${esc(sum)}</small></span><i data-lucide="chevron-right"></i></button>
     <button class="row" id="r-s"><span>${S.sample ? '샘플 기록 끄기' : '샘플 기록으로 둘러보기'}<small>일주일치 예시 기록이에요</small></span><i data-lucide="chevron-right"></i></button>
+    <button class="row" id="r-k"><span>나에 대해 알게 된 것<small>내 기록이 겹쳐 보일 때만 적혀요</small></span><i data-lucide="chevron-right"></i></button>
+    <button class="row" id="r-h"><span>건강 데이터 ${S.health && S.health.on ? '연결됨' : '연결'}<small>${S.health && S.health.on ? '수면 같은 맥락을 조용히 참고하고 있어요' : '수면·걸음 수를 한 줄의 맥락으로만 써요 (선택)'}</small></span><i data-lucide="chevron-right"></i></button>
+    <button class="row" id="r-w"><span>알림창 위젯 미리 보기<small>Android 알림창에 늘 떠 있는 모습이에요</small></span><i data-lucide="chevron-right"></i></button>
     <button class="row" id="r-i"><span>소개 다시 보기</span><i data-lucide="chevron-right"></i></button>
     <button class="row" id="r-x" style="color:#C0362C"><span>모든 기록 지우기<small>이 휴대폰에서만 지워져요</small></span></button>`);
   $('#r-p', bg).onclick = () => { bg.close(); setup(true); };
   $('#r-s', bg).onclick = () => { S.sample ? clearSample() : loadSample(); bg.close(); render(); };
+  $('#r-k', bg).onclick = () => { bg.close(); insightsPage(); };
+  $('#r-h', bg).onclick = () => { bg.close(); if (S.health && S.health.on) { S.health = null; save(); render(); } else setTimeout(healthConnect, 240); };
+  $('#r-w', bg).onclick = () => { bg.close(); widget(); };
   $('#r-i', bg).onclick = () => { bg.close(); intro(true); };
   $('#r-x', bg).onclick = function(){ if (this.dataset.c) { S.entries.forEach(e => e.pid && del(e.pid)); S.entries = []; S.dismissed = []; S.sample = false; save(); bg.close(); render(); } else { this.dataset.c = 1; this.querySelector('span').firstChild.textContent = '한 번 더 누르면 지워져요'; } };
 }
@@ -268,10 +283,84 @@ function setup(edit){
   notesRefresh();
 }
 
+// ---- 나에 대해 알게 된 것: 내 기록이 의미 있게 겹칠 때만. 인과 표현 없음, 숫자 없음 ----
+const SYM = [[/쥐/,'다리에 쥐가 났던','c'],[/더부룩|체했/,'속이 더부룩했던','a'],[/잠.*(설|못)|불면/,'잠을 설쳤던','c'],[/두통|머리.*아/,'머리가 아팠던','a']];
+function insights(){
+  const es = visible(), t = today(), out = [];
+  const near = (d, tag, from, to) => es.filter(e => (e.tags||[]).includes(tag) && gap(e.day, d) >= from && gap(e.day, d) <= to);
+  for (const [re, lbl, kind] of SYM) {
+    const ms = es.filter(e => e.kind === 'memo' && re.test(e.text)); if (ms.length < 2) continue;
+    const cof = ms.map(m => near(m.day, 'coffee', 0, 3)); if (kind === 'c' && cof.every(c => c.length >= 2)) out.push({ id:'sym-cof-'+lbl, text:`${lbl} 때는 매번 커피가 잦던 며칠 뒤였어요.`, src:[...ms, ...cof.map(c => c.at(-1))] });
+    const alc = ms.map(m => near(m.day, 'alcohol', 1, 1)); if (kind === 'a' && alc.every(a => a.length)) out.push({ id:'sym-alc-'+lbl, text:`${lbl} 날은 매번 전날 밤에 술이 있었어요.`, src:[...ms, ...alc.map(a => a[0])] });
+  }
+  if (S.health && S.health.on) { const sd = (S.health.short||[]).filter(d => d <= t), hit = sd.filter(d => near(d, 'coffee', 0, 0).length >= 2);
+    if (hit.length >= 2) out.push({ id:'sleep-cof', health:true, text:'잠이 짧았던 다음 날엔 커피가 늘었어요.', src: hit.map(d => near(d,'coffee',0,0).at(-1)), sub: '수면은 연결한 건강 데이터에서' }); }
+  const days = [...new Set(es.map(e => e.day))];
+  const ap = days.filter(d => es.some(e => e.day === d && e.tags.includes('apap')) && es.some(e => e.day === d && e.tags.includes('alcohol')));
+  if (ap.length) out.push({ id:'apap', text:'타이레놀 먹은 날 술이 겹친 적이 있었어요. 감기약을 먹는 날 밥심이 계속 챙길게요.', src: ap.flatMap(d => es.filter(e => e.day === d && (e.tags.includes('apap') || e.tags.includes('alcohol')))) });
+  const htn = S.profile.conds.includes('hypertension') || hasMed(/혈압/), lic = es.filter(e => e.tags.includes('licorice'));
+  if (htn && lic.length) out.push({ id:'lic', text:'혈압약을 드시는 중에 쌍화탕 기록이 있었어요. 감초가 없는 생강차·대추차가 그 자리를 대신할 수 있어요.', src: lic });
+  return out;
+}
+function insightsPage(){
+  const list = insights(), t = today();
+  const ds = d => { const n = gap(d, t); if (n <= 2) return dayName(d, t); const x = new Date(d + 'T12:00:00'); return `${x.getMonth()+1}월 ${x.getDate()}일`; };
+  const ov = document.createElement('div'); ov.className = 'ov'; ov.id = 'ins';
+  ov.innerHTML = `<div class="in-top" style="justify-content:space-between"><button id="ib" aria-label="뒤로"><i data-lucide="chevron-left"></i></button></div><div class="su ins">
+    <h2>나에 대해 알게 된 것</h2><p${why('제목이 곧 설명이에요. 진단처럼 들리는 \'사용설명서\'나 \'리포트\' 대신, 내 기록에서 보인 것만 담는다는 뜻으로 지었어요.')}>내 기록이 겹쳐 보일 때만 적어 둬요. 이유를 단정하지 않고, 겹친 기록을 그대로 보여 드려요.</p>
+    ${list.length ? list.map((x,i) => `<article class="ins-it"${i===0?why('겹친 사실만 말하고 \'때문에\'라고 하지 않아요. 아래 사진·메모가 그 근거예요. 숫자와 점수는 없어요.'):''}><p>${esc(x.text)}</p>${chipsOf(x.src)}${x.sub?`<small${why('건강 데이터는 숫자 없이 출처만 조용히 밝혀요.')}><i data-lucide="heart-pulse"></i>${esc(x.sub)}</small>`:''}</article>`).join('')
+      : `<div class="ins-empty"${why('빈 화면이 고장처럼 보이지 않게, 저절로 채워진다는 걸 알려요. 할 일을 주지 않아요.')}><i data-lucide="sprout"></i><b>아직 알게 된 게 없어요</b><span>찍고 적어 둔 기록이 쌓여서 겹치는 게 보이면, 여기에 조용히 적혀요.</span></div>`}
+    <p class="disc">내 기록에서 보인 겹침일 뿐, 원인을 뜻하지 않아요.</p></div>`;
+  function chipsOf(a){ return `<div class="ins-src">${a.slice(0,5).map(e => `<span class="tchip">${src(e)?`<img src="${src(e)}" alt="">`:'<i data-lucide="pen-line"></i>'}${esc(ds(e.day))} ${esc(e.text)}</span>`).join('')}</div>`; }
+  document.body.appendChild(ov); icons();
+  $('#ib', ov).onclick = () => { ov.classList.add('out'); setTimeout(() => { ov.remove(); notesRefresh(); }, 250); };
+  notesRefresh();
+}
+
+// ---- 건강 데이터 연결 (목업 권한 화면, 한 번만, 선택) ----
+function healthConnect(){
+  const isA = /iPhone|iPad/.test(navigator.userAgent);
+  const bg = sheet(`<div class="hc"><div class="hc-ic"><i data-lucide="heart-pulse"></i></div><div class="s-eyebrow" style="text-align:center;margin:12px 0 0">${isA ? 'Apple 건강' : 'Health Connect'}</div>
+    <h2 class="s-title" style="text-align:center;margin:6px 0 8px">밥심이 읽을 수 있는 정보</h2>
+    <p class="hc-p"${why('왜 필요한지 먼저 말해요. 숫자를 보여 주려는 게 아니라, 한 줄의 근거를 조금 더 정확하게 하려는 것뿐이에요.')}>잠이 짧았던 날 같은 맥락을 조용히 참고해요. 숫자로 보여 주거나 따로 화면을 만들지 않아요.</p>
+    ${[['moon','수면'],['footprints','걸음 수'],['activity','심박수']].map(([i,l]) => `<label class="hc-row"><span><i data-lucide="${i}"></i>${l}</span><input type="checkbox" checked><em></em></label>`).join('')}
+    <p class="hc-f"><i data-lucide="lock"></i>읽기만 해요. 이 휴대폰 밖으로 보내지 않아요.</p>
+    <button class="primary" id="hc-ok">허용</button><button class="ghost" id="hc-no">허용 안 함</button></div>`);
+  $('#hc-ok', bg).onclick = () => { S.health = { on:true, sample:true, short:[12,6,4].map(d => dk(add(base,-d))) }; save(); buzz(); bg.close(); render(); };
+  $('#hc-no', bg).onclick = () => bg.close();
+  notesRefresh();
+}
+
+// ---- Android One UI 알림창 위젯 목업 (?widget=1) ----
+function widget(){
+  $$('#shade').forEach(x => x.remove());
+  const n = pick(), t = new Date(), hh = String(t.getHours()).padStart(2,'0') + ':' + String(t.getMinutes()).padStart(2,'0');
+  const d = new Date(today() + 'T12:00:00'), date = `${d.getMonth()+1}월 ${d.getDate()}일 ${WD[d.getDay()]}요일`;
+  const ov = document.createElement('div'); ov.className = 'shade'; ov.id = 'shade';
+  const qs8 = ['wifi','bluetooth','volume-2','flashlight','plane','rotate-ccw'];
+  ov.innerHTML = `<div class="sh-status"><span>${hh}</span><span class="r"><i data-lucide="wifi"></i><i data-lucide="signal"></i><i data-lucide="battery-full"></i></span></div>
+    <div class="sh-head"><div><b>${hh}</b><span>${date}</span></div><span class="r"><i data-lucide="search"></i><i data-lucide="settings"></i></span></div>
+    <div class="sh-qs">${qs8.map((q,i) => `<span class="${i<2?'on':''}"><i data-lucide="${q}"></i></span>`).join('')}</div>
+    <div class="sh-bright"><i data-lucide="sun"></i><span><i style="width:62%"></i></span></div>
+    <div class="ow ${n ? 'has' : ''}" id="ow"${why('늘 떠 있는 진행 중 알림 위젯. 앱을 열지 않고 알림창을 내린 김에 바로 찍게 해요. 찍는 습관이 끊기지 않게 하는 입구예요.')}>
+      <span class="ow-ic"${why('어떤 앱인지 한눈에. 로고 하나면 충분해서 앱 이름 줄은 따로 두지 않았어요.')}><i></i></span>
+      <button class="ow-line" id="owl"${why(n ? '한 줄 카드와 같은 내용을 더 짧게. 누르면 앱에서 이유와 대안이 열려요. 다음 날이면 스스로 기본 문구로 돌아가요.' : '기본 상태는 할 일 하나만: 찍어 두기. 정보가 없을 땐 아무 정보도 보여 주지 않아요.')}>${n ? `<small>${esc(n.pair)}</small>${esc(n.short)}` : '찍어 두기만 하세요'}</button>
+      <button class="ow-shot" id="ows" aria-label="찍어 두기"${why('유일한 동작. 셔터 모양이라 설명이 필요 없어요. 누르면 앱 안에서 바로 카메라가 열려요.')}><i data-lucide="camera"></i></button>
+    </div>
+    <div class="sh-n"><span class="ic"><i data-lucide="message-circle"></i></span><div><b>메시지</b><span>오늘 저녁 7시 괜찮아?</span></div><em>방금</em></div>
+    <div class="sh-foot"><button id="owx">닫기</button></div>`;
+  document.body.appendChild(ov); icons();
+  const close = () => { ov.classList.add('out'); setTimeout(() => ov.remove(), 260); };
+  $('#ows', ov).onclick = () => { buzz(); close(); capture(false); };
+  $('#owl', ov).onclick = () => { close(); if (n) setTimeout(() => detail(n), 280); };
+  $('#owx', ov).onclick = close;
+  notesRefresh();
+}
+
 // ---- 디자인 노트 (?notes=1) ----
 let notesOn = false;
 function notesRefresh(){ if (!notesOn) return; requestAnimationFrame(() => { $$('.why-pin,.why-panel').forEach(x => x.remove());
-  const top = $$('.ov').at(-1) || $$('.sh-bg').at(-1); const scope = top || document;
+  const top = $$('.sh-bg').at(-1) || $$('.shade').at(-1) || $$('.ov').at(-1); const scope = top || document;
   const els = $$('[data-why]', scope).filter(el => { const r = el.getBoundingClientRect(); return r.width && r.bottom > 0 && r.top < innerHeight && r.left < innerWidth && r.right > 0; });
     if (!els.length) return;
   els.forEach((el, i) => { const r = el.getBoundingClientRect(), d = document.createElement('div'); d.className = 'why-pin'; d.textContent = i + 1;
@@ -292,6 +381,8 @@ function demoBar(){ if (!qs.has('demo')) return; document.body.classList.add('de
 // ---- 시작 ----
 (async () => { await loadUrls(); render(); notesToggle(); demoBar();
   if (!S.intro) intro(false); else if (!S.setup) setup(false);
+  if (qs.has('widget')) widget();
+  if (qs.has('insights')) insightsPage();
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {}); })();
 window.__bapsim = { S, render };
 })();
