@@ -140,7 +140,7 @@ function render(){
   const top = n ? `<article class="note" id="note"${why('하루에 최대 하나. 기록과 내 약에서 연결된 것만. 질문이 아니라서 답할 필요가 없어요.')}>
       <div class="n-src"${why('왜 지금 이 말을 하는지 근거가 바로 보여야 무작위 건강 상식처럼 느껴지지 않아요.')}>${thumbs(n.src)}<span class="n-pair">${esc(dayName(t,t))} · ${esc(n.pair)}</span><span class="ai" aria-label="AI가 쓴 문장"${why('AI 기본법에 따라 생성형 AI가 쓴 문장임을 알려요. 크게 드러내지 않고 근거 줄 끝에 작은 글자 두 개로만, 어디서나 같은 자리에.')}>AI</span>${n.health?`<i data-lucide="heart-pulse" class="n-h"${why('수면 같은 건강 데이터는 숫자로 보여 주지 않고, 근거 줄의 작은 표시로만 드러나요.')}></i>`:''}</div>
       <p class="n-msg">${esc(n.msg)}</p>
-      <div class="n-foot"><button class="n-more" id="more"${n.why || n.q || n.product ? '' : ' hidden'}${why('자세한 이유와 대안은 원할 때만. 카드가 길어지지 않게 탭 뒤로 숨겼어요.')}>${n.product ? '가격 보기' : '이유와 대안 보기'}<i data-lucide="chevron-right"></i></button><span class="n-exp"${why('스스로 사라진다는 걸 알려서, 쌓일까 봐 부담 갖지 않게 해요.')}>오늘까지</span></div>
+      <div class="n-foot"><button class="n-more" id="more"${n.why || n.q || n.product ? '' : ' hidden'}${why('자세한 이유와 대안은 원할 때만. 카드가 길어지지 않게 탭 뒤로 숨겼어요.')}>${n.product ? '가격 보기' : n.alts ? '이유와 대안 보기' : '자세히 보기'}<i data-lucide="chevron-right"></i></button><span class="n-exp"${why('스스로 사라진다는 걸 알려서, 쌓일까 봐 부담 갖지 않게 해요.')}>오늘까지</span></div>
       <button class="x" id="nx" aria-label="닫기"${why('무시할 권리. 닫으면 그날은 더 이상 아무것도 뜨지 않고, 같은 종류는 3일 동안 조용해요.')}><i data-lucide="x"></i></button></article>`
     : `<div class="quiet"${why('조용한 날에도 앱이 고장 난 게 아니라 일부러 조용하다는 걸 알려 줘요.')}><span class="q-ic"><i data-lucide="moon"></i></span><div><b>오늘은 챙길 게 없어요</b><span>계속 찍어 두세요. 필요할 때만 알려 드릴게요.</span></div></div>`;
   const days = {}; visible().forEach(e => (days[e.day] = days[e.day] || []).push(e));

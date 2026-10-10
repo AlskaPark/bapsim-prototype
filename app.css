@@ -384,3 +384,4 @@ img{image-orientation:from-image}
 .ref span{margin-left:2px;font-size:.9em;text-decoration:none;display:inline-block}
 .src .refs{display:flex;flex-direction:column;gap:4px;margin-top:4px}
 .ref-t{display:block;margin-top:4px;font-size:11.5px;color:var(--faint)}
+.n-more[hidden]{display:none}
