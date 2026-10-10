@@ -10,13 +10,13 @@ const qs = new URLSearchParams(location.search);
 
 // 이름표: 사진 속에 있는 것 (모두 같은 형식, 범주 구분 없음)
 const ITEMS = {
-  coffee:{l:'커피',t:['coffee']}, beer:{l:'맥주',t:['alcohol']}, soju:{l:'소주',t:['alcohol']}, tylenol:{l:'타이레놀',t:['apap']},
+  coffee:{l:'커피',t:['coffee']}, beer:{l:'맥주',t:['alcohol','fizzy']}, soju:{l:'소주',t:['alcohol']}, tylenol:{l:'타이레놀',t:['apap']},
   ssanghwa:{l:'쌍화탕',t:['licorice']}, grapefruit:{l:'자몽주스',t:['grapefruit']}, iron:{l:'철분제',t:['iron']}, energy:{l:'에너지 드링크',t:['coffee']},
-  banana:{l:'바나나',t:['mg']}, tofu:{l:'두부',t:['mg']}, dosirak:{l:'도시락',t:[]}, onigiri:{l:'삼각김밥',t:[]}, protein:{l:'프로틴바',t:[]},
-  pizza:{l:'피자',t:[]}, chicken:{l:'치킨',t:[]}, tteok:{l:'떡볶이',t:[]}, ramen:{l:'라면',t:[]}, salad:{l:'샐러드',t:[]}, cola:{l:'콜라',t:[]},
+  banana:{l:'바나나',t:['mg']}, tofu:{l:'두부',t:['mg','soy']}, dosirak:{l:'도시락',t:[]}, onigiri:{l:'삼각김밥',t:[]}, protein:{l:'프로틴바',t:[]},
+  pizza:{l:'피자',t:['dairy','oily']}, chicken:{l:'치킨',t:['oily']}, samgyeop:{l:'삼겹살',t:['oily']}, snack:{l:'과자',t:['sweet']}, tteok:{l:'떡볶이',t:['sweet']}, ramen:{l:'라면',t:[]}, salad:{l:'샐러드',t:[]}, cola:{l:'콜라',t:['fizzy','sweet']},
 };
 // 모의 이미지 인식: 서버가 붙으면 실제 모델로 교체. 지금은 파일 이름 단서만 사용, 확실하지 않으면 이름표 없음 (묻지 않음)
-const REC = [[/tylenol|타이레놀|acetaminophen/i,'tylenol'],[/beer|맥주/i,'beer'],[/soju|소주/i,'soju'],[/coffee|커피|latte|americano/i,'coffee'],[/ssanghwa|쌍화/i,'ssanghwa'],[/grapefruit|자몽/i,'grapefruit'],[/iron|철분/i,'iron'],[/energy|에너지/i,'energy'],[/banana|바나나/i,'banana'],[/tofu|두부/i,'tofu'],[/dosirak|도시락|lunch/i,'dosirak'],[/onigiri|삼각김밥/i,'onigiri'],[/protein|프로틴/i,'protein'],[/pizza|피자/i,'pizza'],[/chicken|치킨/i,'chicken'],[/tteok|떡볶이/i,'tteok'],[/ramen|라면/i,'ramen'],[/salad|샐러드/i,'salad'],[/cola|콜라/i,'cola']];
+const REC = [[/tylenol|타이레놀|acetaminophen/i,'tylenol'],[/beer|맥주/i,'beer'],[/soju|소주/i,'soju'],[/coffee|커피|latte|americano/i,'coffee'],[/ssanghwa|쌍화/i,'ssanghwa'],[/grapefruit|자몽/i,'grapefruit'],[/iron|철분/i,'iron'],[/energy|에너지/i,'energy'],[/banana|바나나/i,'banana'],[/tofu|두부/i,'tofu'],[/dosirak|도시락|lunch/i,'dosirak'],[/onigiri|삼각김밥/i,'onigiri'],[/protein|프로틴/i,'protein'],[/pizza|피자/i,'pizza'],[/chicken|치킨/i,'chicken'],[/tteok|떡볶이/i,'tteok'],[/ramen|라면/i,'ramen'],[/salad|샐러드/i,'salad'],[/cola|콜라/i,'cola'],[/samgyeop|삼겹/i,'samgyeop'],[/snack|과자/i,'snack']];
 const recognize = name => { const h = REC.find(([r]) => r.test(name || '')); return h ? h[1] : null; };
 const TRAY = ['coffee','beer','soju','tylenol','ssanghwa','grapefruit','iron','energy','banana'];
 const MEDS = ['혈압약','고지혈증약','타이레놀·감기약','아스피린','와파린','철분제','항생제'];
@@ -46,7 +46,7 @@ const src = e => e.pid ? (URLS[e.pid] || '') : e.k ? IMG(e.k) : '';
 async function loadUrls(){ for (const e of S.entries) if (e.pid && !URLS[e.pid]) { const b = await get(e.pid); if (b) URLS[e.pid] = URL.createObjectURL(b); } }
 async function shrink(f){ try { const bm = await createImageBitmap(f); const k = Math.min(1, 1080 / Math.max(bm.width, bm.height)); const c = document.createElement('canvas'); c.width = bm.width * k; c.height = bm.height * k; c.getContext('2d').drawImage(bm, 0, 0, c.width, c.height); return await new Promise(r => c.toBlob(r, 'image/jpeg', .85)); } catch { return f; } }
 const now = () => new Date().toTimeString().slice(0,5);
-const memoTags = text => { const c = E.classify(text), t = [...c.tags]; [[/타이레놀|아세트아미노펜|감기약/,'apap'],[/쌍화탕/,'licorice'],[/술|맥주|소주|와인|막걸리/,'alcohol'],[/커피|아메리카노|라떼/,'coffee'],[/자몽/,'grapefruit'],[/철분/,'iron'],[/두부|바나나|아몬드/,'mg']].forEach(([r,x]) => { if (r.test(text) && !t.includes(x)) t.push(x); }); return t; };
+const memoTags = text => { const c = E.classify(text), t = [...c.tags]; [[/타이레놀|아세트아미노펜|감기약/,'apap'],[/쌍화탕/,'licorice'],[/술|맥주|소주|와인|막걸리/,'alcohol'],[/커피|아메리카노|라떼/,'coffee'],[/자몽/,'grapefruit'],[/철분/,'iron'],[/두부|바나나|아몬드/,'mg'],[/우유|라떼|치즈|요거트/,'dairy'],[/두부|두유|콩/,'soy'],[/콜라|사이다|탄산/,'fizzy'],[/치킨|튀김|삼겹|기름진/,'oily'],[/케이크|초콜릿|과자|디저트|빵/,'sweet']].forEach(([r,x]) => { if (r.test(text) && !t.includes(x)) t.push(x); }); return t; };
 
 // ---- 프로필 → 엔진 ----
 const profile = () => ({ conditions: S.profile.conds, meds: [...S.profile.meds, S.profile.other].join(' ').replace('타이레놀·감기약','타이레놀 감기약'), allergies: [] });
@@ -55,14 +55,14 @@ const hasMed = re => re.test([...S.profile.meds, S.profile.other].join(' '));
 // ---- 샘플 일주일 ----
 const SAMPLE = { meds:['혈압약'], shortSleep:[12,6,4], log:[
   [13,'coffee','09:00'],[13,'salad','12:40'],[12,'coffee','08:30'],[12,'energy','15:40'],[12,'n','다리에 쥐 났음'],
-  [11,'chicken','20:00'],[11,'soju','21:30'],[10,'n','속이 더부룩함'],[10,'coffee','10:00'],[9,'ramen','13:00'],[8,'coffee','09:10'],[7,'tofu','19:00'],
+  [11,'chicken','20:00'],[9,'cola','21:00'],[8,'n','아침에 배에 가스 참'],[8,'snack','16:00'],[7,'samgyeop','12:30'],[7,'n','소화가 잘 안 됨'],[6,'n','턱에 뾰루지'],[11,'soju','21:30'],[10,'n','속이 더부룩함'],[10,'coffee','10:00'],[9,'ramen','13:00'],[8,'coffee','09:10'],[7,'tofu','19:00'],
   [6,'coffee','08:40'],[6,'dosirak','12:30'],[6,'energy','16:10'],
   [5,'coffee','08:50'],[5,'banana','15:20'],[5,'n','다리에 쥐 났음'],
   [4,'coffee','09:00'],[4,'onigiri','13:10'],[4,'energy','17:00'],
   [3,'tylenol','09:10'],[3,'pizza','20:10'],[3,'beer','21:00'],
-  [2,'coffee','08:45'],[2,'n','속이 더부룩함'],[2,'protein','15:00'],[2,'tteok','19:30'],
-  [1,'chicken','20:40'],[1,'soju','22:10'],[1,'n','팀 회식'],
-  [0,'coffee','08:45'],[0,'n','감기 기운'],[0,'ssanghwa','13:20'] ] };
+  [2,'coffee','08:45'],[2,'n','속이 더부룩함'],[2,'n','아침에 배에 가스 참'],[2,'protein','15:00'],[2,'tteok','19:30'],
+  [1,'chicken','20:40'],[1,'n','이마에 뾰루지'],[1,'soju','22:10'],[1,'n','팀 회식'],
+  [0,'coffee','08:45'],[0,'n','소화가 잘 안 됨'],[0,'n','감기 기운'],[0,'ssanghwa','13:20'] ] };
 function loadSample(){ S.entries = S.entries.filter(e => !e.sample).concat(SAMPLE.log.map(([d,k,t], i) => k === 'n'
   ? { id:'s'+i, sample:true, day: dk(add(base,-d)), kind:'memo', text:t, tags: memoTags(t) }
   : { id:'s'+i, sample:true, day: dk(add(base,-d)), kind:'photo', k, text: ITEMS[k].l, time:t, tags: ITEMS[k].t }));
@@ -280,36 +280,59 @@ function setup(edit){
 }
 
 // ---- 나에 대해 알게 된 것: 내 기록이 의미 있게 겹칠 때만. 인과 표현 없음, 숫자 없음 ----
-const SYM = [[/쥐/,'다리에 쥐가 났던','c'],[/더부룩|체했/,'속이 더부룩했던','a'],[/잠.*(설|못)|불면/,'잠을 설쳤던','c'],[/두통|머리.*아/,'머리가 아팠던','a']];
+const AREAS = { gut:['배·소화','soup'], skin:['피부','sparkles'], energy:['잠·기운','moon'], body:['몸','footprints'], med:['약','pill'] };
+// 규칙: 사용자가 직접 적은 메모가 두 번 이상, 매번 같은 무리의 기록과 겹칠 때만
+const RULES = [
+  { id:'gas', area:'gut', re:/가스/, g:[['dairy','유제품'],['soy','콩'],['fizzy','탄산']], from:1, to:1, t:n => `아침에 배에 가스가 찼던 날은 매번 전날 ${n}이 있었어요.` },
+  { id:'oily', area:'gut', re:/소화가/, g:[['oily','기름진 음식']], from:0, to:1, t:n => `소화가 잘 안 됐던 날은 매번 그 전에 ${n}이 있었어요.` },
+  { id:'bloat', area:'gut', re:/더부룩|체했/, g:[['alcohol','술']], from:1, to:1, t:n => `속이 더부룩했던 날은 매번 전날 밤에 ${n}이 있었어요.` },
+  { id:'skin', area:'skin', re:/뾰루지|여드름|트러블/, g:[['sweet','단 것'],['dairy','유제품'],['alcohol','술']], from:1, to:3, t:n => `뾰루지가 났던 며칠 전엔 매번 ${n}이 있었어요.` },
+  { id:'cramp', area:'body', re:/쥐/, g:[['coffee','커피']], from:0, to:3, need:2, t:() => '다리에 쥐가 났던 때는 매번 커피가 잦던 며칠 뒤였어요.' },
+];
 function insights(){
   const es = visible(), t = today(), out = [];
   const near = (d, tag, from, to) => es.filter(e => (e.tags||[]).includes(tag) && gap(e.day, d) >= from && gap(e.day, d) <= to);
-  for (const [re, lbl, kind] of SYM) {
-    const ms = es.filter(e => e.kind === 'memo' && re.test(e.text)); if (ms.length < 2) continue;
-    const cof = ms.map(m => near(m.day, 'coffee', 0, 3)); if (kind === 'c' && cof.every(c => c.length >= 2)) out.push({ id:'sym-cof-'+lbl, text:`${lbl} 때는 매번 커피가 잦던 며칠 뒤였어요.`, src:[...ms, ...cof.map(c => c.at(-1))] });
-    const alc = ms.map(m => near(m.day, 'alcohol', 1, 1)); if (kind === 'a' && alc.every(a => a.length)) out.push({ id:'sym-alc-'+lbl, text:`${lbl} 날은 매번 전날 밤에 술이 있었어요.`, src:[...ms, ...alc.map(a => a[0])] });
+  for (const r of RULES) {
+    const ms = es.filter(e => e.kind === 'memo' && r.re.test(e.text)); if (ms.length < 2) continue;
+    const hit = r.g.filter(([tag]) => ms.every(m => near(m.day, tag, r.from, r.to).length >= (r.need || 1))); if (!hit.length) continue;
+    const ev = ms.flatMap(m => { const x = hit.flatMap(([tag]) => near(m.day, tag, r.from, r.to)); return [m, x.sort((a,b) => a.day < b.day ? 1 : -1)[0]]; }).filter(Boolean);
+    out.push({ id:r.id, area:r.area, text:r.t(hit.map(h => h[1]).join('이나 ')), src:ev, latest: ms.map(m => m.day).sort().at(-1) });
   }
   if (S.health && S.health.on) { const sd = (S.health.short||[]).filter(d => d <= t), hit = sd.filter(d => near(d, 'coffee', 0, 0).length >= 2);
-    if (hit.length >= 2) out.push({ id:'sleep-cof', health:true, text:'잠이 짧았던 다음 날엔 커피가 늘었어요.', src: hit.map(d => near(d,'coffee',0,0).at(-1)), sub: '수면은 연결한 건강 데이터에서' }); }
+    if (hit.length >= 2) out.push({ id:'sleep', area:'energy', health:true, text:'잠이 짧았던 다음 날엔 커피가 늘었어요.', src: hit.flatMap(d => near(d,'coffee',0,0).slice(-1).map(e => ({ ...e, sleep:true }))), latest: hit.sort().at(-1) }); }
   const days = [...new Set(es.map(e => e.day))];
-  const ap = days.filter(d => es.some(e => e.day === d && e.tags.includes('apap')) && es.some(e => e.day === d && e.tags.includes('alcohol')));
-  if (ap.length) out.push({ id:'apap', text:'타이레놀 먹은 날 술이 겹친 적이 있었어요. 감기약을 먹는 날 밥심이 계속 챙길게요.', src: ap.flatMap(d => es.filter(e => e.day === d && (e.tags.includes('apap') || e.tags.includes('alcohol')))) });
-  const htn = S.profile.conds.includes('hypertension') || hasMed(/혈압/), lic = es.filter(e => e.tags.includes('licorice'));
-  if (htn && lic.length) out.push({ id:'lic', text:'혈압약을 드시는 중에 쌍화탕 기록이 있었어요. 감초가 없는 생강차·대추차가 그 자리를 대신할 수 있어요.', src: lic });
+  const ap = days.filter(d => es.some(e => e.day === d && (e.tags||[]).includes('apap')) && es.some(e => e.day === d && (e.tags||[]).includes('alcohol')));
+  if (ap.length) out.push({ id:'apap', area:'med', inter:true, text:'타이레놀 먹은 날 술이 겹친 적이 있었어요. 감기약 먹는 날엔 밥심이 계속 챙길게요.', src: ap.flatMap(d => es.filter(e => e.day === d && ((e.tags||[]).includes('apap') || (e.tags||[]).includes('alcohol')))), latest: ap.sort().at(-1) });
+  const htn = S.profile.conds.includes('hypertension') || hasMed(/혈압/), lic = es.filter(e => (e.tags||[]).includes('licorice'));
+  if (htn && lic.length) out.push({ id:'lic', area:'med', inter:true, text:'혈압약을 드시는 중에 쌍화탕 기록이 있었어요. 감초 없는 생강차·대추차가 그 자리를 대신할 수 있어요.', src: lic, latest: lic.map(e => e.day).sort().at(-1) });
   return out;
 }
 function insightsPage(){
   const list = insights(), t = today();
-  const ds = d => { const n = gap(d, t); if (n <= 2) return dayName(d, t); const x = new Date(d + 'T12:00:00'); return `${x.getMonth()+1}월 ${x.getDate()}일`; };
+  const ds = d => { const n = gap(d, t); if (n <= 2) return dayName(d, t); const x = new Date(d + 'T12:00:00'); return `${x.getMonth()+1}월 ${x.getDate()}일 ${WD[x.getDay()]}`; };
+  const stack = a => { const ph = a.filter(e => src(e)).slice(0, 4); return `<span class="stk">${ph.map(e => `<img src="${src(e)}" alt="">`).join('')}${a.some(e => !src(e)) ? '<span class="m"><i data-lucide="pen-line"></i></span>' : ''}</span>`; };
+  const tline = a => { const by = {}; a.forEach(e => (by[e.day] = by[e.day] || []).push(e)); return `<ol class="tln">${Object.keys(by).sort().map(d => `<li><span class="d">${esc(ds(d))}</span><span class="r">${by[d].map(e => `<span class="ti">${src(e) ? `<img src="${src(e)}" alt="">` : '<i data-lucide="pen-line"></i>'}${esc(e.text)}${e.sleep ? '<em>잠이 짧았던 날</em>' : ''}</span>`).join('')}</span></li>`).join('')}</ol>`; };
+  const card = (x, hero) => `<article class="fd${x.inter ? ' inter' : ''}${hero ? ' hero' : ''}" data-id="${x.id}">
+      ${hero ? `<div class="fd-new"${why('가장 최근에 알게 된 것 하나만 위로. 새로 생겼다는 건 작은 점으로만 알려요.')}><i></i>새로 알게 된 것</div>` : ''}
+      ${x.inter ? `<div class="fd-tag"${why('밥심이 실제로 챙겼던 약 조합. 같은 카드 형식이지만 옅은 바탕으로 조용히 구분해요.')}><i data-lucide="shield-check"></i>챙겼던 조합</div>` : ''}
+      <p class="fd-t">${esc(x.text)}</p>
+      <div class="fd-f"${hero ? why('근거는 겹친 사진 몇 장으로만 보여 주고, 날짜별 기록은 원할 때만 펼쳐요. 숫자로 몇 번인지 세지 않아요.') : ''}>${stack(x.src)}<button class="fd-more">기록 보기<i data-lucide="chevron-down"></i></button>${x.health ? '<span class="fd-h"><i data-lucide="heart-pulse"></i>건강 데이터</span>' : ''}</div>
+      <div class="fd-ev">${tline(x.src)}</div></article>`;
+  let body = '';
+  if (list.length) {
+    const hero = list.slice().sort((a,b) => (a.latest < b.latest ? 1 : a.latest > b.latest ? -1 : (a.inter ? 1 : 0) - (b.inter ? 1 : 0)))[0];
+    body += card(hero, true);
+    for (const [k, [name, ic]] of Object.entries(AREAS)) { const g = list.filter(x => x.area === k && x !== hero); if (!g.length) continue;
+      body += `<section class="ar"><h3${k==='gut'?why('몸의 부위별로 묶어서, 비슷한 카드가 끝없이 이어지는 기록처럼 보이지 않게 했어요.'):''}><i data-lucide="${ic}"></i>${name}</h3>${g.map(x => card(x)).join('')}</section>`; }
+  } else body = `<div class="ins-empty"${why('빈 화면이 고장처럼 보이지 않게, 저절로 채워진다는 걸 알려요. 할 일을 주지 않아요.')}><i data-lucide="sprout"></i><b>아직 알게 된 게 없어요</b><span>기록이 쌓여 겹치는 게 보이면 여기에 조용히 적혀요.</span></div>`;
   const ov = document.createElement('div'); ov.className = 'ov'; ov.id = 'ins';
-  ov.innerHTML = `<div class="in-top" style="justify-content:space-between"><button id="ib" aria-label="뒤로"><i data-lucide="chevron-left"></i></button></div><div class="su ins">
-    <h2>나에 대해 알게 된 것</h2><p${why('제목이 곧 설명이에요. 진단처럼 들리는 \'사용설명서\'나 \'리포트\' 대신, 내 기록에서 보인 것만 담는다는 뜻으로 지었어요.')}>내 기록이 겹쳐 보일 때만 적어 둬요. 이유를 단정하지 않고, 겹친 기록을 그대로 보여 드려요.</p>
-    ${list.length ? list.map((x,i) => `<article class="ins-it"${i===0?why('겹친 사실만 말하고 \'때문에\'라고 하지 않아요. 아래 사진·메모가 그 근거예요. 숫자와 점수는 없어요.'):''}><p>${esc(x.text)}</p>${chipsOf(x.src)}${x.sub?`<small${why('건강 데이터는 숫자 없이 출처만 조용히 밝혀요.')}><i data-lucide="heart-pulse"></i>${esc(x.sub)}</small>`:''}</article>`).join('')
-      : `<div class="ins-empty"${why('빈 화면이 고장처럼 보이지 않게, 저절로 채워진다는 걸 알려요. 할 일을 주지 않아요.')}><i data-lucide="sprout"></i><b>아직 알게 된 게 없어요</b><span>찍고 적어 둔 기록이 쌓여서 겹치는 게 보이면, 여기에 조용히 적혀요.</span></div>`}
-    <p class="disc">내 기록에서 보인 겹침일 뿐, 원인을 뜻하지 않아요.</p></div>`;
-  function chipsOf(a){ return `<div class="ins-src">${a.slice(0,5).map(e => `<span class="tchip">${src(e)?`<img src="${src(e)}" alt="">`:'<i data-lucide="pen-line"></i>'}${esc(ds(e.day))} ${esc(e.text)}</span>`).join('')}</div>`; }
+  ov.innerHTML = `<div class="in-top" style="justify-content:flex-start"><button id="ib" aria-label="뒤로"><i data-lucide="chevron-left"></i></button></div><div class="su ins">
+    <h2${why('\'내 몸 사용설명서\'는 진단처럼 들려서, 내 기록에서 보인 것만 담는다는 뜻으로 지었어요.')}>나에 대해 알게 된 것</h2><p class="ins-sub"${why('설명은 한 줄로. 원인을 단정하지 않는다는 건 아래 안내에 한 번만.')}>내 기록에서 겹쳐 보인 것만 적어 둬요.</p>
+    ${body}<p class="disc">기록이 겹쳤다는 뜻일 뿐, 원인을 뜻하지 않아요.</p></div>`;
   document.body.appendChild(ov); icons();
+  $$('.fd-more', ov).forEach(b => b.onclick = () => { const c = b.closest('.fd'); c.classList.toggle('open'); b.firstChild.textContent = c.classList.contains('open') ? '접기' : '기록 보기'; buzz(); notesRefresh(); });
   $('#ib', ov).onclick = () => { ov.classList.add('out'); setTimeout(() => { ov.remove(); notesRefresh(); }, 250); };
+  $('.su', ov).addEventListener('scroll', () => notesOn && notesRefresh(), { passive: true });
   notesRefresh();
 }
 
