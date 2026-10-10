@@ -11,12 +11,12 @@ const qs = new URLSearchParams(location.search);
 // 이름표: 사진 속에 있는 것 (모두 같은 형식, 범주 구분 없음)
 const ITEMS = {
   coffee:{l:'커피',t:['coffee','caffeine']}, latte:{l:'라떼',t:['coffee','caffeine','dairy','latte']}, americano:{l:'아메리카노',t:['coffee','caffeine','americano']}, filter:{l:'필터 커피',t:['coffee','caffeine','filter']}, decaf:{l:'디카페인',t:['coffee','decaf']}, beer:{l:'맥주',t:['alcohol','fizzy']}, soju:{l:'소주',t:['alcohol']}, tylenol:{l:'타이레놀',t:['apap']},
-  ssanghwa:{l:'쌍화탕',t:['licorice']}, grapefruit:{l:'자몽주스',t:['grapefruit']}, iron:{l:'철분제',t:['iron']}, energy:{l:'에너지 드링크',t:['caffeine','fizzy','sweet']},
+  ssanghwa:{l:'쌍화탕',t:['licorice']}, grapefruit:{l:'자몽주스',t:['grapefruit']}, iron:{l:'철분제',t:['iron']}, ibuprofen:{l:'이부프로펜',t:['nsaid'],img:'tylenol'}, energy:{l:'에너지 드링크',t:['caffeine','fizzy','sweet']},
   banana:{l:'바나나',t:['mg']}, tofu:{l:'두부',t:['mg','soy']}, dosirak:{l:'도시락',t:[]}, onigiri:{l:'삼각김밥',t:[]}, protein:{l:'프로틴바',t:[]},
   pizza:{l:'피자',t:['dairy','oily']}, chicken:{l:'치킨',t:['oily']}, samgyeop:{l:'삼겹살',t:['oily']}, snack:{l:'과자',t:['sweet']}, tteok:{l:'떡볶이',t:['sweet','spicy']}, ramen:{l:'라면',t:['spicy','oily']}, salad:{l:'샐러드',t:['veg']}, yogurt:{l:'요거트',t:['dairy','yogurt']}, cola:{l:'콜라',t:['fizzy','sweet']},
 };
 // 모의 이미지 인식: 서버가 붙으면 실제 모델로 교체. 지금은 파일 이름 단서만 사용, 확실하지 않으면 이름표 없음 (묻지 않음)
-const REC = [[/tylenol|타이레놀|acetaminophen/i,'tylenol'],[/beer|맥주/i,'beer'],[/soju|소주/i,'soju'],[/filter|drip|드립|필터/i,'filter'],[/decaf|디카페인/i,'decaf'],[/latte|라떼/i,'latte'],[/americano|아메리카노/i,'americano'],[/coffee|커피/i,'coffee'],[/ssanghwa|쌍화/i,'ssanghwa'],[/grapefruit|자몽/i,'grapefruit'],[/iron|철분/i,'iron'],[/energy|에너지/i,'energy'],[/banana|바나나/i,'banana'],[/tofu|두부/i,'tofu'],[/dosirak|도시락|lunch/i,'dosirak'],[/onigiri|삼각김밥/i,'onigiri'],[/protein|프로틴/i,'protein'],[/pizza|피자/i,'pizza'],[/chicken|치킨/i,'chicken'],[/tteok|떡볶이/i,'tteok'],[/ramen|라면/i,'ramen'],[/salad|샐러드/i,'salad'],[/cola|콜라/i,'cola'],[/samgyeop|삼겹/i,'samgyeop'],[/snack|과자/i,'snack'],[/yogurt|요거트|요구르트/i,'yogurt']];
+const REC = [[/tylenol|타이레놀|acetaminophen/i,'tylenol'],[/ibuprofen|이부프로펜|부루펜|advil/i,'ibuprofen'],[/beer|맥주/i,'beer'],[/soju|소주/i,'soju'],[/filter|drip|드립|필터/i,'filter'],[/decaf|디카페인/i,'decaf'],[/latte|라떼/i,'latte'],[/americano|아메리카노/i,'americano'],[/coffee|커피/i,'coffee'],[/ssanghwa|쌍화/i,'ssanghwa'],[/grapefruit|자몽/i,'grapefruit'],[/iron|철분/i,'iron'],[/energy|에너지/i,'energy'],[/banana|바나나/i,'banana'],[/tofu|두부/i,'tofu'],[/dosirak|도시락|lunch/i,'dosirak'],[/onigiri|삼각김밥/i,'onigiri'],[/protein|프로틴/i,'protein'],[/pizza|피자/i,'pizza'],[/chicken|치킨/i,'chicken'],[/tteok|떡볶이/i,'tteok'],[/ramen|라면/i,'ramen'],[/salad|샐러드/i,'salad'],[/cola|콜라/i,'cola'],[/samgyeop|삼겹/i,'samgyeop'],[/snack|과자/i,'snack'],[/yogurt|요거트|요구르트/i,'yogurt']];
 const recognize = name => { const h = REC.find(([r]) => r.test(name || '')); return h ? h[1] : null; };
 ITEMS.soda = { l:'탄산음료', t:['fizzy','sweet'], img:'cola' }; ITEMS.cancoffee = { l:'커피 캔', t:['coffee','caffeine','sweet'], img:'energy' }; ITEMS.makgeolli = { l:'막걸리', t:['alcohol'], img:'soju' };
 ITEMS.vitamin = { l:'영양제', t:[], img:'iron' }; ITEMS.coldmed = { l:'감기약', t:['apap'], img:'tylenol' }; ITEMS.gingertea = { l:'생강차', t:[], img:'ssanghwa' };
@@ -51,11 +51,11 @@ const URLS = {};
 const put = async (id, b) => { const db = await DB; if (!db) return; await new Promise(r => { const t = db.transaction('p','readwrite'); t.objectStore('p').put(b, id); t.oncomplete = r; t.onerror = r; }); };
 const get = async id => { const db = await DB; if (!db) return null; return new Promise(r => { const q = db.transaction('p').objectStore('p').get(id); q.onsuccess = () => r(q.result); q.onerror = () => r(null); }); };
 const del = async id => { const db = await DB; if (db) db.transaction('p','readwrite').objectStore('p').delete(id); };
-const src = e => e.pid ? (URLS[e.pid] || '') : e.k ? IMG(e.k) : '';
+const src = e => e.pid ? (URLS[e.pid] || '') : e.k ? IMGK(e.k) : '';
 async function loadUrls(){ for (const e of S.entries) if (e.pid && !URLS[e.pid]) { const b = await get(e.pid); if (b) URLS[e.pid] = URL.createObjectURL(b); } }
 async function shrink(f){ try { const bm = await createImageBitmap(f, { imageOrientation: 'from-image' }); /* EXIF 회전을 저장 시점에 반영 */ const k = Math.min(1, 1080 / Math.max(bm.width, bm.height)); const c = document.createElement('canvas'); c.width = bm.width * k; c.height = bm.height * k; c.getContext('2d').drawImage(bm, 0, 0, c.width, c.height); return await new Promise(r => c.toBlob(r, 'image/jpeg', .85)); } catch { return f; } }
 const now = () => new Date().toTimeString().slice(0,5);
-const memoTags = text => { const c = E.classify(text), t = [...c.tags]; [[/타이레놀|아세트아미노펜|감기약/,'apap'],[/쌍화탕/,'licorice'],[/술|맥주|소주|와인|막걸리/,'alcohol'],[/커피|아메리카노|라떼/,'coffee'],[/자몽/,'grapefruit'],[/철분/,'iron'],[/두부|바나나|아몬드/,'mg'],[/우유|라떼|치즈|요거트/,'dairy'],[/요거트|요구르트/,'yogurt'],[/두부|두유|콩/,'soy'],[/콜라|사이다|탄산/,'fizzy'],[/치킨|튀김|삼겹|기름진/,'oily'],[/케이크|초콜릿|과자|디저트|빵/,'sweet']].forEach(([r,x]) => { if (r.test(text) && !t.includes(x)) t.push(x); }); return t; };
+const memoTags = text => { const c = E.classify(text), t = [...c.tags]; [[/타이레놀|아세트아미노펜|감기약/,'apap'],[/쌍화탕/,'licorice'],[/이부프로펜|부루펜|애드빌|나프록센/,'nsaid'],[/술|맥주|소주|와인|막걸리/,'alcohol'],[/커피|아메리카노|라떼/,'coffee'],[/자몽/,'grapefruit'],[/철분/,'iron'],[/두부|바나나|아몬드/,'mg'],[/우유|라떼|치즈|요거트/,'dairy'],[/요거트|요구르트/,'yogurt'],[/두부|두유|콩/,'soy'],[/콜라|사이다|탄산/,'fizzy'],[/치킨|튀김|삼겹|기름진/,'oily'],[/케이크|초콜릿|과자|디저트|빵/,'sweet']].forEach(([r,x]) => { if (r.test(text) && !t.includes(x)) t.push(x); }); return t; };
 
 // ---- 프로필 → 엔진 ----
 const profile = () => ({ conditions: S.profile.conds, meds: [...S.profile.meds, S.profile.other].join(' ').replace('타이레놀·감기약','타이레놀 감기약'), allergies: [] });
@@ -96,10 +96,13 @@ function pick(){
   const lipid = hasMed(/고지혈|스타틴/);
   const C = [];
   const apap = on(t,'apap'), alc = on(t,'alcohol');
-  if (apap.length && alc.length) C.push({ id:'apap', src:[...apap.slice(-1), ...alc.slice(-1)], pair:`${apap.at(-1).text} + ${alc.at(-1).text}`,
-    msg:`${apap.at(-1).text} 먹은 날 ${alc.at(-1).text}예요. 같이 들어가면 간에 부담이 될 수 있어서, 오늘 술은 여기까지가 좋아요.`,
-    short:`${apap.at(-1).text} 먹은 날이에요. 오늘 술은 여기까지`, title:'타이레놀 먹은 날의 술', why:'타이레놀(아세트아미노펜)과 술은 둘 다 간에서 처리돼요. 같은 날 겹치면 간이 평소보다 힘들 수 있다고 알려져 있어요. 감기약·두통약 중에도 같은 성분이 든 게 많아요.',
-    alts:[['물이나 꿀물','오늘 남은 저녁은 이쪽이 편해요'],['따뜻한 국물','속을 편하게 하는 데 조금이라도 도움이 될 수 있어요']] });
+  const nsa = [...on(t,'nsaid')], pk = [...apap, ...nsa];
+  if (pk.length && alc.length) { const isN = !apap.length;
+  C.push({ id:'apap', src:[...pk.slice(-1), ...alc.slice(-1)], pair:`${pk.at(-1).text} + ${alc.at(-1).text}`,
+    msg: isN ? `${pk.at(-1).text} 먹은 날 술이 있었어요. 같이 먹으면 위출혈이 생길 수 있다고 안내돼 있어요.` : `${pk.at(-1).text} 먹은 날 술이 있었어요. 같이 먹으면 간에 부담이 될 수 있다고 안내돼 있어요.`,
+    short:`${pk.at(-1).text} 먹은 날이에요. 술과는 같이 안 먹는 게 좋아요`, title:'진통제 먹은 날의 술',
+    why:'식약처 허가사항에는 매일 세 잔 이상 술을 마시는 사람이 해열진통제를 먹으면, 아세트아미노펜(타이레놀 등)은 간손상, 이부프로펜 같은 소염진통제는 위장출혈이 생길 수 있어 의사·약사와 상의하라고 적혀 있어요.',
+    srcs:'출처: 식약처 의약품 허가사항' }); }
   const lic = [...on(t,'licorice'), ...on(y,'licorice')];
   if (lic.length && htn) C.push({ id:'lic', src:lic.slice(-1), pair:`${lic.at(-1).text} + 혈압약`,
     msg:'쌍화탕엔 감초가 들어 있어요. 혈압약을 드시는 동안은 맞지 않을 수 있어요. 오늘은 따뜻한 물이면 충분해요.',
@@ -196,7 +199,7 @@ function detail(n){
     <div class="s-sec"${why('근거 없는 경고는 믿지 않아요. 왜 그런지 한 단락으로만.')}><h4>이유</h4><p>${esc(n.why)}</p></div>
     ${body ? `<div class="s-sec"${why('경고로 끝내지 않고, 지금 할 수 있는 작은 대안. 음식·차·제품 모두 같은 형식이고 범주 표시가 없어요.')}><h4>대신 이렇게</h4>${body}</div>` : ''}
     ${(() => { const cs = CURATE.filter(c => c.on === n.id); return cs.length ? `<div class="cur">${cs.map(c => `<p>${esc(c.food)}</p><button class="pr-open" data-p="${esc(c.key)}">${esc(PRODUCTS[c.key].title.split(' · ')[0])} 제품 보기<i data-lucide="chevron-right"></i></button>`).join('')}</div>` : ''; })()}
-    ${n.srcs ? `<p class="src"${why('생약·한약 관련 내용은 현대 근거(허가사항·임상·체계적 문헌고찰)가 있을 때만 쓰고, 출처를 한 줄로 남겨요. 고전 문헌이나 \'전통적으로\'는 근거로 쓰지 않아요.')}>근거: ${esc(n.srcs)}</p>` : ''}
+    ${n.srcs ? `<p class="src"${why('생약·한약 관련 내용은 현대 근거(허가사항·임상·체계적 문헌고찰)가 있을 때만 쓰고, 출처를 한 줄로 남겨요. 고전 문헌이나 \'전통적으로\'는 근거로 쓰지 않아요.')}>${/^출처/.test(n.srcs) ? '' : '근거: '}${esc(n.srcs)}</p>` : ''}
     <p class="disc">진단이나 처방이 아닌 일반 정보예요. 문구는 예시이며 약사 검수 전이에요. 약에 대해서는 약사·의사의 안내를 따라 주세요.</p>`);
   notesRefresh();
 }
