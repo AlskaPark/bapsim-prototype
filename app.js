@@ -114,6 +114,7 @@ function pick(){
     C.push({ id:'mg', src:[cramp[0], mg.at(-1), cw.at(-1)], pair:'다리에 쥐 + 커피 잦은 주',
       msg:`커피 잦은 주에 다리에 쥐가 났다고 적으셨어요. 이미 드시는 ${f}${/[가-힣]/.test(f) && (f.charCodeAt(f.length-1)-0xAC00)%28 ? '을' : '를'} 매일 하나씩 곁들이면 조금이라도 도움이 될 수 있어요.`,
       short:`이미 드시는 ${f}, 매일 하나씩 곁들여 보세요`, title:'다리에 쥐가 난 주', why:'카페인은 마그네슘·칼륨이 소변으로 빠지는 걸 조금 늘릴 수 있어요. 커피는 그대로 두고, 이미 드시는 것 중 마그네슘·칼륨이 든 걸 조금 더하는 정도면 충분해요.', q:'다리에 쥐가 자주 나요' }); }
+  if (!C.length && S.watch) for (const [name, w] of Object.entries(S.watch)) { const now = priceOn(name, w.base, t); if (now < w.at && t > w.day) { C.push({ id:'price', src:[], product: w.key, pair:'지켜보던 가격', msg:`지켜보던 ${name} 가격이 내려갔어요. 확인된 판매처 기준이에요.`, short:`지켜보던 ${name} 가격이 내려갔어요` }); break; } }
   const kind = d => d.slice(0, d.indexOf('-')), dday = d => d.slice(d.indexOf('-') + 1);
   return C.find(c => !S.dismissed.some(d => kind(d) === c.id && gap(dday(d), t) >= 0 && gap(dday(d), t) <= 3)) || null;
 }
@@ -128,7 +129,7 @@ function render(){
   const top = n ? `<article class="note" id="note"${why('하루에 최대 하나. 기록과 내 약에서 연결된 것만. 질문이 아니라서 답할 필요가 없어요.')}>
       <div class="n-src"${why('왜 지금 이 말을 하는지 근거가 바로 보여야 무작위 건강 상식처럼 느껴지지 않아요.')}>${thumbs(n.src)}<span class="n-pair">${esc(dayName(t,t))} · ${esc(n.pair)}</span>${n.health?`<i data-lucide="heart-pulse" class="n-h"${why('수면 같은 건강 데이터는 숫자로 보여 주지 않고, 근거 줄의 작은 표시로만 드러나요.')}></i>`:''}</div>
       <p class="n-msg">${esc(n.msg)}</p>
-      <div class="n-foot"><button class="n-more" id="more"${why('자세한 이유와 대안은 원할 때만. 카드가 길어지지 않게 탭 뒤로 숨겼어요.')}>이유와 대안 보기<i data-lucide="chevron-right"></i></button><span class="n-exp"${why('스스로 사라진다는 걸 알려서, 쌓일까 봐 부담 갖지 않게 해요.')}>오늘까지</span></div>
+      <div class="n-foot"><button class="n-more" id="more"${why('자세한 이유와 대안은 원할 때만. 카드가 길어지지 않게 탭 뒤로 숨겼어요.')}>${n.product ? '가격 보기' : '이유와 대안 보기'}<i data-lucide="chevron-right"></i></button><span class="n-exp"${why('스스로 사라진다는 걸 알려서, 쌓일까 봐 부담 갖지 않게 해요.')}>오늘까지</span></div>
       <button class="x" id="nx" aria-label="닫기"${why('무시할 권리. 닫으면 그날은 더 이상 아무것도 뜨지 않고, 같은 종류는 3일 동안 조용해요.')}><i data-lucide="x"></i></button></article>`
     : `<div class="quiet"${why('조용한 날에도 앱이 고장 난 게 아니라 일부러 조용하다는 걸 알려 줘요.')}><span class="q-ic"><i data-lucide="moon"></i></span><div><b>오늘은 챙길 게 없어요</b><span>계속 찍어 두세요. 필요할 때만 알려 드릴게요.</span></div></div>`;
   const days = {}; visible().forEach(e => (days[e.day] = days[e.day] || []).push(e));
@@ -150,7 +151,7 @@ function render(){
   $('#gear').onclick = settings; if ($('#insl')) $('#insl').onclick = insightsPage; $('#shot').onclick = () => capture(false); $('#album').onclick = () => capture(true); $('#pen').onclick = composer;
   $$('.tile').forEach(b => b.onclick = () => photoView(b.dataset.id));
   const ft = $('.tile'); if (ft) ft.setAttribute('data-why', '밥심이 사진을 스스로 알아보고, 이름표를 사진 위에 작게만 붙여요. 아무것도 뜨지 않아요. 확실하지 않으면 이름표를 붙이지 않고, 묻지도 않아요.');
-  if (n) { $('#more').onclick = () => detail(n); $('#nx').onclick = () => { buzz(); $('#note').classList.add('out'); setTimeout(() => { S.dismissed.push(n.id + '-' + t); save(); render(); }, 260); }; }
+  if (n) { $('#more').onclick = () => n.product ? productSheet(n.product) : detail(n); $('#nx').onclick = () => { buzz(); $('#note').classList.add('out'); setTimeout(() => { S.dismissed.push(n.id + '-' + t); save(); render(); }, 260); }; }
   notesRefresh();
 }
 let lastNew = null;
@@ -370,15 +371,44 @@ const PRODUCTS = { '필터 커피': { title:'드립백 · 필터 커피', why:'�
   { name:'B사 드립백 (12개입)', unit:'개당', sellers:[['B사 공식 스토어',10800,true,'공식 판매처'],['B마켓',9900,true,'정품 인증 판매자']] },
   { name:'C사 종이 필터 + 원두 (200g)', unit:'세트', sellers:[['C사 공식 스토어',15000,true,'공식 판매처'],['D몰',13900,true,'정품 인증 판매자']] } ] } };
 const won = n => n.toLocaleString('ko-KR') + '원';
+// 가격 변동 (예시 데이터): 날짜로 정해지는 가상의 값
+const seedOf = str => [...str].reduce((a, c) => a + c.charCodeAt(0), 0);
+function priceOn(name, base, d){ const sd = seedOf(name), i = Math.round(new Date(d + 'T12:00:00') / 864e5);
+  const f = j => 1 + .07 * Math.sin(j / 9 + sd) + .035 * Math.sin(j / 3.7 + sd * 2), i0 = Math.round(new Date(dk(base0) + 'T12:00:00') / 864e5); return Math.round(base * f(i) / f(i0) / 10) * 10; }
+const base0 = new Date(base.getTime());
+function history(name, base){ const t = today(); return Array.from({ length: 90 }, (_, k) => { const d = dk(add(new Date(t + 'T12:00:00'), k - 89)); return { d, p: priceOn(name, base, d) }; }); }
+function chartHTML(name, base){ const h = history(name, base), ps = h.map(x => x.p), lo = Math.min(...ps), hi = Math.max(...ps), cur = ps.at(-1);
+  const W = 320, H = 84, px = i => 4 + i * (W - 8) / (h.length - 1), py = p => 10 + (hi - p) * (H - 24) / ((hi - lo) || 1);
+  const path = h.map((x, i) => `${i ? 'L' : 'M'}${px(i).toFixed(1)},${py(x.p).toFixed(1)}`).join('');
+  const li = ps.indexOf(lo), hiI = ps.indexOf(hi), pos = (cur - lo) / ((hi - lo) || 1);
+  const verdict = pos <= .15 ? '지금이 최근 최저가에 가까워요' : pos >= .75 ? '최근보다 비싼 편이에요' : '최근 가격과 비슷한 편이에요';
+  const m0 = new Date(h[0].d + 'T12:00:00');
+  return `<div class="pc"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="최근 석 달 가격 변동 (예시)"><path d="${path}" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+    <circle cx="${px(li)}" cy="${py(lo)}" r="3" fill="#2F6FD8"/><circle cx="${px(hiI)}" cy="${py(hi)}" r="3" fill="#C0362C"/><circle cx="${px(h.length-1)}" cy="${py(cur)}" r="4.5" fill="var(--accent)" stroke="var(--ink)" stroke-width="1.5"/></svg>
+    <div class="pc-k"><span><i style="background:#2F6FD8"></i>최저 ${won(lo)}</span><span><i style="background:#C0362C"></i>최고 ${won(hi)}</span><span><i style="background:var(--accent);box-shadow:inset 0 0 0 1.5px var(--ink)"></i>지금 ${won(cur)}</span></div>
+    <div class="pc-ax"><span>${m0.getMonth()+1}월</span><span>지금</span></div><p class="pc-v">${verdict}</p></div>`; }
+function rangeHTML(it, first){ const all = it.sellers, lo = Math.min(...all.map(x => x[1])), hi = Math.max(...all.map(x => x[1]));
+  const ver = all.filter(x => x[2]).sort((a, b) => a[1] - b[1]), best = ver[0], top = all.slice().sort((a, b) => b[1] - a[1])[0], cheapUnver = all.find(x => !x[2] && x[1] < best[1]);
+  const pct = p => ((p - lo) / ((hi - lo) || 1) * 100).toFixed(1);
+  const side = (x, lbl) => `<div class="rg-c"><small>${lbl}</small><b>${won(x[1])}</b><span>${esc(x[0])}</span><span class="pr-v${x[2] ? '' : ' no'}"><i data-lucide="${x[2] ? 'badge-check' : 'circle-help'}"></i>${esc(x[3])}</span></div>`;
+  return `<div class="rg"${first ? why('판매처 사이 가격 폭을 막대 하나로. 표시는 확인된 판매처 중 가장 싼 곳에만 해요. 확인 안 된 곳이 더 싸면 흐리게만 알려요.') : ''}>
+    <div class="rg-bar"><span class="rg-fill"></span><i class="rg-m" style="left:${pct(best[1])}%"></i>${cheapUnver ? `<i class="rg-u" style="left:${pct(cheapUnver[1])}%"></i>` : ''}</div>
+    <div class="rg-ends"><span>${won(lo)}</span><span>${won(hi)}</span></div>
+    <div class="rg-cols"${first ? why('가장 싼 확인된 곳과 가장 비싼 곳을 나란히 두어 차이를 바로 보게 해요. 어느 쪽도 권하지 않아요.') : ''}>${side(best, '확인된 곳 중 가장 싼 곳')}${side(top, '가장 비싼 곳')}</div>
+    ${cheapUnver ? `<p class="rg-note"><i data-lucide="circle-help"></i>${esc(cheapUnver[0])}가 더 싸지만 판매자 정보가 확인되지 않았어요.</p>` : ''}</div>`; }
+const watching = name => !!(S.watch && S.watch[name]);
 function productSheet(key){ const P = PRODUCTS[key]; if (!P) return;
   const rows = P.items.map(it => { const v = it.sellers.filter(x => x[2]).sort((a,b) => a[1] - b[1]); const best = v[0]; const cnt = parseInt((it.name.match(/(\d+)개입/)||[])[1] || 0);
     return { it, best, per: cnt ? Math.round(best[1] / cnt) : null }; });
   const cheapest = rows.slice().sort((a, b) => (a.per || a.best[1]) - (b.per || b.best[1]))[0];
   const bg = sheet(`<div class="s-eyebrow">제품으로 고른다면 · 예시 데이터</div><h2 class="s-title">${esc(P.title)}</h2><p class="pr-why">${esc(P.why)} 꼭 사지 않아도 돼요.</p>
     ${rows.map(r => `<div class="pr"${r === rows[0] ? why('비슷한 제품 2~3개만, 판매처마다 확인된 곳 중 가장 싼 값으로. 가격은 쇼핑 정보라 숫자를 보여 주는 유일한 예외예요.') : ''}><div class="pr-h"><b>${esc(r.it.name)}</b>${r.per ? `<span>${esc(r.it.unit)} ${won(r.per)}</span>` : ''}</div>
-      ${r.it.sellers.map(x => `<div class="pr-s${x[2] ? '' : ' no'}"><span>${esc(x[0])}</span><span class="pr-v"${x === r.it.sellers[0] && r === rows[0] ? why('정품·공식 판매처인지가 가격보다 먼저. 확인 안 된 곳은 더 싸도 흐리게 두고 링크를 주지 않아요.') : ''}><i data-lucide="${x[2] ? 'badge-check' : 'circle-help'}"></i>${esc(x[3])}</span><em>${won(x[1])}</em></div>`).join('')}</div>`).join('')}
+      ${rangeHTML(r.it, r === rows[0])}
+      <div${r === rows[0] ? why('가격 추적기처럼 최근 석 달 흐름을 선 하나로. 지금 사도 괜찮은지 한 줄 판단만 덧붙이고, 사라고 권하지 않아요.') : ''}>${chartHTML(r.it.name, r.best[1])}</div>
+      <label class="pw"${r === rows[0] ? why('원하는 사람만 켜는 가격 지켜보기. 내려가면 알림을 쏟아내지 않고, 다른 한 줄이 없는 날에만 홈·위젯에 한 줄로 알려요.') : ''}><span><i data-lucide="bell"></i>가격이 내려가면 한 줄로 알려 주기</span><input type="checkbox" data-w="${esc(r.it.name)}" data-b="${r.best[1]}" ${watching(r.it.name) ? 'checked' : ''}><em></em></label></div>`).join('')}
     <a class="pr-go" href="#" onclick="return false"${why('링크는 하나만, 확인된 판매처 중 가장 싼 곳으로. 특가 배너나 구매 유도 문구는 두지 않아요.')}>확인된 판매처 중 가장 싼 곳 보기<small>${esc(cheapest.it.name)} · ${esc(cheapest.best[0])} ${won(cheapest.best[1])}</small></a>
-    <p class="disc">예시 데이터예요. 실제 제품·가격이 아니고, 이 앱은 판매 수수료를 받지 않는다는 가정이에요.</p>`);
+    <p class="disc">가격과 변동 그래프는 예시 데이터예요. 실제 제품·가격이 아니고, 이 앱은 판매 수수료를 받지 않는다는 가정이에요.</p>`);
+  $$('[data-w]', bg).forEach(c => c.onchange = () => { S.watch = S.watch || {}; if (c.checked) S.watch[c.dataset.w] = { base: +c.dataset.b, at: priceOn(c.dataset.w, +c.dataset.b, today()), day: today(), key }; else delete S.watch[c.dataset.w]; save(); buzz(); });
   notesRefresh(); }
 function insightsPage(){
   let list = insights(); const t = today(), fo = focus();
@@ -475,7 +505,7 @@ function widget(){
     $('#ow', ov).after(pop);
     $$('button', pop).forEach(b => b.onclick = () => { saveMemo(b.dataset.m); pop.innerHTML = '<span class="ok">적어 뒀어요</span>'; setTimeout(() => { pop.remove(); render(); }, 900); });
     notesRefresh(); }
-  $('#owl', ov).onclick = () => { close(); if (n) setTimeout(() => detail(n), 280); };
+  $('#owl', ov).onclick = () => { close(); if (n) setTimeout(() => n.product ? productSheet(n.product) : detail(n), 280); };
   $('#owx', ov).onclick = close;
   notesRefresh();
 }
