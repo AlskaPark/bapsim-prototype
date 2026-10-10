@@ -201,7 +201,7 @@ function detail(n){
     ${(() => { const cs = CURATE.filter(c => c.on === n.id); return cs.length ? `<div class="cur">${cs.map(c => `<p>${esc(c.food)}</p><button class="pr-open" data-p="${esc(c.key)}">${esc(PRODUCTS[c.key].title.split(' · ')[0])} 제품 보기<i data-lucide="chevron-right"></i></button>`).join('')}</div>` : ''; })()}
     ${n.quote ? `<div class="s-sec"${why('허가사항 원문은 AI 문장과 섞지 않고 인용으로 따로. 무엇이 AI 문장이고 무엇이 공식 문구인지 바로 구분돼요.')}><h4>허가사항 원문</h4>${n.quote.map(q => `<blockquote class="qt"><p>“${esc(q.t)}”</p><cite>${q.ref && REFS[q.ref] ? `<a class="ref" href="${REFS[q.ref].u}" target="_blank" rel="noopener noreferrer">${esc(q.s)}<span aria-hidden="true">↗</span></a>` : esc(q.s)}</cite></blockquote>`).join('')}</div>` : ''}
     <p class="ai-f"${why('출처 줄 바로 옆에 한 줄. 원문 인용을 뺀 문장은 AI가 썼다는 걸 알려요.')}><span class="ai">AI</span>AI가 내 기록을 보고 쓴 문장이에요${n.quote ? '. 따옴표 안은 허가사항 원문이에요' : ''}.</p>
-    ${n.refs ? `<p class="src"${why('출처는 눌러서 원문을 바로 열 수 있게. 직접 열어 확인한 링크만 걸고, 확인 못 한 출처는 글자로만 남겨요. 작게, 밑줄과 ↗로만.')}>출처: 식약처 의약품 허가사항${n.refs.filter(k => /nedrug/.test(REFS[k].u)).length ? '' : ''}<span class="refs">${n.refs.map(refA).join('')}</span></p>` : ''}
+    ${n.refs ? `<p class="src"${why('출처는 눌러서 원문을 바로 열 수 있게. 직접 열어 확인한 링크만 걸고, 확인 못 한 출처는 글자로만 남겨요. 작게, 밑줄과 ↗로만.')}>${n.refs.every(k => /nedrug/.test(REFS[k].u)) ? '출처: 식약처 의약품 허가사항' : '출처'}<span class="refs">${n.refs.map(refA).join('')}</span></p>` : ''}
     <p class="disc">진단이나 처방이 아닌 일반 정보예요. 문구는 예시이며 약사 검수 전이에요. 약에 대해서는 약사·의사의 안내를 따라 주세요.</p>`);
   notesRefresh();
 }
