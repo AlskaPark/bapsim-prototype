@@ -694,6 +694,10 @@ function expertDemo(){ if (!S.sample) { loadSample(); render(); } insightsPage()
   if (qs.has('insights')) insightsPage();
   if (qs.has('memo')) composer();
   if (qs.has('expert')) expertDemo();
-  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {}); })();
-window.__bapsim = { S, render };
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    // 새 버전이 깔리면 한 번만 조용히 새로고침 (예전 캐시에 묶이지 않게)
+    const had = !!navigator.serviceWorker.controller; let done = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if (had && !done) { done = true; location.reload(); } });
+    navigator.serviceWorker.register('sw.js', { updateViaCache:'none' }).then(r => { r.update(); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') r.update(); }); }).catch(() => {}); } })();
+window.__bapsim = { S, render, v:'v46' };
 })();
