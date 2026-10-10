@@ -15,6 +15,9 @@ const ITEMS = {
   banana:{l:'바나나',t:['mg']}, tofu:{l:'두부',t:['mg']}, dosirak:{l:'도시락',t:[]}, onigiri:{l:'삼각김밥',t:[]}, protein:{l:'프로틴바',t:[]},
   pizza:{l:'피자',t:[]}, chicken:{l:'치킨',t:[]}, tteok:{l:'떡볶이',t:[]}, ramen:{l:'라면',t:[]}, salad:{l:'샐러드',t:[]}, cola:{l:'콜라',t:[]},
 };
+// 모의 이미지 인식: 서버가 붙으면 실제 모델로 교체. 지금은 파일 이름 단서만 사용, 확실하지 않으면 이름표 없음 (묻지 않음)
+const REC = [[/tylenol|타이레놀|acetaminophen/i,'tylenol'],[/beer|맥주/i,'beer'],[/soju|소주/i,'soju'],[/coffee|커피|latte|americano/i,'coffee'],[/ssanghwa|쌍화/i,'ssanghwa'],[/grapefruit|자몽/i,'grapefruit'],[/iron|철분/i,'iron'],[/energy|에너지/i,'energy'],[/banana|바나나/i,'banana'],[/tofu|두부/i,'tofu'],[/dosirak|도시락|lunch/i,'dosirak'],[/onigiri|삼각김밥/i,'onigiri'],[/protein|프로틴/i,'protein'],[/pizza|피자/i,'pizza'],[/chicken|치킨/i,'chicken'],[/tteok|떡볶이/i,'tteok'],[/ramen|라면/i,'ramen'],[/salad|샐러드/i,'salad'],[/cola|콜라/i,'cola']];
+const recognize = name => { const h = REC.find(([r]) => r.test(name || '')); return h ? h[1] : null; };
 const TRAY = ['coffee','beer','soju','tylenol','ssanghwa','grapefruit','iron','energy','banana'];
 const MEDS = ['혈압약','고지혈증약','타이레놀·감기약','아스피린','와파린','철분제','항생제'];
 const CONDS = [['hypertension','고혈압'],['diabetes','당뇨'],['kidney','신장 질환'],['pregnant','임신·수유']];
@@ -123,7 +126,7 @@ function render(){
   if (!keys.includes(t)) keys.unshift(t);
   const tl = keys.map((d, i) => { const es = (days[d] || []).slice().reverse(), ph = es.filter(e => e.kind === 'photo'), me = es.filter(e => e.kind === 'memo');
     return `<section class="day"${i===0?why('날짜별 기록. 저장됐다는 믿음과, 한 줄의 근거를 확인하는 곳이에요. 숫자나 분석은 없어요.'):''}><h3>${esc(dayName(d,t))}</h3>
-      ${ph.length ? `<div class="grid">${ph.map(e => `<button class="tile${e.id===lastNew?' new':''}" data-id="${e.id}" aria-label="${esc(e.text||'사진')}"><img src="${src(e)}" alt="" loading="lazy">${e.k?`<span class="lb">${esc(e.text)}</span>`:''}</button>`).join('')}</div>` : (me.length ? '' : `<div class="empty">아직 찍은 게 없어요</div>`)}
+      ${ph.length ? `<div class="grid">${ph.map(e => `<button class="tile${e.id===lastNew?' new':''}" data-id="${e.id}" aria-label="${esc(e.text||'사진')}"><img src="${src(e)}" alt="" loading="lazy">${e.rec==='pending'?'<span class="lb pend">확인 중</span>':e.k?`<span class="lb">${esc(e.text)}</span>`:''}</button>`).join('')}</div>` : (me.length ? '' : `<div class="empty">아직 찍은 게 없어요</div>`)}
       ${me.length ? `<div class="memos">${me.map(e => `<span class="memo"><i data-lucide="pen-line"></i>${esc(e.text)}</span>`).join('')}</div>` : ''}</section>`; }).join('');
   app.innerHTML = `<div class="wrap">${head}<div class="today">${top}</div>${tl}</div>
     <nav class="dock"><div class="dock-in">
@@ -134,6 +137,7 @@ function render(){
   icons(); lastNew = null;
   $('#gear').onclick = settings; $('#shot').onclick = () => capture(false); $('#album').onclick = () => capture(true); $('#pen').onclick = composer;
   $$('.tile').forEach(b => b.onclick = () => photoView(b.dataset.id));
+  const ft = $('.tile'); if (ft) ft.setAttribute('data-why', '밥심이 사진을 스스로 알아보고, 이름표를 사진 위에 작게만 붙여요. 아무것도 뜨지 않아요. 확실하지 않으면 이름표를 붙이지 않고, 묻지도 않아요.');
   if (n) { $('#more').onclick = () => detail(n); $('#nx').onclick = () => { buzz(); $('#note').classList.add('out'); setTimeout(() => { S.dismissed.push(n.id + '-' + t); save(); render(); }, 260); }; }
   notesRefresh();
 }
@@ -144,25 +148,14 @@ function capture(multi){
   const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; if (multi) inp.multiple = true; else inp.capture = 'environment';
   inp.style.display = 'none'; document.body.appendChild(inp);
   inp.onchange = async () => { const fs = [...inp.files]; inp.remove(); if (!fs.length) return; let e;
+    const made = [];
     for (const f of fs) { const pid = 'p' + Date.now() + Math.random().toString(36).slice(2,6), b = await shrink(f); await put(pid, b); URLS[pid] = URL.createObjectURL(b);
-      e = { id:'e' + Date.now() + Math.random().toString(36).slice(2,5), day: today(), kind:'photo', pid, text:'', time: now(), tags:[] }; S.entries.push(e); }
-    save(); buzz(); lastNew = e.id; closeTray(); render(); if (fs.length === 1) tray(e); };
+      e = { id:'e' + Date.now() + Math.random().toString(36).slice(2,5), day: today(), kind:'photo', pid, text:'', time: now(), tags:[], rec:'pending' }; S.entries.push(e); made.push([e, f.name]); }
+    save(); buzz(); lastNew = e.id; render();
+    setTimeout(() => { made.forEach(([x, name]) => { const k = recognize(name); delete x.rec; if (k) { x.k = k; x.text = ITEMS[k].l; x.tags = ITEMS[k].t; x.auto = true; } }); save(); render(); }, 1000); };
   inp.click();
 }
-let trayT;
-function closeTray(){ clearTimeout(trayT); const t = $('.tray'); if (t) { t.classList.add('out'); setTimeout(() => t.remove(), 220); } }
-function tray(e){
-  const d = document.createElement('div'); d.className = 'tray';
-  d.setAttribute('data-why', '서버 분석이 없는 동안, 사진이 무엇인지 알 수 있는 유일한 방법이에요. 한 번 탭이면 끝나고, 안 눌러도 8초 뒤 스스로 닫혀요.');
-  d.innerHTML = `<div class="tray-h"><img src="${src(e)}" alt=""><p>사진 속에 있는 걸 누르면, 겹치는 조합을 챙길 수 있어요</p><button class="x" aria-label="닫기"><i data-lucide="x"></i></button></div>
-    <div class="tray-c">${TRAY.map(k => `<button class="tag" data-k="${k}"><img src="${IMG(k)}" alt="">${ITEMS[k].l}</button>`).join('')}</div><div class="tray-bar"><i></i></div>`;
-  document.body.appendChild(d); icons();
-  trayT = setTimeout(closeTray, 8000);
-  $('.x', d).onclick = closeTray;
-  $$('.tag', d).forEach(b => b.onclick = () => { clearTimeout(trayT); b.classList.add('on'); buzz(); setLabel(e.id, b.dataset.k); setTimeout(() => { closeTray(); render(); }, 220); });
-  notesRefresh();
-}
-function setLabel(id, k){ const e = S.entries.find(x => x.id === id); if (!e) return; e.k = k; e.text = ITEMS[k].l; e.tags = ITEMS[k].t; save(); }
+function setLabel(id, k){ const e = S.entries.find(x => x.id === id); if (!e) return; e.k = k; e.text = ITEMS[k].l; e.tags = ITEMS[k].t; e.auto = false; save(); }
 
 // ---- 시트 ----
 function sheet(html, cls = ''){ const bg = document.createElement('div'); bg.className = 'sh-bg'; bg.innerHTML = `<div class="sh ${cls}"><div class="grab"></div><button class="x" aria-label="닫기"><i data-lucide="x"></i></button>${html}</div>`;
@@ -190,12 +183,14 @@ function variants(v){ return `<details><summary>제품으로 고른다면</summa
 function photoView(id){
   const e = S.entries.find(x => x.id === id); if (!e) return;
   const bg = sheet(`<div class="pv"><img src="${src(e)}" alt=""><div class="meta">${esc(dayName(e.day, today()))}${e.time ? ' · ' + esc(e.time) : ''}</div>
-    <h4 style="font-size:13px;color:var(--sub);margin:16px 0 0">이름표</h4><div class="tags">${TRAY.map(k => `<button class="tag${e.k===k?' on':''}" data-k="${k}"><img src="${IMG(k)}" alt="">${ITEMS[k].l}</button>`).join('')}</div>
+    <button class="curtag" id="ct"${why('고치는 건 선택이고, 사진을 눌러 본 사람만 발견해요. 찍을 때마다 묻지 않기 위해서예요.')}>${e.k ? `<img src="${IMG(e.k)}" alt="">${esc(e.text)}` : '이름표 없음'}<span>${e.k ? '바꾸기' : '붙이기'}</span></button>
+    <div class="tags" id="tg" hidden>${TRAY.map(k => `<button class="tag${e.k===k?' on':''}" data-k="${k}"><img src="${IMG(k)}" alt="">${ITEMS[k].l}</button>`).join('')}</div>
     <button class="danger" id="del">이 기록 지우기</button></div>`);
-  $$('.tag', bg).forEach(b => b.onclick = () => { $$('.tag', bg).forEach(x => x.classList.remove('on')); b.classList.add('on'); buzz(); setLabel(id, b.dataset.k); render(); });
+  $('#ct', bg).onclick = () => { $('#tg', bg).hidden = false; $('#ct', bg).hidden = true; notesRefresh(); };
+  $$('.tag', bg).forEach(b => b.onclick = () => { $$('.tag', bg).forEach(x => x.classList.remove('on')); b.classList.add('on'); buzz(); setLabel(id, b.dataset.k); render(); setTimeout(() => bg.close(), 200); });
   $('#del', bg).onclick = () => { S.entries = S.entries.filter(x => x.id !== id); if (e.pid) del(e.pid); save(); bg.close(); render(); };
+  notesRefresh();
 }
-
 function composer(){
   const bg = sheet(`<div class="comp"><div class="s-eyebrow">한 줄 적기</div><h2 class="s-title">찍을 수 없는 몸 상태를 남겨 두세요</h2>
     <textarea id="mt" rows="2" placeholder="예: 다리에 쥐 남"></textarea>
@@ -278,8 +273,7 @@ let notesOn = false;
 function notesRefresh(){ if (!notesOn) return; requestAnimationFrame(() => { $$('.why-pin,.why-panel').forEach(x => x.remove());
   const top = $$('.ov').at(-1) || $$('.sh-bg').at(-1); const scope = top || document;
   const els = $$('[data-why]', scope).filter(el => { const r = el.getBoundingClientRect(); return r.width && r.bottom > 0 && r.top < innerHeight && r.left < innerWidth && r.right > 0; });
-  const tr = $('.tray'); if (tr && !top) els.push(tr);
-  if (!els.length) return;
+    if (!els.length) return;
   els.forEach((el, i) => { const r = el.getBoundingClientRect(), d = document.createElement('div'); d.className = 'why-pin'; d.textContent = i + 1;
     d.style.left = Math.min(innerWidth - 24, Math.max(4, r.right - 12)) + 'px'; d.style.top = (Math.max(4, r.top - 8) + scrollY) + 'px'; document.body.appendChild(d); });
   const pn = document.createElement('div'); pn.className = 'why-panel'; pn.innerHTML = `<h5>왜 이렇게?</h5><ol>${els.map(el => `<li>${esc(el.getAttribute('data-why'))}</li>`).join('')}</ol>`; document.body.appendChild(pn); }); }
